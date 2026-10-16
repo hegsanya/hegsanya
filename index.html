@@ -1,6 +1,6 @@
 <!doctype html><html lang="hu" data-theme="light"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>CEG – Konvoj kísérő kampány v1.14.136</title>
+<title>CEG – Konvoj kísérő kampány v1.14.137</title>
 <style>
 /* Színek: világos/sötét téma változókkal; a gombok és táblázatok stílusa */
 :root{--bg:#f4f1ea;--fg:#1d2733;--pn:#fff;--ln:#c9c2b3;--ac:#b3261e;--sea:#d6ecf4;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -455,7 +455,8 @@ function reset(){dxCancel();applyBoard();FOGM={};BS={};KL=[];if(typeof NZLOG!=='
 // nd: az irány körbefordítása 1–8 közé (az Excel Irany táblája: 9→1, 0→8, −3→5 ...).
 const nd=x=>((x-1)%8+8)%8+1;
 // turnFor: egy hajó új körének kisorsolása: modul-Stand, sebesség (motorkiesés után), lépésenkénti irány-csoportok, szenzor extra irány, U-boat mélység-lehetőségek és torpedócsövek.
-function turnFor(s){s.bl=false;s.det=null;s.detZ=false;
+function turnFor(s){s.tn=turn;s.bl=false;s.det=null;s.detZ=false;   // s.tn: a kör száma, amikor a hajó utoljára friss lépést kapott (az automata-pipa kapcsolgatása ezt nézi)
+
  if(s.t=='A'){   // ellenséges repülő: véletlen sebesség és három véletlen (abszolút) irány; a sebességet ezekkel az irányokkal kell lelépni
   s.spd=R(CFG.airSpLo,CFG.airSpHi);s.done=false;s.ch=[];s.idx=0;s.xs=0;s.dice=null;const ds=[R(1,8),R(1,8),R(1,8)];s.groups=Array.from({length:s.spd},()=>ds.slice());return}
  // U-boat: Medal = elsüllyesztett tonna / medál-tonna
@@ -1143,7 +1144,11 @@ function lst(){fogFrame();const man=!$('fo').checked;$('lst').innerHTML='<b>Sorr
 // fs: FULL speed kérés (sikerdobás); a következő körtől mindig maximális sebesség, és ilyenkor nincs bombázás.
 function fs(on){const s=sel;if(!on){s.full=false;say(s.id+': FULL speed kikapcsolva.');return}
  const ok=R(0,2+s.med,s.id+': FULL speed','sikerül, ha > 1',s,v=>v>1?'SIKERÜL':'nem sikerült')>1;s.full=ok;say(s.id+': FULL speed '+(ok?'bekapcsolva a következő körtől.':'nem sikerült.'));card()}
-$('fo').onchange=()=>{if(!$('fo').checked)newTurn();draw();card()};
+// automata kíséret pipa: kivételekor a (korábban automata) kísérők kézi lépést kapnak – de CSAK ha ebben a körben még nem kaptak (s.tn), így a kapcsolgatás nem oszt újra lépést
+$('fo').onchange=()=>{if(!$('fo').checked){ships.forEach(s=>{if(s.t!='E'||s.en||s.sup||s.npc)return;
+   if(s.am===turn){s.done=true;s.idx=need(s);return}   // az automata már lépett ebben a körben: kézi lépést csak a KÖVETKEZŐ körtől kap
+   if(s.tn!==turn)turnFor(s)})}   // még nem kapott lépést ebben a körben: friss lépés (a kapcsolgatás nem oszt újra)
+ draw();card()};
 // cmd: a Commodore hajója (a beírt név, egyébként M7).
 // bas: a konvoj irányához igazodó helyi koordináta-rendszer (egységvektorok): 'al' = haladási irány, 'ac' = rá merőleges (jobbra). 5-ös iránynál: al = lefelé, ac = jobbra (a régi állás).
 // FA / FB: a konvoj-rács nyújtása kétcellás módban (oldalirányban / haladási irányban); a zónák a régi 3×2-es rács egységeiben maradnak
@@ -1179,7 +1184,8 @@ function step(){
  ms.forEach(s=>{snake(s);s.x+=v[0];s.y+=v[1]});
  const cm=cmd();
   if($('fo').checked)ships.filter(s=>s.t=='E'&&!s.en&&!s.sup&&!s.npc&&s.zid).forEach(s=>{   // automata mód (az Excel MozgasCelTeruletre_Sor makrója): a kísérő a kisorsolt irány-csoportokból azt választja, amelyik a zónája közepéhez visz (kis büntetéssel a konvoj irányától való eltérésre)
-   turnFor(s);{const keep=sel,ab=aiBusy;aiBusy=true;s._auto=true;try{aiTurnE(s)}finally{aiBusy=ab;sel=keep;s.done=false;s._auto=false}return}   // automata = NPC-logika: üldöz (póráz + önvédelmi sugár), bombáz, lő, torpedóz; ellenség nélkül a zónába tér vissza
+   turnFor(s);s.am=turn+1;   // s.am: az automata már lépett ebben a körben (a step turn++ utáni körszáma)
+   {const keep=sel,ab=aiBusy;aiBusy=true;s._auto=true;try{aiTurnE(s)}finally{aiBusy=ab;sel=keep;s.done=false;s._auto=false}return}   // automata = NPC-logika: üldöz (póráz + önvédelmi sugár), bombáz, lő, torpedóz; ellenség nélkül a zónába tér vissza
    const z=ZONE[s.zid],ca=(z[0]+z[2])/2,cb=(z[1]+z[3])/2,cd=+dr.value;
    for(let i=0;i<s.spd;i++){let best=null,bd=1e9;
     for(const d of s.groups[i]){const w=DV[d],nx=s.x+w[0],ny=s.y+w[1];if(nx<1||nx>N||ny<1||ny>N)continue;const[p,q]=loc(nx-cm.x,ny-cm.y),dist=Math.hypot(p-ca,q-cb)+Math.abs(d-cd)*.5;if(dist<bd){bd=dist;best=[nx,ny,d]}}
@@ -1682,6 +1688,7 @@ applyLogPos();renderCfg();try{qbRender()}catch(e){}   // a pálya felállítás�
 //   v1.13.4 (2026-10-08) – Oldalnézeti kártya-képek: Z (Z1–Z2), Flower (FL; az FM is), T-class és H-class (az utóbbi kettő ideiglenes, pontatlan rajz: később cserélendő).
 //   v1.13.5 (2026-10-08) – Oldalnézeti kártya-képek: Black Swan (BB, sloop), River (RV) és az ellenséges repülő (He 111; az 'A' kulcs: a repülők kártyáján).
 //   v1.13.6 (2026-10-08) – Az eseménynapló fegyveres sorai (lövés, torpedó, vizibomba, bombázás, légvédelem) pirosak; az ágyú-táblázatban a „Külön cél” a második sorba került (nem tolja ki a hajókártyát).
+//   v1.14.137 (2026-10-16) – HIBAJAVÍTÁS: az „automata kíséret” pipa kivétele / visszarakása kör közben minden alkalommal ÚJRA kiosztotta a kísérők lépését (újra léphettek, akárhányszor kapcsolgatva). Az automata kísérők a konvoj lépésekor már léptek (s.am), ezért a pipa kivételekor ebben a körben nem lépnek újra – kézzel csak a következő körtől; a többi kísérő csak akkor kap friss lépést, ha ebben a körben még nem volt (s.tn).
 //   v1.14.136 (2026-10-16) – ÚJ BEÁLLÍTÁS hAA45: az Admiral_4x5″ (H) kap egy extra dupla légvédelmi modult (AA4-AA5, +2 lövés körönként, lőtáv: aaRng) az AA2-3 és AA1 mellé; a modul neve szerint öröklődnek a régi mentések sérülései. 1 = be (alap), 0 = ki; a váltás az oldal újratöltése után érvényes.
 //   v1.14.135 (2026-10-16) – ÚJ BEÁLLÍTÁS opEvEnd (OP): az eseményréteg (az „Eseményréteg” kapcsoló betűi: U/R/H/K) AUTOMATIKUSAN megjelenik az OP-kör végén – amikor a konvoj és minden egység lépett (nincs több teendő) –, így a kör közben nem segít kikerülni az ellenséget, a végén viszont látszik, mi volt a cellákban. Az új nap elején újra rejtett. 0 = ki, 1 = be.
 //   v1.14.134 (2026-10-16) – ÚJ: GYORSBEÁLLÍTÓ GOMBOK a felső sor alatt (qb): kapcsoló-csoportok (Mozgás: Sakktábla / Szabad; Láthatóság: Mindent lát (fog 0) / Köd (fog 1, nézőpont automatikus); Irányok: Irányok / Iránykockák; Elöregedés; Időjárás: Évszakok / Napi ciklus; Bomba az U-boatnak: Látja / Rejtve; U-boat zaj). Egy kattintás a csoport összes hozzá tartozó beállítását átírja (a Beállítások lapon is látszik, nem felejthetsz el egyet sem); az aktív opció kiemelt, ha a beállítások kézzel eltértek: „egyedi”. A kör közepén váltott Mozgás a következő körtől érvényes (jelzi). A mikro-hangolás a Beállítások lapon változatlanul megmarad.
@@ -1820,7 +1827,7 @@ applyLogPos();renderCfg();try{qbRender()}catch(e){}   // a pálya felállítás�
 //   v1.14.1 (2026-10-08) – ütközés csak 0 mélységű (felszíni) U-boattal, mindkét hajó sérül (teherhajó d1–10 rakomány); az ágyútáblában a Táv. piros hatótávon kívül; a kártyán a sérült modul sora halvány piros (KO: erősebb)
 //   v1.14.0 – kézi dobás ablak (dobás-ablak a pályán, Kocka gomb)
 //   v1.13.7 (2026-10-08) – JAVÍTÁS: a mélyen lévő U-boattal nincs ütközés (colDepth: csak a legfeljebb 2 mélységű U-boat ütközhet; mélyebben a hajó fölötte halad el, a napló jelzi); az AI sem tart az ütközéstől mély U-boatnál.
-const VER = 'v1.14.136';
+const VER = 'v1.14.137';
 
 // ===== BEÁLLÍTÁSOK (Beállítások fül): gazdaság, flotta, javítás, fejlesztés, bérelt hajó =====
 const ECO0 = { startEgp: 0, tutEgp: 200, tutAll: 0, startFleet: 'T,FL,FL,FL', maxGroup: 6, bombPrice: 1, decPen: 50, decNew: 1, decScale: 60, cvP: 100, stragDie: 30, sensFloor: '4,3,2,1,1', newLuck: 40, newWorse: 2, newMax: 4, shopDaily: 1, upgCost: 100, upgP: 50, hfCls: 'T,H,BS,BB,RV,FL,FM', hfStart: 4, hfBest: 2, hfFrom: '1941-07-01', hfNew: '1942-01-01', hfFitCost: 100, hfFitDays: 5, thrDyn: 1, thrScout: 20, thrDeep: 20, thrShadowDie: 20, thrLoseBase: 25, thrLoseWx: 10, thrLoseTurn: 15, thrLoseHit: 15, thrSink1: 35, thrSink2: 45, thrTele: 1, shortP: 30, shortEgp: 100, rescueOn: 1, rescueSpd: 1, refitCost: 150, refitHH: 250, refitDay: 5, refitMax: 0, refitYear: 1939, hhYear: 1941, rfBombTw: 20, rfBombG5: 50, upgLo: 2, upgHi: 12,
