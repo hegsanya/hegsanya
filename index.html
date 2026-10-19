@@ -1,6 +1,6 @@
 <!doctype html><html lang="hu" data-theme="light"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>CEG – Konvoj kísérő kampány v1.14.156</title>
+<title>CEG – Konvoj kísérő kampány v1.14.157</title>
 <style>
 /* Színek: világos/sötét téma változókkal; a gombok és táblázatok stílusa */
 :root{--bg:#f4f1ea;--fg:#1d2733;--pn:#fff;--ln:#c9c2b3;--ac:#b3261e;--sea:#d6ecf4;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -363,7 +363,7 @@ const dr=$('dr');// setDirOptions: a konvoj irány-választója: a kezdő irány
 function setDirOptions(d0){const w=x=>((x-1)%8+8)%8+1;dr.innerHTML='';[w(d0-1),d0,w(d0+1)].forEach(i=>dr.add(new Option(AR[i]+' '+i,i)));dr.value=d0}
 setDirOptions(5);
 // ===== BEÁLLÍTÁSOK (setup-kártya): a dobásokat befolyásoló változók. Az alapértékek a CFG0-ban vannak. =====
-const CFG0={earRear:1,bombHear:1,bombHearR:20,fogPer:1,fogPerR:5,fogPerDep:1,bombSig:1,bombSigN:0,dieFx:1,dieFxMs:800,stillOn:1,stillHit:30,aiEscTp:1,aiUdef:1,dcMove:1,aiEsc:1,aiSonP:50,subBat:1,subMax:25,subRech:5,uRepAll:1,gunMin:1,cardHelp:1,fog:0,fogView:0,fogCr:15,fogDd:10,fogSm:8,fogMer:10,fogU:5,fogAir:15,fogFire:25,fogMem:5,fogUm:3,fogRings:1,uBombHide:1,uSub45:1,uEdge:1,uNoise:2,uNzCarry:1,uCrack:1,ffMax:20,bombAdj:1,fogRel:0,fogHfR:40,turnRule:0,trMax45:3,trAllow90:1,fogRadR:12,fogSonR:3,fogPing:1,fogPingR:8,fogCvA:15,fogCvB:10,fogCvC:5,fogCvBand:1.5,fogDefR:1,fogDefS:0,fogAI:1,fogBd:1,fogOwn:1,fogWx:1,fogEar:1,white:0,supStay:0,supNoCol:1,dieselRule:1,tfTurn:4,cvTurn:2,cvStrict:1,entFree:1,dark:0,diagWide:1,wideGap:5,maxTWide:70,sideArt:1,mapOpts:1,jokerOn:1,hfWx:0,opDir:1,opDirMin:80,aaMod:1,aaRng:2,logPos:1,twoColSp:4,twoRowSp:3,twoCell:0,capW:.5,capLbl:1,msgBat:1,boardN:50,playN:50,marginEnemy:0,zoneGrid:0,tblOp:1,tblFont:1,entAsk:1,rentFee:300,supFee:300,entOnce:0,msgOld:1,msgNear:1,nearR:5,nearInfo:0,msgEnd:1,trailSm:1,anim:1,animMs:450,wxSmSpread:1.5,wxSmPow:1.3,wxSm:1,wxSmNum:1,wxSmAnim:1,wxSmSpd:6,autoNoCol:1,npcClose:3,sfTpArc:1,airMerchP:70,sumAuto:1,pathM:1,pathBomb:1,pathEnd:1,tfDockR:1,wxDaily:1,wxPeak:183,opEvEnd:1,hAA45:1,fleetCol:1,fuelBar:1,fuelWarn:1,opFuel:160,aiListen:1,aiListenSteps:1,pathNum:1,pathMer:1,fxWakeM:1,fxWake:1,fxBomb:1,fxHit:1,fxBoom:1,fxTorp:1,wxBg:1,manualDice:0,diceAnim:1,uOrder:1,colDie:6,colHit:1,colDmg:6,colDepth:0,colMerch:10,maxT:35,stopBase:80,stopMul:10,uDie:25,medalT:30000,bombMax:5,bdLo:1,bdHi:8,bdDmg:6,tdLo:10,tdHi:30,tmBase:3,tmHit:3,twBase:8,twPar:4,cpLo:10,cpHi:40,shipsLo:20,shipsHi:50,fuelStep:4,fuelW3:1,fuelW4:2,fuelFull:1,fuelReserve:800,thrOn:1,thrK:2,evDie:50,evThr:45,evHot:5,evTypeDie:10,tU:7,tH:9,tR:10,npcDetect:10,npcLeash:12,npcChase:15,supOn:1,supCA:50,supAI:1,supDie:25,mapH:826,imgDX:-1,imgDY:-1,imgS:100,diceMode:0,diceN:4,dF:1,dR1:1,dR2:1,dL1:1,dL2:1,dS:1,diceCap:0,mapArt:2,iconAnchor:0,iconScale:1,iconMinS:14,sfTp:10,floodPct:50,armorRed:1,allEnemies:0,zContact:1,zContactR:10,aiU:0,aiZ:0,aiA:0,aiSafe:10,aiAuto:1,aiAggr:6,aiRisk:5,aiNoise:2,airDie:15,airLo:1,airHi:8,airSpLo:3,airSpHi:8,bmbHi:30,zDie:25,zLeave:5,gunMerchMul:1,gunShipMul:1,aaLo:3,aaHi:10,repBase:5,calCap:12,sinkPct:60};
+const CFG0={decoyOn:1,decoyN:3,decoyTurns:2,decoyHear:1,decoyKill:1,decoyAiP:50,earRear:1,bombHear:1,bombHearR:20,fogPer:1,fogPerR:5,fogPerDep:1,bombSig:1,bombSigN:0,dieFx:1,dieFxMs:800,stillOn:1,stillHit:30,aiEscTp:1,aiUdef:1,dcMove:1,aiEsc:1,aiSonP:50,subBat:1,subMax:25,subRech:5,uRepAll:1,gunMin:1,cardHelp:1,fog:0,fogView:0,fogCr:15,fogDd:10,fogSm:8,fogMer:10,fogU:5,fogAir:15,fogFire:25,fogMem:5,fogUm:3,fogRings:1,uBombHide:1,uSub45:1,uEdge:1,uNoise:2,uNzCarry:1,uCrack:1,ffMax:20,bombAdj:1,fogRel:0,fogHfR:40,turnRule:0,trMax45:3,trAllow90:1,fogRadR:12,fogSonR:3,fogPing:1,fogPingR:8,fogCvA:15,fogCvB:10,fogCvC:5,fogCvBand:1.5,fogDefR:1,fogDefS:0,fogAI:1,fogBd:1,fogOwn:1,fogWx:1,fogEar:1,white:0,supStay:0,supNoCol:1,dieselRule:1,tfTurn:4,cvTurn:2,cvStrict:1,entFree:1,dark:0,diagWide:1,wideGap:5,maxTWide:70,sideArt:1,mapOpts:1,jokerOn:1,hfWx:0,opDir:1,opDirMin:80,aaMod:1,aaRng:2,logPos:1,twoColSp:4,twoRowSp:3,twoCell:0,capW:.5,capLbl:1,msgBat:1,boardN:50,playN:50,marginEnemy:0,zoneGrid:0,tblOp:1,tblFont:1,entAsk:1,rentFee:300,supFee:300,entOnce:0,msgOld:1,msgNear:1,nearR:5,nearInfo:0,msgEnd:1,trailSm:1,anim:1,animMs:450,wxSmSpread:1.5,wxSmPow:1.3,wxSm:1,wxSmNum:1,wxSmAnim:1,wxSmSpd:6,autoNoCol:1,npcClose:3,sfTpArc:1,airMerchP:70,sumAuto:1,pathM:1,pathBomb:1,pathEnd:1,tfDockR:1,wxDaily:1,wxPeak:183,opEvEnd:1,hAA45:1,fleetCol:1,fuelBar:1,fuelWarn:1,opFuel:160,aiListen:1,aiListenSteps:1,pathNum:1,pathMer:1,fxWakeM:1,fxWake:1,fxBomb:1,fxHit:1,fxBoom:1,fxTorp:1,wxBg:1,manualDice:0,diceAnim:1,uOrder:1,colDie:6,colHit:1,colDmg:6,colDepth:0,colMerch:10,maxT:35,stopBase:80,stopMul:10,uDie:25,medalT:30000,bombMax:5,bdLo:1,bdHi:8,bdDmg:6,tdLo:10,tdHi:30,tmBase:3,tmHit:3,twBase:8,twPar:4,cpLo:10,cpHi:40,shipsLo:20,shipsHi:50,fuelStep:4,fuelW3:1,fuelW4:2,fuelFull:1,fuelReserve:800,thrOn:1,thrK:2,evDie:50,evThr:45,evHot:5,evTypeDie:10,tU:7,tH:9,tR:10,npcDetect:10,npcLeash:12,npcChase:15,supOn:1,supCA:50,supAI:1,supDie:25,mapH:826,imgDX:-1,imgDY:-1,imgS:100,diceMode:0,diceN:4,dF:1,dR1:1,dR2:1,dL1:1,dL2:1,dS:1,diceCap:0,mapArt:2,iconAnchor:0,iconScale:1,iconMinS:14,sfTp:10,floodPct:50,armorRed:1,allEnemies:0,zContact:1,zContactR:10,aiU:0,aiZ:0,aiA:0,aiSafe:10,aiAuto:1,aiAggr:6,aiRisk:5,aiNoise:2,airDie:15,airLo:1,airHi:8,airSpLo:3,airSpHi:8,bmbHi:30,zDie:25,zLeave:5,gunMerchMul:1,gunShipMul:1,aaLo:3,aaHi:10,repBase:5,calCap:12,sinkPct:60};
 const CFG=Object.assign({},CFG0);
 // A beállítások csoportjai: [kulcs, felirat]
 const SETUP=[['Térkép-asztal téma (OP lap)',[['tblOp','Térkép-asztal: fa asztal, papírlapok, keretezett térkép az OP és a taktikai lapon, papírlap a többi lapon (0/1)'],['tblFont','Írógép betű a feliratokhoz és gombokhoz; a táblázatok olvasható betűvel maradnak (0/1)']]],['Pálya (a méret az új csata elejétől érvényes)',[['boardN','Tábla mérete cellában (50–120; 50 = a megszokott)'],['playN','Játékterület mérete (a tábla közepén; az ellenség itt lép be és ki; 50 és a tábla mérete között, a különbség páros legyen)'],['twoCell','Kétcellás hajók (0/1): minden hajó két cellát foglal (orr + tat); a tat az előző orr-cellába lép („kígyó”); a találat, a lőtáv és az ütközés bármelyik cellára az egész hajóra érvényes; kapszula-rajzzal (a repülő egycellás marad). Alap 0 = a régi egycellás játék'],['twoColSp','Kétcellás mód: a konvoj teherhajói közti távolság OLDALIRÁNYBAN (cella; a régi egycellás játékban 3). A kísérők zónái ezzel arányosan nyúlnak (a zóna-számok a régi 3×2-es rácsra vonatkoznak)'],['twoRowSp','Kétcellás mód: a teherhajók közti távolság a HALADÁSI IRÁNYBAN (cella; a régi játékban 2; a hajó 2 cella hosszú, 3 = 1 cella rés)'],['mapOpts','A választható irányok megjelennek a taktikai térképen (a kézzel irányított hajó soron következő lépéséhez), és a térképen a kívánt cellára kattintva lehet lépni. 0 = csak a kártya gombjai'],['jokerOn','Szenzor-joker: a Radar / Radar1 / Radar2 / Szonár / HF-DF modulok sikeres dobása EGYSZER használható Joker-irányt ad (radar: véletlen 1–8; szonár és HF/DF: a legközelebbi U-boat felé, ha nincs, véletlen), bármelyik hagyományos irány helyett. 0 = a régi szabály (extra irány az 1. lépéshez). Kockás módban (diceMode) mindig a régi'],['hfWx','HF/DF dobása az időjárás-módosítóval (1) vagy anélkül (0, alap: az HF/DF nem függ az időjárástól)'],['tfTurn','OP lap: a kötelék lépésének szöge az iránytól: 1 = ±45°, 2 = ±90°, 3 = ±135°, 4 = bármerre (mind a 8 szomszéd, alap)'],['cvTurn','OP lap: a konvoj lépésének szöge az iránytól: 1 = ±45° (3 cella), 2 = ±90° (5 cella, alap), 3 = ±135° (7 cella)'],['cvStrict','OP lap: a konvoj naponta csak a jelölt 3 cellára léphet (az irányhoz képest előre vagy ±45°-ra). 0 = bármelyik cellára kattinthat'],['opDir','Nagy pályán (opDirMin) a taktikai csata a konvoj OP-n beállított IRÁNYÁT kapja, az átlós irányokat is (1–8). 0 = mindig a cél-kikötő fő iránya (1/3/5/7)'],['opDirMin','Ennél a táblamérettől (boardN) kezdve érvényes az opDir (alap 80; kisebb pályán az átlós indulásnak nincs hely)'],['marginEnemy','Az ellenség a játékterületen kívüli keretbe is bemehet (0/1; alap 0 = nem)'],['zoneGrid','10×10-es zónahálózat betűkkel és számokkal a térképen (0/1)']]],['Bérelt és támogató hajók: belépési díj',[['entAsk','Belépéskor megkérdezi, kéred-e a bérelt / támogató hajót (0/1; 0 = ingyen, mint eddig). A kérdés a belépő kocka UTÁN jön.'],['rentFee','Bérelt hajó belépési díja (EGp)'],['supFee','Támogató hajó (CL / CA) belépési díja hajónként (EGp)'],['entOnce','Díj csatánként egyszer (1) vagy minden belépéskor (0)'],['entFree','Ha nincs elég EGp a díjra (pl. 0 EGp a kampány elején), a Flotta DÍJMENTESEN küldi a bérelt / támogató hajót (0/1); ha van elég EGp, csak fizetve jön']]],['Üzenetek (régi parancs-papír)',[['msgOld','Régi, gépelt parancs-papír az üzenetekhez: konvoj-indítás, ellenség-jelzés, csata-jelentés (0/1; 0 = a régi párbeszédablak / napló)'],['msgNear','Ellenséges erő jelzése a konvoj körül haladás közben (0/1)'],['nearR','A jelzés sugara cellában (Chebyshev-távolság)'],['nearInfo','A jelzés részletes: típus is (1), vagy csak irány és távolság (0)'],['msgBat','Csata kezdetén parancs-papír: mi fenyeget, „Védje meg a konvojt!” – a félbehagyott csata figyelmeztetése is ez (0/1)'],['msgEnd','Csata végén jelentés-papír (0/1)']]],['Kézi dobás',[['manualDice','Kézi dobás: 0 = ki, 1 = csak a saját oldal akciói, 2 = mindenki (az ellenségé is)'],['diceAnim','Kocka-animáció (0/1)']]],['Körsorrend',[['uOrder','Sorrend-védelem: a U-boat csak a kézzel irányított kísérők után léphet (1 = be, 0 = ki)']]],['Légvédelem: a kísérők AA modulja',[['aaMod','A kísérők AA modulja (AA1-AA2, AA3 …) is lő a bombázó repülőre (0/1), csak ha a modul Stand = 0 és nem 6/6'],['aaRng','Az AA modul lőtávolsága (cella; alap 2). A dobás: d(0; táv) = a repülő távolsága → lelövi; modulonként körönként egyszer']]],['Ütközés',[['autoNoCol','Automata kíséret üzemmódban a kísérők nem ütköznek (0/1; kézi irányításnál mindig van ütközésvizsgálat)'],['colDie','Ütközés-kocka oldalszáma (CT4)'],['colHit','Ütközést jelentő dobás (CT6)'],['colDmg','Ütközéskor a sérült modulonkénti sérülés-kocka'],['colDepth','Ütközés csak akkor, ha a U-boat mélysége legfeljebb ennyi (0 = csak a felszínen; mélyebben alatta halad el)'],['colMerch','Ütközéskor a teherhajó sérülése: 1–ennyi rakomány-pont']]],
@@ -376,6 +376,7 @@ const SETUP=[['Térkép-asztal téma (OP lap)',[['tblOp','Térkép-asztal: fa as
  ['Teherhajók (új pályánál)',[['shipsLo','Konvoj mérete min (új konvojnál)'],['shipsHi','Konvoj mérete max (új konvojnál)'],['cpLo','Rakomány pont min'],['cpHi','Rakomány pont max'],['aaLo','Légvédelem kocka min'],['aaHi','Légvédelem kocka max']]],
  ['Vizibomba (szabad mozgás)',[['dcMove','Szabad mozgásnál a lépés előtti vízibomba feltételes: ha a hajó a körében mégsem lép, a bombák visszavonódnak és a készlet nem csökken (mindenkire, kézi és AI; 0/1)']]],
  ['Kísérő hallása (szabad mozgás)',[['earRear','A haladó kísérő passzív hallása hátrafelé (a hajóirányhoz képest a hátsó 3 irány) süket; a mozdulatlan körbehall (0/1, csak köddel)']]],
+ ['U-boat: csali (v1.14.157)',[['decoyOn','Csali (0/1): a merült U-boat a helyén hagy egy mozdulatlan hamis kontaktust; a kísérő szonárral / hallással két jelet kap'],['decoyN','Csalik száma csatánként U-boatonként'],['decoyTurns','Hány körig érvényes a csali (a lerakás körével együtt)'],['decoyHear','Hallás (0/1): a csali hallgatózással is kontaktust ad (a kísérő hallótávján belül), nem csak aktív szonárral'],['decoyKill','Vízibomba-robbanás ennyi cellán belül megsemmisíti a csalit'],['decoyAiP','Az AI U-boat ennyi % eséllyel dob csalit, ha kísérő van a közelében (6 cella)']]],
  ['U-boat: periszkóp és bombázás-jelzés',[['fogPer','Periszkóp: a 1/8 mélységű merült U-boat a felszíni hajót (az álló kísérőt is) látja (0/1, csak köddel)'],['fogPerR','Periszkóp látótáv (cella, az időjárás levonódik)'],['fogPerDep','Periszkóp: legnagyobb mélység (1 = 1/8)'],['bombSig','A bombázó kísérőn jelzés (gyűrű + 💣) az U-boat nézőpontjából, ha a bombák helye rejtett (0/1)'],['bombSigN','A jelzésen a bombák száma is látszik (0/1)'],['bombHear','A vízibombázás messzire hallható: az U-boat figyelmeztetést kap a bombázás IRÁNYÁRÓL (0/1, uBombHide mellett)'],['bombHearR','A bombázás hallótávja (cella)']]],
  ['Dobás-animáció',[['dieFx','Fegyver-ikon és háttér-animáció a dobások ablakában (vízibomba, ágyú, torpedó, repülő bomba, légvédelem) (0/1)'],['dieFxMs','Az animáció hossza (ms)']]],
  ['Mozdulatlan kísérő (szabad mozgás)',[['stillOn','A mozdulatlan kísérőt (lezárta a körét lépés nélkül) a torpedó stillHit % eséllyel találja (0/1)'],['stillHit','Találati esély mozdulatlan hajóra (%)']]],
@@ -466,7 +467,7 @@ try{Object.assign(CFG,JSON.parse(localStorage.getItem('ceg_cfg')||'{}'))}catch(e
 wxbgInit();
 function find(id){return ships.find(s=>s.id===id)}
 // reset: új pálya. Felállítja a konvojt (soronként 12 hajó, 3 oszlop- és 2 sortávolság, a hátsó sor kívülről befelé töltődik), kijelöli a Commodore-t, a kísérőket a zónájukba teszi.
-function reset(){dxCancel();applyBoard();FOGM={};BS={};KL=[];if(typeof NZLOG!=='undefined'&&NZLOG)NZLOG.length=0;SUMSHOWN=false;FX=[];trail={};lastPos={};paths={};bombMarks=[];
+function reset(){dxCancel();applyBoard();FOGM={};DEC=[];FOGD=[];BS={};KL=[];if(typeof NZLOG!=='undefined'&&NZLOG)NZLOG.length=0;SUMSHOWN=false;FX=[];trail={};lastPos={};paths={};bombMarks=[];
  const cmp=typeof CAMP!=='undefined'&&CAMP.battle,mer=cmp?(CAMP.ev&&CAMP.ev.unit?[]:CAMP.voy.m.filter(q=>!q.gone)):null,n=cmp?mer.length:cl(+$('n').value||36,12,50),rows=Math.ceil(n/12),yf=6+2*(rows-1),rem=n%12,ord=[0,11,1,10,2,9,3,8,4,7,5,6];
  $('tn').textContent=0;ships=[];torps=[];store={};dead={};supSlots=[];raid={};raidDead={};airDone=false;airN=0;turn=0;sel=null;stopped=false;pool={U:['U10','U13','U12'],Z:['Z1','Z2','CA1'],A:['R1','R2','R3']};
  for(let i=0;i<n;i++){const row=Math.floor(i/12),last=row==rows-1&&rem>0,c=last?ord[i%12]:i%12;
@@ -544,7 +545,7 @@ function applyDamage(){const msg=[];
  ships.filter(s=>s.t=='E'&&s.dmg).forEach(e=>{const L=D[e.c].mod.reduce((a,m)=>a+m[1],0);if(e.dmg.reduce((a,b)=>a+b,0)/L>CFG.sinkPct/100)msg.push(kill(e,'a sérülés meghaladta a '+CFG.sinkPct+'%-ot'))});
  if(msg.length)say('A sérülések hatása érvényesült: '+msg.join(' '));return msg}
 function newTurn(){
- applyDamage();
+ applyDamage();decExpire();
  ships.forEach(s=>{if(s.t=='U'||s.t=='A'||s.en||s.sup||s.npc||(s.t=='E'&&(!$('fo').checked||!s.zid)))turnFor(s)})}
 // mi: egy hajó moduljának indexe a neve eleje alapján.
 const mi=(s,p)=>D[s.c].mod.findIndex(m=>m[0].startsWith(p));
@@ -629,7 +630,7 @@ function fire(b){const s=sel;if((s&&s.done)||uLock(s)||uGate(s)||!torpOk(s,b))re
  if(r)m+=' – '+r;else{torps.push(tp);m+=' – az első 3 mezőn nem talált, a következő körben tovább halad.'}say(m);draw();card()}
 // dep: az U-boat mélységének választása (az adott körben érvényes, körönként egyszer).
 // uPost: az U-boat lépései után (mielőtt lőhetne) kiértékelődik a körülötte lévő összes vízibomba (körönként egyszer); igaz, ha az U-boat még cselekedhet (nem végzetes a sérülése)
-function uPost(u){if(!u||u.t!='U')return true;if(!u.bl){u.bl=true;let m=u.id+': a lépések után a vízibombák kiértékelése:',any=false;ships.filter(q=>q.t=='E').forEach(e=>e.bm.forEach(b=>{any=true;m+=' '+b[3]+'→'+bAd(b[0],b[1])+blast(u,b)}));if(any){say(m);draw();card()}
+function uPost(u){if(!u||u.t!='U')return true;ships.filter(q=>q.t=='E'&&!q.bpend).forEach(decBlast);if(!u.bl){u.bl=true;let m=u.id+': a lépések után a vízibombák kiértékelése:',any=false;ships.filter(q=>q.t=='E').forEach(e=>e.bm.forEach(b=>{any=true;m+=' '+b[3]+'→'+bAd(b[0],b[1])+blast(u,b)}));if(any){say(m);draw();card()}
   if(ships.includes(u)&&fatal(u))say(u.id+': a sérülése végzetes, nem lőhet (a következő körben elsüllyed).')}
  return ships.includes(u)&&!fatal(u)}
 // uGate: az U-boat lövése előbb a lépések lelépését, majd a vízibombák kiértékelését kívánja; igaz, ha le van tiltva
@@ -714,11 +715,11 @@ function bomb(d){const s=sel;if(!s||s.done||!bok(s,d))return;const[x,y]=bcell(s,
  let m=s.id+': vizibomba '+bAd(x,y)+(CFG.uBombHide?' (az U-boat hallja a robbanást)':'')+' ('+s.bm.length+'/'+CFG.bombMax+').';
  const cond=!!(CFG.dcMove&&trOn(s)&&!(s.idx|0));   // dcMove: lépés előtti bomba feltételes: csak akkor érvényes, ha a hajó ebben a körben lép
  if(cond){s.bpend=true;m+=' FELTÉTELES: csak akkor érvényes, ha ebben a körben lépsz.'}
- else ships.filter(q=>q.t=='U'&&q.done).forEach(u=>{m+=' '+u.id+':'+blast(u,[x,y,0,s.id])});say(m);if(!cond)bombHear(s);draw();card()}
+ else ships.filter(q=>q.t=='U'&&q.done).forEach(u=>{m+=' '+u.id+':'+blast(u,[x,y,0,s.id])});say(m);if(!cond){bombHear(s);decBlast(s)}draw();card()}
 // bpendResolve: a Kész-kor a feltételes bombák sorsa: nem lépett → visszavonva (készlet vissza); lépett → érvényesek (a már lépett U-boatra most hatnak)
 function bpendResolve(s){if(!s.bpend)return '';s.bpend=false;let m='';
  if(!(s.idx|0)){const n=s.bm.length;s.b+=n;bst(s.id).bd-=n;s.bm.forEach(b=>{const k=b[0]+','+b[1];const i=s.used.indexOf(k);if(i>=0)s.used.splice(i,1);const j=bombMarks.findIndex(q=>q[0]==b[0]&&q[1]==b[1]&&q[3]==s.id&&q[2]==turn);if(j>=0)bombMarks.splice(j,1)});s.bm=[];return ' A(z) '+n+' feltételes vízibomba visszavonva (nem lépett), a készlet nem csökkent.'}
- ships.filter(q=>q.t=='U'&&q.done).forEach(u=>s.bm.forEach(b=>{m+=' '+u.id+':'+blast(u,b)}));bombHear(s);return m}
+ ships.filter(q=>q.t=='U'&&q.done).forEach(u=>s.bm.forEach(b=>{m+=' '+u.id+':'+blast(u,b)}));bombHear(s);decBlast(s);return m}
 // fin: a hajó körének lezárása (előbb le kell lépnie a kapott lépéseket); U-boatnál itt dől el a környező bombák hatása.
 function fin(){const s=sel;if(!s||uLock(s))return;if(s&&trOn(s)&&!s.done&&!s.fr){s.fr=true;trSync(s)}   // szabad mozgás: a „Kész” lezárja a mozgást (kevesebb lépés is lehet)
  if(s.idx<need(s)){say(s.id+': még '+(need(s)-s.idx)+' lépést meg kell tennie.');return}
@@ -917,7 +918,8 @@ function aiTurnZ(z){if(z.done)return;sel=z;const Lz=D[z.c].mod.reduce((a,m)=>a+m
  if(!z.practice&&canLeave(z)&&wantOut){leaveMap(z,'AI: '+(hz?'sérült':'lemaradt'));return}
  fin()}
 // aiTurnU: az AI-val vezérelt U-boat köre: mélység-választás és lépések (a legjobb pontszámú kombináció), javítás, torpedózás, majd a kör lezárása (itt dől el a bombák hatása)
-function aiTurnU(u){if(u.done)return;sel=u;if(!u.practice&&canLeave(u)&&(aiHurtU(u)||behind(u))){leaveMap(u,'AI: '+(aiHurtU(u)?'sérült':'lemaradt'));return}let best=null;let cands=[...new Set([u.dep].concat(u.dch?[]:(u.dopts||[])))];if(subOut(u)&&cands.some(d=>d==0))cands=cands.filter(d=>d==0);   // kimerült akku: az AI felszínre vált
+function aiTurnU(u){if(u.done)return;sel=u;if(decOk(u)&&ships.some(q=>q.t=='E'&&cheb(q,u)<=6)&&Math.random()*100<(+CFG.decoyAiP||0))decoy(u);   // csali, ha kísérő van a közelben
+ if(!u.practice&&canLeave(u)&&(aiHurtU(u)||behind(u))){leaveMap(u,'AI: '+(aiHurtU(u)?'sérült':'lemaradt'));return}let best=null;let cands=[...new Set([u.dep].concat(u.dch?[]:(u.dopts||[])))];if(subOut(u)&&cands.some(d=>d==0))cands=cands.filter(d=>d==0);   // kimerült akku: az AI felszínre vált
  for(const d of cands){const k=d>0?((accOut(u)||subOut(u))?0:Math.min(1,u.spd)):(dieOut(u)?0:u.spd);
   for(const seq of aiSeqs(u,k)){const f=aiSim(u,seq,d),sc=aiScore(u,f,d)+(R(0,100)/100-.5)*CFG.aiNoise*.5;if(!best||sc>best.sc)best={sc,d,seq,f}}}
  if(!best){fin();return}
@@ -931,6 +933,31 @@ function aiTurnU(u){if(u.done)return;sel=u;if(!u.practice&&canLeave(u)&&(aiHurtU
  say(u.id+' (AI): '+(info.length?info.join(', ')+'; ':'')+'pontszám '+best.sc.toFixed(1)+', végállás '+addr(best.f.x,best.f.y));
  if(!u.practice&&canLeave(u)&&(aiHurtU(u)||behind(u))){leaveMap(u,'AI: '+(aiHurtU(u)?'sérült':'lemaradt'));return}
  fin()}
+
+// ===== U-BOAT CSALI (v1.14.157) =====
+// DEC: a lerakott csalik {x,y,dep,t0,by}. A csali mozdulatlan, decoyTurns körig él (t0 = a lerakás köre), és a kísérő számára második U-boat-jelnek látszik.
+var DEC=[],FOGD=[];
+const decLeft=u=>u.dc==null?(+CFG.decoyN||0):u.dc;   // hátralévő csalik
+const decOk=u=>!!(CFG.decoyOn&&u&&u.t=='U'&&!u.done&&u.dep>0&&decLeft(u)>0&&u.dcT!==turn);   // körönként legfeljebb 1, csak merülten
+// decoy: a csali lerakása az U-boat jelenlegi cellájába (az U-boat ezután továbbhalad)
+function decoy(u){u=u||sel;if(!decOk(u))return;u.dc=decLeft(u)-1;u.dcT=turn;DEC.push({x:u.x,y:u.y,dep:u.dep,t0:turn,by:u.id});
+ say(u.id+': csali lerakva '+addr(u.x,u.y)+' ('+(+CFG.decoyTurns||2)+' körig érvényes, hátra: '+u.dc+').');draw();card()}
+// decExpire: lejárt csalik törlése (newTurn)
+function decExpire(){DEC=DEC.filter(d=>turn-d.t0<Math.max(1,CFG.decoyTurns|0))}
+// decSeen: az „A” (kísérő) oldal észleli-e a csalit: aktív szonár, vagy (decoyHear) passzív hallás, mint egy lépő merült U-boatot
+function decSeen(d,V,w){return ships.some(e=>{if(e.t!='E'||fogSideOf(e)!==V)return false;const k=cheb(e,d);
+  if(fogEm(e,'S')&&CFG.fogSonR>0&&k<=Math.max(0,CFG.fogSonR-w))return true;
+  if(CFG.decoyHear&&CFG.fogEar&&e.sq>0&&!earBlind(e,d)&&k<=Math.max(0,FOG_HE[Math.min(5,fogSp(e))][Math.min(8,d.dep)]-w))return true;
+  return false})}
+// decBlast: egy kísérő bombái közül a csali közelében robbanók megsemmisítik a csalit
+function decBlast(s){if(!s||!DEC.length)return;const R_=Math.max(0,CFG.decoyKill|0);
+ (s.bm||[]).forEach(b=>{DEC=DEC.filter(d=>{if(Math.max(Math.abs(d.x-b[0]),Math.abs(d.y-b[1]))>R_)return true;say('Csali megsemmisült '+addr(d.x,d.y)+' (vízibomba robbant a közelében).');return false})})}
+// decDraw: a csali kirajzolása. Köd nélkül mindenkinek; ködben az U-boat oldalának (X) mindig, a kísérőknek (A) csak ha észlelték („U?” hamis kontaktus)
+function decDraw(){if(!CFG.decoyOn||!DEC.length)return;const V=CFG.fog?fogViewer():null;
+ DEC.forEach(d=>{let own=!CFG.fog||V==='X';if(!own&&!FOGD.includes(d))return;
+  const cx=O+(d.x-.5)*S,cy=O+(d.y-.5)*S;g.save();g.textAlign='center';g.textBaseline='middle';g.setLineDash([3,3]);g.lineWidth=2;
+  g.strokeStyle=own?'#6a1b9a':'#e65100';g.beginPath();g.arc(cx,cy,S*.4,0,7);g.stroke();g.setLineDash([]);
+  g.fillStyle=own?'#6a1b9a':'#e65100';g.font='bold 8px sans-serif';g.fillText(own?'csali':'U?',cx,cy-2);g.font='7px sans-serif';g.fillText((d.t0+Math.max(1,CFG.decoyTurns|0)-turn)+'k',cx,cy+7);g.restore()})}
 // ===== FELSZÍNI HAJÓK TORPEDÓJA (a torpedó-modullal rendelkező kísérők és az ellenséges Z / CA) =====
 // Készlet: sfTp (10), egyszerre legfeljebb 5 (a csövek véletlenszerűen töltődnek be körönként, mint az U-boatnál: a Torp modul sérülése rontja az esélyt).
 // A sorozat előre, a hajó irányában megy, ugyanúgy, mint az U-boat torpedója: az első 3 mezőn azonnal, a következő 3 mezőn a következő körben (a konvoj lépése után) halad.
@@ -1023,7 +1050,8 @@ function aiTurnE(e){if(e.done)return;sel=e;
  if(chase)e.chaseN=(e.chaseN||0)+1;else if(!tg||td>CFG.npcDetect)e.chaseN=0;
  if(CFG.aiEsc&&CFG.fog&&tg&&e.sq>0)e.emS=1;   // kontaktus: a szonár bekapcsolva marad
  // aiEsc: nincs aktuális kontaktus → az U-boat utolsó ismert helye felé tart (vadászat); a legfrissebb, fogMem körön belüli emlék
- let hunt=null;if(CFG.aiEsc&&CFG.fog&&!tg){let ba=1e9;ships.forEach(q=>{if(q.t!='U')return;const m=FOGM[q.id];if(!m)return;const age=turn-m.turn;if(age>CFG.fogMem||age>=ba)return;if(Math.max(Math.abs(m.x-e.x),Math.abs(m.y-e.y))<1)return;ba=age;hunt={x:m.x,y:m.y,id:q.id,age}})}
+ let hunt=null;if(CFG.aiEsc&&CFG.fog&&!tg&&FOGD.length){let bd=1e9;FOGD.forEach(d=>{const k=Math.max(Math.abs(d.x-e.x),Math.abs(d.y-e.y));if(k>=1&&k<bd){bd=k;hunt={x:d.x,y:d.y,id:'U?',age:0}}})}
+ if(CFG.aiEsc&&CFG.fog&&!tg&&!hunt){let ba=1e9;ships.forEach(q=>{if(q.t!='U')return;const m=FOGM[q.id];if(!m)return;const age=turn-m.turn;if(age>CFG.fogMem||age>=ba)return;if(Math.max(Math.abs(m.x-e.x),Math.abs(m.y-e.y))<1)return;ba=age;hunt={x:m.x,y:m.y,id:q.id,age}})}
  if(hunt)e.aiWhy='vadászat: '+hunt.id+' utolsó ismert helye '+addr(hunt.x,hunt.y)+' ('+hunt.age+' köre)';
  e.det=null;e.detZ=false;
  if(tg&&td<=CFG.npcDetect){e.det=tg.id;say(e.id+' (AI): U-boat észlelve – '+tg.id+' ('+addr(tg.x,tg.y)+'), '+td+' cellára, mélység '+(tg.dep||0)+'. '+(chase?'Üldözi ('+e.chaseN+'/'+CFG.npcChase+'. kör).':(e.chaseN>=CFG.npcChase?'Nem üldözi tovább: az üldözési limit ('+CFG.npcChase+' kör) lejárt.':'Nem üldözi: a zóna közepétől '+zdE.toFixed(1)+' cellára van (póráz '+CFG.npcLeash+', önvédelmi sugár '+CFG.npcClose+').')));e.detSeen=tg.id}
@@ -1362,7 +1390,7 @@ function card(){
   if(E){if(s.sens&&s.sens.length)h+=(CFG.jokerOn?TB(['Szenzor','Minőség','Stand','Dobás',CFG.fog?'Eredmény':'Joker-irány'],s.sens)+'<div style="font-size:12px;opacity:.8">Sikeres dobás (1) = egy Joker-irány: radar → véletlen 1–8; szonár / HF-DF → a legközelebbi U-boat felé (ha nincs a pályán, véletlen). Minden szenzor külön dob; a Joker-irány egyszer használható, bármelyik lépés hagyományos iránya helyett.</div>':TB(['Szenzor','Minőség','Stand','Extra irány (*)'],s.sens));
    h+=TB(['Bomba','Mező'],Array.from({length:CFG.bombMax},(_,i)=>i+1).map(n=>['B'+n,s.bm[n-1]?addr(s.bm[n-1][0],s.bm[n-1][1]):'–']));
    h+='<div style="margin-top:6px">Bomba hátra: '+back(s).map(d=>'<button '+(bok(s,d)?'':'disabled ')+'onclick="bomb('+d+')">'+AR[d]+d+'</button>').join(' ')+(CFG.dcMove&&trOn(s)&&!(s.idx|0)?' <small style="color:#b3261e">– lépés előtt feltételes: ha nem lépsz, visszavonódik</small>':'')+'</div>'}
-  else if(s.t=='U'){h+=aiUI(s);h+='<div style="margin-top:6px">Mélység (most): '+s.dopts.map(d=>'<button '+(s.dep===d&&s.dch?'class="go" ':'')+(s.done||s.dch?'disabled ':'')+'onclick="dep('+d+')">'+d+'</button>').join(' ')+'</div>';
+  else if(s.t=='U'){h+=aiUI(s);if(CFG.decoyOn)h+='<div style="margin-top:6px">Csali: <button '+(decOk(s)?'':'disabled ')+'onclick="decoy()">Csali lerakása ('+decLeft(s)+')</button></div>';h+='<div style="margin-top:6px">Mélység (most): '+s.dopts.map(d=>'<button '+(s.dep===d&&s.dch?'class="go" ':'')+(s.done||s.dch?'disabled ':'')+'onclick="dep('+d+')">'+d+'</button>').join(' ')+'</div>';
    h+=TB(['Torpedó','Db','Előre (e körben)','Hátra'],[['',s.tp,s.tub.slice(0,4).filter(x=>x).length+' cső','<button '+(torpOk(s,0)?'':'disabled ')+'onclick="fire(0)">előre</button> '+(s.tub[4]?1:0)+' cső <button '+(torpOk(s,1)?'':'disabled ')+'onclick="fire(1)">hátra</button>']])}
   if(s.t=='A')h+=airUI(s);if(s.en||s.sup||s.npc)h+=aiUI(s);else if(s.t=='E'&&s.zid&&$('fo').checked)h+=aiScanHtml(s);if(s.t=='E')h+=torpUI(s);
   const gl=(k&&k.gun)||[];
@@ -1600,7 +1628,8 @@ function fogSetEm(k,v){if(sel){sel['em'+k]=v?1:0;draw();card()}}
 // Közös kép: amit bárki észlel, az mindenkinek információ. A kijelölt hajó (fogOwn) viszont a saját látótávját használja:
 // ami neki csak mások jelentéséből ismert, azt „!”-ként látja (nem azonosítja, nem jelölhető ki).
 function fogFrame(){
- FOGH=new Set();FOGQ=[];FOGX=[];FOGND=new Set();FOGB=[];const V=fogViewer();if(!V||typeof ships==='undefined')return;
+ FOGH=new Set();FOGQ=[];FOGX=[];FOGND=new Set();FOGB=[];FOGD=[];const V=fogViewer();if(!V||typeof ships==='undefined')return;
+ if(V=='A'&&CFG.decoyOn&&DEC.length){const w0=(+$('wx').value||0)*CFG.fogWx;DEC.forEach(d=>{if(decSeen(d,V,w0))FOGD.push(d)})}   // a csalik, amiket a kísérők észleltek
  const w=(+$('wx').value||0)*CFG.fogWx;
  const own=(CFG.fogOwn&&sel&&sel.t!='M'&&fogSideOf(sel)===V&&ships.includes(sel))?sel:null;
  for(const t of ships){if(fogSideOf(t)===V)continue;
@@ -1701,7 +1730,7 @@ function draw(){
   if(((s.t=='E'&&(!$('fo').checked||s.en||!s.zid))||s.t=='U'||s.t=='A')&&!s.done){g.strokeStyle='#fff';g.lineWidth=2;g.strokeRect(X+3,Y+3,S-6,S-6)}
   if(s.dir&&!cap){const kk=kkOf(vp.a),cx=X+S/2,cy=Y+S/2;g.strokeStyle='#000';g.lineWidth=2;g.beginPath();g.moveTo(cx,cy);g.lineTo(cx+Math.cos(vp.a)*kk*S*.75,cy+Math.sin(vp.a)*kk*S*.75);g.stroke()}
   if(s===sel){g.strokeStyle='#000';g.lineWidth=2;g.strokeRect(X,Y,S,S)}}
- fogDrawMarks();
+ fogDrawMarks();decDraw();
  fxDraw();try{animKick()}catch(e){}
 }
 // ===== ZÓNA-SZERKESZTŐ és KATTINTÁS-KEZELÉS =====
@@ -1794,6 +1823,7 @@ applyLogPos();renderCfg();try{qbRender()}catch(e){}   // a pálya felállítás�
 //   v1.13.4 (2026-10-08) – Oldalnézeti kártya-képek: Z (Z1–Z2), Flower (FL; az FM is), T-class és H-class (az utóbbi kettő ideiglenes, pontatlan rajz: később cserélendő).
 //   v1.13.5 (2026-10-08) – Oldalnézeti kártya-képek: Black Swan (BB, sloop), River (RV) és az ellenséges repülő (He 111; az 'A' kulcs: a repülők kártyáján).
 //   v1.13.6 (2026-10-08) – Az eseménynapló fegyveres sorai (lövés, torpedó, vizibomba, bombázás, légvédelem) pirosak; az ágyú-táblázatban a „Külön cél” a második sorba került (nem tolja ki a hajókártyát).
+//   v1.14.157 (2026-10-19) – ÚJ BEÁLLÍTÁSOK: decoyOn (alap 1), decoyN (3), decoyTurns (2), decoyHear (1), decoyKill (1), decoyAiP (50): U-boat csali – a merült U-boat a helyén egy mozdulatlan hamis kontaktust hagy (körönként 1, csatánként decoyN db, decoyTurns körig él); a kísérő aktív szonárral vagy (decoyHear) hallgatózással „U?” jelet kap, így két kontaktust lát; vízibomba decoyKill cellán belül megsemmisíti; az AI U-boat dobja, az AI kísérő a csalira is vadászik.
 //   v1.14.156 (2026-10-19) – ÚJ BEÁLLÍTÁS earRear (alap 1): a HALADÓ kísérő passzív hallása (hidrofon) a hátsó szektorban (a hajó irányához képest a hátsó 3 irány: 135°–225°) NEM hall; oldalra és előre igen. A mozdulatlan kísérő minden irányban hall (ez a hallgatózás ára: ilyenkor a torpedó stillHit % eséllyel találja). Az aktív szonár minden irányban érzékel; az U-boatnak nincs holtzónája (minden irányban hall). earRear=0 a régi viselkedés.
 //   v1.14.155 (2026-10-19) – ÚJ BEÁLLÍTÁS bombHear (alap 1) + bombHearR (20): a vízibombázás messzire hallható: ha egy hajó bombát dob (a bombák helye rejtve van, uBombHide), a bombHearR cellán belüli U-boat figyelmeztetést kap a bombázó IRÁNYÁRÓL (nyolc égtáj; a naplóban piros, a térképen narancs nyíl + 💣 az U-boaton az adott körben). A bombák pontos helye rejtett marad. A feltételes (lépés előtti) bomba csak akkor hallható, ha a hajó lépett.
 //   v1.14.154 (2026-10-19) – ÚJ BEÁLLÍTÁSOK: (1) fogPer (alap 1), fogPerR (5), fogPerDep (1): periszkóp – a legfeljebb fogPerDep mélységű (1/8) merült U-boat a felszíni hajót (kísérő, teherhajó) fogPerR cellára látja, a mozdulatlan (hallgatózó) kísérőt is (eddig az álló kísérő nem volt hallható); az időjárás levonódik; az AI U-boat is ezt használja (fogBy). (2) bombSig (alap 1), bombSigN (0): ha a bombák helye el van rejtve az U-boat elől (uBombHide), a bombázó kísérőn narancs szaggatott gyűrű + 💣 jelzés látszik (bombSigN=1: a bombák száma is) – a bombák helye marad rejtett.
@@ -1952,7 +1982,7 @@ applyLogPos();renderCfg();try{qbRender()}catch(e){}   // a pálya felállítás�
 //   v1.14.1 (2026-10-08) – ütközés csak 0 mélységű (felszíni) U-boattal, mindkét hajó sérül (teherhajó d1–10 rakomány); az ágyútáblában a Táv. piros hatótávon kívül; a kártyán a sérült modul sora halvány piros (KO: erősebb)
 //   v1.14.0 – kézi dobás ablak (dobás-ablak a pályán, Kocka gomb)
 //   v1.13.7 (2026-10-08) – JAVÍTÁS: a mélyen lévő U-boattal nincs ütközés (colDepth: csak a legfeljebb 2 mélységű U-boat ütközhet; mélyebben a hajó fölötte halad el, a napló jelzi); az AI sem tart az ütközéstől mély U-boatnál.
-const VER = 'v1.14.156';
+const VER = 'v1.14.157';
 
 // ===== BEÁLLÍTÁSOK (Beállítások fül): gazdaság, flotta, javítás, fejlesztés, bérelt hajó =====
 const ECO0 = { startEgp: 0, tutEgp: 200, tutAll: 0, startFleet: 'T,FL,FL,FL', maxGroup: 6, bombPrice: 1, decPen: 50, decNew: 1, decScale: 60, cvP: 100, stragDie: 30, sensFloor: '4,3,2,1,1', newLuck: 40, newWorse: 2, newMax: 4, shopDaily: 1, upgCost: 100, upgP: 50, hfCls: 'T,H,BS,BB,RV,FL,FM', hfStart: 4, hfBest: 2, hfFrom: '1941-07-01', hfNew: '1942-01-01', hfFitCost: 100, hfFitDays: 5, thrDyn: 1, thrScout: 20, thrDeep: 20, thrShadowDie: 20, thrLoseBase: 25, thrLoseWx: 10, thrLoseTurn: 15, thrLoseHit: 15, thrSink1: 35, thrSink2: 45, thrTele: 1, uAttOn: 1, uAttCut: 3, uAttRec: 0.2, uAttMin: 30, shortP: 30, shortEgp: 100, rescueOn: 1, rescueSpd: 1, refitCost: 150, refitHH: 250, refitDay: 5, refitMax: 0, refitYear: 1939, hhYear: 1941, rfBombTw: 20, rfBombG5: 50, upgLo: 2, upgHi: 12,
