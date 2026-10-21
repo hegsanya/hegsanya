@@ -1,6 +1,6 @@
 <!doctype html><html lang="hu" data-theme="light"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>CEG – Konvoj kísérő kampány v1.14.188</title>
+<title>CEG – Konvoj kísérő kampány v1.14.189</title>
 <style>
 /* Színek: világos/sötét téma változókkal; a gombok és táblázatok stílusa */
 :root{--bg:#f4f1ea;--fg:#1d2733;--pn:#fff;--ln:#c9c2b3;--ac:#b3261e;--sea:#d6ecf4;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -242,6 +242,7 @@ body[data-view="HOME"]{padding:0;background:#0b1218}
 .hm-top{padding:calc(clamp(18px,5vw,48px) + env(safe-area-inset-top,0px)) clamp(16px,4vw,40px) 0;text-shadow:0 2px 14px rgba(0,0,0,.65)}
 .hm-top h1{margin:0;font:700 clamp(46px,11vw,104px)/1 Georgia,"Times New Roman",serif;letter-spacing:.14em;color:#fff}
 .hm-top .hm-sub{margin-top:6px;font:italic clamp(15px,2.6vw,24px)/1.2 Georgia,"Times New Roman",serif;letter-spacing:.06em;color:#e8e2d2}
+.hm-top .hm-sub2{margin-top:4px;font:13px/1.2 system-ui,Arial,sans-serif;letter-spacing:.18em;text-transform:uppercase;color:#e8e2d2;opacity:.8}
 .hm-top .hm-ver{margin-top:8px;font-size:12px;letter-spacing:.12em;text-transform:uppercase;opacity:.75}
 .hm-in{padding:0 clamp(16px,4vw,40px) calc(clamp(16px,4vw,36px) + env(safe-area-inset-bottom,0px))}
 .hm-go{display:flex;align-items:center;justify-content:center;gap:12px;width:100%;box-sizing:border-box;min-height:64px;margin-bottom:12px;padding:12px 18px;border:1px solid rgba(255,255,255,.35);border-radius:12px;background:linear-gradient(180deg,#d2443a,#a82219);color:#fff;font:700 clamp(20px,3.4vw,28px)/1.1 Georgia,"Times New Roman",serif;letter-spacing:.12em;text-transform:uppercase;box-shadow:0 6px 22px rgba(0,0,0,.45);cursor:pointer}
@@ -255,6 +256,7 @@ body[data-view="HOME"]{padding:0;background:#0b1218}
 .hm-opt option{color:#111}
 @media(max-width:520px){.hm-grid{grid-template-columns:1fr 1fr}.hm-grid .hm-b:last-child:nth-child(odd){grid-column:1/-1}.hm-b{padding:9px 10px;font-size:14px;gap:8px}.hm-b small{display:none}#vHOME{background-position:36% 40%}}
 @media(max-height:560px) and (orientation:landscape){.hm-top h1{font-size:44px}.hm-go{min-height:50px;margin-bottom:8px}.hm-b{min-height:44px}}
+body.hintoff #vOP #o_msg:not(.open){white-space:normal;overflow:visible;text-overflow:clip;cursor:default;min-height:20px!important;padding-top:8px!important;padding-bottom:8px!important}   /* OP: a „Nyomd meg a WEATHER gombot…” sor a Súgó kikapcsolásakor sem zsugorodik */
 /* ===== OP CETLIK (opNotes): a Konvoj kártya, az üzenet, a Kikötőben és a lépés-jelzés külön cetli; keskeny képernyőn egymás alatt, PC-n egymás mellett (a térkép följebb kerül), nagyon széles képernyőn (≥1800 px) a térkép jobb oldalán oszlopban ===== */
 body.opN #vOP #o_notes{display:flex;flex-wrap:wrap;gap:18px 16px;align-items:flex-start;margin:12px 0 16px}
 body.opN #vOP #o_notes>div:not(#zz){flex:1 1 300px;max-width:560px;margin:0;position:relative;box-sizing:border-box;padding:16px 12px 10px;border-radius:2px;box-shadow:2px 5px 12px rgba(0,0,0,.45);transform:rotate(-.6deg)}
@@ -275,7 +277,7 @@ body.opN #vOP #o_notes>div:not(#zz):nth-child(2n)::before{transform:rotate(2deg)
 <div class="bar" id="qb" title="Gyorsbeállítók: egy kattintás a csoport összes beállítását átállítja (a Beállítások lapon látszik)"></div>
 <!-- FŐOLDAL (v1.14.187): kép + a ritkán használt gombok; a „Játék” az OP lapra visz -->
 <div id="vHOME" style="display:none">
-<div class="hm-top"><h1>CEG</h1><div class="hm-sub">Konvoj kísérő kampány</div><div class="hm-ver"><span id="hver"></span> · <span id="hm_st"></span></div></div>
+<div class="hm-top"><h1>CEG</h1><div class="hm-sub">Convoy Escort Group Commander</div><div class="hm-sub2">Konvoj kísérő kampány</div><div class="hm-ver"><span id="hver"></span> · <span id="hm_st"></span></div></div>
 <div class="hm-in">
 <button class="hm-go" onclick="showView('OP')"><span>▶ Játék<small>az OP térkép: a kampány folytatása</small></span></button>
 <div class="hm-grid">
@@ -299,13 +301,16 @@ body.opN #vOP #o_notes>div:not(#zz):nth-child(2n)::before{transform:rotate(2deg)
 <label style="display:none"><input type="checkbox" id="o_st"> elindult</label>
 <button id="o_bl" style="display:none">Indulhat?</button>
 </div>
+<!-- a két játék-címke (üzenet, lépés-jelzés) mindig látszik a WEATHER sor alatt, nem cetli és nem zsugorodik -->
+<div id="o_msg">Nyomd meg a WEATHER gombot, majd kattints a konvoj új pozíciójára. A cél pirossal körözött kikötő.</div>
+<div id="o_ui" class="note"></div>
 <!-- #o_notes (opNotes): a szövegek cetliként a térkép mellett / felett; opNotes=0: egymás alatti sávok -->
 <div id="o_notes">
 <div id="o_cvc" style="margin:4px 0"></div>
-<div id="o_msg">Nyomd meg a WEATHER gombot, majd kattints a konvoj új pozíciójára. A cél pirossal körözött kikötő.</div>
+
 <div id="mis" class="note" style="font-weight:600;color:#b3261e"></div>
 <div id="o_note" class="note"></div>
-<div id="o_evc" class="note"></div><div id="o_ui" class="note"></div>
+<div id="o_evc" class="note"></div>
 </div>
 <div class="wrap">
 <div class="scr"><div id="o_map"><canvas id="o_wxc"></canvas><div id="o_g"></div><svg id="o_tr" width="1344" height="736"></svg></div></div>
@@ -2040,6 +2045,7 @@ applyLogPos();renderCfg();try{qbRender()}catch(e){}   // a pálya felállítás�
 //   v1.13.4 (2026-10-08) – Oldalnézeti kártya-képek: Z (Z1–Z2), Flower (FL; az FM is), T-class és H-class (az utóbbi kettő ideiglenes, pontatlan rajz: később cserélendő).
 //   v1.13.5 (2026-10-08) – Oldalnézeti kártya-képek: Black Swan (BB, sloop), River (RV) és az ellenséges repülő (He 111; az 'A' kulcs: a repülők kártyáján).
 //   v1.13.6 (2026-10-08) – Az eseménynapló fegyveres sorai (lövés, torpedó, vizibomba, bombázás, légvédelem) pirosak; az ágyú-táblázatban a „Külön cél” a második sorba került (nem tolja ki a hajókártyát).
+//   v1.14.189 (2026-10-21) – FŐOLDAL: „Convoy Escort Group Commander” felirat a CEG alatt; OP: az üzenet („Nyomd meg a WEATHER gombot…”) és a lépés-jelzés („Most a konvoj lép…”) a WEATHER sor alatt, cetli nélkül, mindig látszik és nem zsugorodik.
 //   v1.14.188 (2026-10-21) – OP CETLIK (ÚJ BEÁLLÍTÁS opNotes, alap 1): az OP lapon a Konvoj kártya, az üzenet, a Kikötőben és a lépés-jelzés külön cetli (#o_notes tartó): enyhén elforgatva, ragasztócsíkkal; telefonon egymás alatt, PC-n egymás mellett (a térkép följebb kerül), ≥1800 px-en a térkép mellett jobb oldali oszlop. A Konvoj kártya a WEATHER sor után van.
 //   v1.14.187 (2026-10-21) – FŐOLDAL (ÚJ BEÁLLÍTÁS homePage, alap 1): induláskor teljes képernyős Főoldal (a mellékelt romboló-fotóval; PC-n és telefonon is): ▶ Játék (→ OP lap), Új kampány, Betöltés, Mentés fájlba, Tutorial, Beállítások, Téma, Nézet (egyszerű/teljes). Ezek a felső sorból kikerülnek; ott marad: ⌂ Főoldal, OP, Taktikai, Flotta, Jelmagyarázat, Összegzés, EGp, Súgó. homePage = 0: a régi menü.
 //   v1.14.186 (2026-10-21) – HEDGEHOG HARCI HATÁS (hhFx, alapból BE): a felszerelt hedgehog (korvett/fregatt/sloop f.hh, vagy az átépített T/H) sortűzet ad le: 3 cella a hajó előtt (balra előre, előre, jobbra előre, 1 cella); találat BIZTOS, ha az U-boat a lépése után a cellák egyikében van (mélység nincs, felderítés nem kell, vakon is lőhet); sebzés 1–6 (hhDmg) egy véletlen modulon; egy sortűz egy U-boatot legfeljebb egyszer sebez; minden sortűz −1 készlet (hhSalvo 6), találat nélkül is; körönként hhMax sortűz (alap 1); pótlás csak kikötőben (hhPrice EGp / sortűz); az AI kísérő és az AI U-boat is ismeri; minden dobás a kockanaplóban.
@@ -2230,7 +2236,7 @@ applyLogPos();renderCfg();try{qbRender()}catch(e){}   // a pálya felállítás�
 //   v1.14.1 (2026-10-08) – ütközés csak 0 mélységű (felszíni) U-boattal, mindkét hajó sérül (teherhajó d1–10 rakomány); az ágyútáblában a Táv. piros hatótávon kívül; a kártyán a sérült modul sora halvány piros (KO: erősebb)
 //   v1.14.0 – kézi dobás ablak (dobás-ablak a pályán, Kocka gomb)
 //   v1.13.7 (2026-10-08) – JAVÍTÁS: a mélyen lévő U-boattal nincs ütközés (colDepth: csak a legfeljebb 2 mélységű U-boat ütközhet; mélyebben a hajó fölötte halad el, a napló jelzi); az AI sem tart az ütközéstől mély U-boatnál.
-const VER = 'v1.14.188';
+const VER = 'v1.14.189';
 
 // ===== BEÁLLÍTÁSOK (Beállítások fül): gazdaság, flotta, javítás, fejlesztés, bérelt hajó =====
 const ECO0 = { hhFx: 1, hhSalvo: 6, hhDmg: 6, hhMax: 1, hhPrice: 5, hhCls: 'FL,FM,RV,BB,BS', hhFitCost: 150, hhFitDays: 5, hhFrom: 1941, rfBombAA: 50, rfOneCal: 1, rfG5tw: 1, fleetDesel: 1, startEgp: 0, tutEgp: 200, tutAll: 0, startFleet: 'T,FL,FL,FL', maxGroup: 6, bombPrice: 1, decPen: 50, decNew: 1, decScale: 60, cvP: 100, stragDie: 30, sensFloor: '4,3,2,1,1', newLuck: 40, newWorse: 2, newMax: 4, shopDaily: 1, upgCost: 100, upgP: 50, hfCls: 'T,H,BS,BB,RV,FL,FM', hfStart: 4, hfBest: 2, hfFrom: '1941-07-01', hfNew: '1942-01-01', hfFitCost: 100, hfFitDays: 5, thrDyn: 1, thrScout: 20, thrDeep: 20, thrShadowDie: 20, thrLoseBase: 25, thrLoseWx: 10, thrLoseTurn: 15, thrLoseHit: 15, thrSink1: 35, thrSink2: 45, thrTele: 1, uAttOn: 1, uAttCut: 3, uAttRec: 0.2, uAttMin: 30, shortP: 30, shortEgp: 100, rescueOn: 1, rescueSpd: 1, refitCost: 150, refitHH: 250, refitDay: 5, refitMax: 0, refitYear: 1939, hhYear: 1941, rfBombTw: 20, rfBombG5: 50, upgLo: 2, upgHi: 12,
