@@ -1,6 +1,6 @@
 <!doctype html><html lang="hu" data-theme="light"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>CEG – Konvoj kísérő kampány v1.14.204</title>
+<title>CEG – Konvoj kísérő kampány v1.14.205</title>
 <style>
 /* Színek: világos/sötét téma változókkal; a gombok és táblázatok stílusa */
 :root{--bg:#f4f1ea;--fg:#1d2733;--pn:#fff;--ln:#c9c2b3;--ac:#b3261e;--sea:#d6ecf4;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -1443,6 +1443,8 @@ function dxExec(){const j=DX.job;let done=false;DX.i=0;DX.depth=1;j.pend=null;dx
 function dxCancel(){if(DX.job){dxPvClear(DX.job);DX.job=null;dxUI()}}
 // dxWrap: egy belépési pont becsomagolása: kikapcsolt kézi dobásnál vagy már futó akción belül közvetlenül fut
 function dxWrap(name,fn){return function(){if(DX.depth||!CFG.manualDice||OBS.on)return fn.apply(this,arguments);
+ // függő dobás közben a Kör léptetése / ugyanaz az akció nem indul újra (az újraindítás újra lejátszaná a lépéseket): az ablak előtérbe kerül
+ if(DX.job&&DX.job.pend&&(name=='step'||DX.job.name==name)){DX.closed=false;dxUI();say('Függő kockadobás: ('+DX.job.pend.lab+') – dobj a dobás-ablakban, vagy nyomd meg az Auto gombot; a(z) '+(DXN[name]||name)+' addig nem indul újra.');return}
  dxCancel();DX.closed=false;DX.job={name,fn,args:arguments,snap:dxSnap(),q:[],pend:null,auto:false,title:(DXN[name]||name)+(sel?' – '+sel.id:'')};dxExec()}}
 // dxSubmit: a függő dobás értékének megadása (Kocka gomb vagy beírt érték); igaz, ha elfogadta
 function dxSubmit(v){const j=DX.job;if(!j||!j.pend)return false;const p=j.pend;v=Math.round(+v);if(!(v>=p.a&&v<=p.b))return false;
@@ -2342,7 +2344,8 @@ applyLogPos();renderCfg();try{qbRender()}catch(e){}   // a pálya felállítás�
 //   v1.14.202 (2026-10-22) – ÚJ supMemo (alap 1): a kifizetett támogatás (CL / CA) és bérelt hajó díja megmarad a KAMPÁNYMENTÉSBEN (CAMP.paidSup: nap + cella + osztály): ha ugyanazon a napon, ugyanabban a cellában újrakezded a félbehagyott taktikai csatát (pl. új verzióra frissítés után), a már kifizetett osztályú hajók díjmentesen érkeznek; más osztályt vagy többet újra kell fizetni. Az EGp szerkeszthető marad
 //   v1.14.203 (2026-10-23) – JAVÍTÁS: az OP lapon a lebegő „🌦 Weather” fül nem látszott (a Taktikai nézet rejtett dobozán belül volt, ezért 0 méretű); átkerült a nézeteken kívülre, a bal szélre
 //   v1.14.204 (2026-10-23) – a HF/DF 1939-ben (az ECO.hfFrom dátum, alap 1941-07-01 előtt) sehol sem látszik: a Hajóvásárlás szövege, a Flotta hajó-adatlapja (szenzor-sor, modul-tábla) és a taktikai hajókártya modul-táblája csak akkor említi / mutatja, ha a hajón van felszerelt HF/DF, vagy a felszerelés már lehetséges (hfDate('from'))
-const VER = 'v1.14.204';
+//   v1.14.205 (2026-10-23) – JAVÍTÁS (kézi dobás): ha a dobás-ablak egy függő dobást vár, a Kör léptetése (és a Kész) gomb újabb megnyomása nem indítja újra a kört (korábban a körváltás minden megnyomásra újrafutott, és mindenki újra lépett); helyette az ablak előtérbe kerül, és üzenet kéri a dobást (vagy az Auto gombot)
+const VER = 'v1.14.205';
 // ===== MEGFIGYELŐ / TESZT MÓD (obsMode, v1.14.195) =====
 // Megfigyelő módban mindkét oldalt az AI vezérli (a kísérők is: NPC-logikával), a pálya mindent mutat (nincs köd), és a körök maguktól léptetődnek;
 // a lezárt csatákból statisztika készül (konvoj-, U-boat-, kísérő-veszteség, kimenetel), hogy látszódjon: sokféle csata születik-e, vagy egyoldalú lett a hangolás.
