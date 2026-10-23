@@ -1,6 +1,6 @@
 <!doctype html><html lang="hu" data-theme="light"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>CEG – Konvoj kísérő kampány v1.14.202</title>
+<title>CEG – Konvoj kísérő kampány v1.14.203</title>
 <style>
 /* Színek: világos/sötét téma változókkal; a gombok és táblázatok stílusa */
 :root{--bg:#f4f1ea;--fg:#1d2733;--pn:#fff;--ln:#c9c2b3;--ac:#b3261e;--sea:#d6ecf4;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -334,6 +334,7 @@ body.opN #vOP #o_notes>div:not(#zz):nth-child(2n)::before{transform:rotate(2deg)
 <div class="note"><button onclick="CAMP.setupView()" title="Minden beállítás egy helyen: Menü → Beállítások">⚙ Beállítások (a főmenü Beállítások lapján, egy helyen)</button></div>
 <details class="lay" id="o_cfgbox" style="display:none"><summary>⚙ OP beállítások</summary><div id="o_cfg"></div></details>
 </div>
+<div id="wtab" title="WEATHER – új nap" onclick="document.getElementById('o_bw').click()">🌦<small>Weather</small></div>
 <div id="vTAC" style="display:none"><!-- Taktikai nézet: kompakt, a térkép feletti (görgetéskor tapadó) műveleti sáv; a ritkán használt részek (csata-beállítások, ellenség belépése, zónák, dobás-beállítások) lenyithatók -->
 <div class="bar actbar" id="t_act">
 <b>Kör <span id="tn">0</span> / <span id="mx">35</span></b>
@@ -361,7 +362,6 @@ body[data-view="TAC"] #ktab,body[data-view="OP"] #wtab{display:block}
 body.noFT #ktab,body.noFT #wtab{display:none!important}
 </style>
 <div id="ktab" title="Kör léptetése" onclick="document.getElementById('bs').click()">⏭<small>Kör</small></div>
-<div id="wtab" title="WEATHER – új nap" onclick="document.getElementById('o_bw').click()">🌦<small>Weather</small></div>
 <div id="dxtab" title="Dobás-ablak" style="display:none;position:fixed;right:0;top:50%;z-index:49;background:#b3261e;color:#fff;padding:8px 6px;border-radius:8px 0 0 8px;cursor:pointer;font-size:18px">🎲</div>
 <div id="msg">Kattints egy hajóra a kártyájáért.</div>
 <div id="mis2" class="note" style="font-weight:600;color:#b3261e"></div>
@@ -2339,7 +2339,8 @@ applyLogPos();renderCfg();try{qbRender()}catch(e){}   // a pálya felállítás�
 //   v1.14.200 (2026-10-22) – VIZIBOMBA MÉLYSÉG-TARTOMÁNY (szabad mozgás, csak turnRule=1; a sakktábla változatlan): hajónként (Hajókártya, az AI-vezérelt kísérőnél is) vagy globálisan (bdBand) választható: Véletlen (bdLo–bdHi) / Sekély 1–3 / Közepes 4–6 / Mély 7–8; a lerakott bombák mind a kiválasztott tartományban robbannak. ÚJ bdRule (alap 0 = a régi „találat, ha robbanási mélység ≥ az U-boat mélysége”; 1 = a robbanási mélység az U-boat mélységétől legfeljebb bdTol-lal térhet el) – a ≥ szabállyal a Mély tartomány mindig a legjobb, a bdRule=1 már valódi választás
 //   v1.14.201 (2026-10-22) – (1) ÚJ entryRing (alap 1): az ellenséges hadihajók és repülők a KERETBEN (a játékterületen kívüli sávban, pl. 80-as pályán 70-es játékterületnél a 70–80 közötti szegélyen) lépnek be, befelé fordulva, így nem a konvoj mellett bukkannak fel; keret nélkül (50/50) vagy marginEnemy=1 esetén a régi szélső-sáv szabály; az entryMin távolság továbbra is érvényes. (2) Az EGp a felső sorban szerkeszthető (CAMP.setEgp; a napló rögzíti): a félbehagyott, már kifizetett CL/CA támogatás ismételt levonásának korrigálására
 //   v1.14.202 (2026-10-22) – ÚJ supMemo (alap 1): a kifizetett támogatás (CL / CA) és bérelt hajó díja megmarad a KAMPÁNYMENTÉSBEN (CAMP.paidSup: nap + cella + osztály): ha ugyanazon a napon, ugyanabban a cellában újrakezded a félbehagyott taktikai csatát (pl. új verzióra frissítés után), a már kifizetett osztályú hajók díjmentesen érkeznek; más osztályt vagy többet újra kell fizetni. Az EGp szerkeszthető marad
-const VER = 'v1.14.202';
+//   v1.14.203 (2026-10-23) – JAVÍTÁS: az OP lapon a lebegő „🌦 Weather” fül nem látszott (a Taktikai nézet rejtett dobozán belül volt, ezért 0 méretű); átkerült a nézeteken kívülre, a bal szélre
+const VER = 'v1.14.203';
 // ===== MEGFIGYELŐ / TESZT MÓD (obsMode, v1.14.195) =====
 // Megfigyelő módban mindkét oldalt az AI vezérli (a kísérők is: NPC-logikával), a pálya mindent mutat (nincs köd), és a körök maguktól léptetődnek;
 // a lezárt csatákból statisztika készül (konvoj-, U-boat-, kísérő-veszteség, kimenetel), hogy látszódjon: sokféle csata születik-e, vagy egyoldalú lett a hangolás.
