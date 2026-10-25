@@ -1,6 +1,6 @@
 <!doctype html><html lang="hu" data-theme="light"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>CEG – Konvoj kísérő kampány v1.14.212</title>
+<title>CEG – Konvoj kísérő kampány v1.14.213</title>
 <style>
 /* Színek: világos/sötét téma változókkal; a gombok és táblázatok stílusa */
 :root{--bg:#f4f1ea;--fg:#1d2733;--pn:#fff;--ln:#c9c2b3;--ac:#b3261e;--sea:#d6ecf4;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -2396,7 +2396,8 @@ applyLogPos();renderCfg();try{qbRender()}catch(e){}   // a pálya felállítás�
 //   v1.14.210 (2026-10-25) – OP lap: a „Fogyasztás ma / össz.” oszlop helyett „Fogyasztás ma / Kalkulált” (opFuelCalc, alap 1): a kalkulált a beállított napi alapfogyasztás (opFuel, 160), így látszik, mennyit tett hozzá az időjárás / szél (a „ma” az eseményekkel módosított érték). opFuelCalc=0: a régi összes-fogyasztás
 //   v1.14.211 (2026-10-25) – JAVÍTÁS: a vízibomba-effekt szabad mozgásnál nem látszott: a bombák kiértékelésekor (az U-boat lépése után) az U-boat a kijelölt egység, és az effekt el van rejtve előle (uBombHide), mire a kísérőre váltottál, lejárt. Új: fxBombLate (alap 1): a rejtett effekt várólistára kerül, és a következő rajzoláskor játszódik le, amint a nézőpont nem az U-boat oldala (kísérő kijelölve / köd-nézőpont). 0 = a régi (elveszik)
 //   v1.14.212 (2026-10-25) – OP térkép sötét témában: opMapDark (alap 0): a térkép képe és a cellák a NORMÁL nézet szerintiek maradnak (a sötét a partvonalakat elmosta); 1 = a sötétített térkép. Az OP sávon sötét témában „🗺 Térkép: Normál / Sötét” gomb váltja. (html[data-opmap]; a sötét térkép-szabályok csak data-opmap=dark mellett élnek)
-const VER = 'v1.14.212';
+//   v1.14.213 (2026-10-25) – JAVÍTÁS (a v1.14.212 hibája): a tblApply-ba szúrt sor végi // megjegyzés elnyelte a sor többi részét, ezért az OP lap nézet-osztályai (data-view, tblOP, tblFont) nem álltak be: eltűnt a kis Weather / Kör léptetése fül és a térkép-asztal téma. A megjegyzés /* */ lett; a térkép-váltás (opMapDark) változatlan
+const VER = 'v1.14.213';
 // ===== MEGFIGYELŐ / TESZT MÓD (obsMode, v1.14.195) =====
 // Megfigyelő módban mindkét oldalt az AI vezérli (a kísérők is: NPC-logikával), a pálya mindent mutat (nincs köd), és a körök maguktól léptetődnek;
 // a lezárt csatákból statisztika készül (konvoj-, U-boat-, kísérő-veszteség, kimenetel), hogy látszódjon: sokféle csata születik-e, vagy egyoldalú lett a hangolás.
@@ -3340,7 +3341,7 @@ function advTog(id, key) { const e = document.getElementById(id); if (!e) return
 function advApply() { [['o_adv', 'ceg_oadv'], ['t_adv', 'ceg_tadv']].forEach(([id, k]) => { const e = document.getElementById(id); if (!e) return; let on = false; try { on = localStorage.getItem(k) === '1'; } catch (x) { } e.style.display = on ? 'contents' : 'none'; }); }
 // tblApply: a térkép-asztal téma osztályai a törzsön (tblOp, tblFont) + az aktuális nézet (data-view); a téma csak az OP lapon látszik
 function tblApply(v) { // téma: dark = sötét, white = fehér (Excel), különben normál; a fehér téma nem használja a fa asztalt / papírt / írógép betűt
-  const th = CFG.dark ? 'dark' : CFG.white ? 'white' : 'light'; document.documentElement.dataset.theme = th; document.documentElement.dataset.opmap = (CFG.dark && CFG.opMapDark) ? 'dark' : 'norm'; { const mb = document.getElementById('o_mapth'); if (mb) { mb.style.display = CFG.dark ? '' : 'none'; mb.textContent = '🗺 Térkép: ' + (CFG.opMapDark ? 'Sötét' : 'Normál'); } }   // v1.14.212: térkép-váltó gomb csak sötét témában const b = document.body; if (v) b.dataset.view = v; b.classList.toggle('tblOP', !!CFG.tblOp && th !== 'white'); b.classList.toggle('tblFont', !!CFG.tblFont && th !== 'white');
+  const th = CFG.dark ? 'dark' : CFG.white ? 'white' : 'light'; document.documentElement.dataset.theme = th; document.documentElement.dataset.opmap = (CFG.dark && CFG.opMapDark) ? 'dark' : 'norm'; { const mb = document.getElementById('o_mapth'); if (mb) { mb.style.display = CFG.dark ? '' : 'none'; mb.textContent = '🗺 Térkép: ' + (CFG.opMapDark ? 'Sötét' : 'Normál'); } } /* v1.14.212: térkép-váltó gomb csak sötét témában */ const b = document.body; if (v) b.dataset.view = v; b.classList.toggle('tblOP', !!CFG.tblOp && th !== 'white'); b.classList.toggle('tblFont', !!CFG.tblFont && th !== 'white');
   const sl = document.getElementById('nDK'); if (sl && sl.value !== th) sl.value = th; const s2 = document.getElementById('hm_th'); if (s2 && s2.value !== th) s2.value = th; }
 // homeRefresh: a Főoldal állapotsora (nap, dátum, EGp) és a verzió
 function homeRefresh() {
