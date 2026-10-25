@@ -1,6 +1,6 @@
 <!doctype html><html lang="hu" data-theme="light"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>CEG – Konvoj kísérő kampány v1.14.217</title>
+<title>CEG – Konvoj kísérő kampány v1.14.218</title>
 <style>
 /* Színek: világos/sötét téma változókkal; a gombok és táblázatok stílusa */
 :root{--bg:#f4f1ea;--fg:#1d2733;--pn:#fff;--ln:#c9c2b3;--ac:#b3261e;--sea:#d6ecf4;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -17,6 +17,7 @@ html[data-skin="blue"] #sidehd{background:#eaf3ff;color:#0b3c70;border-radius:0}
 html[data-skin="blue"] table,html[data-skin="blue"] th,html[data-skin="blue"] td{border-color:rgba(255,255,255,.4)}
 html[data-skin="blue"] th{background:rgba(255,255,255,.12);color:#fff}
 html[data-skin="blue"] a{color:#bfe0ff}
+html[data-skin="blue"] #card>img{filter:url(#bpEdge);mix-blend-mode:screen;background:#000;border:1px solid rgba(255,255,255,.7);border-radius:0}
 html[data-skin="blue"] canvas#cv{border:1px solid rgba(255,255,255,.8)}
 :root[data-theme="dark"]{--bg:#10161d;--fg:#e6e9ee;--pn:#18212b;--ln:#33414f;--ac:#ff6b5e;--sea:#16303c}
 html{scroll-padding-top:env(safe-area-inset-top,0px)}
@@ -1346,6 +1347,8 @@ function animLoop(now){const dt=Math.min(100,Math.max(0,now-animT));animT=now;co
   if(Math.abs(s.x-v.x)<.01&&Math.abs(s.y-v.y)<.01&&Math.abs(da)<.02){v.x=s.x;v.y=s.y;v.a=ta}else mv=true}
  try{draw()}catch(e){}
  if(mv&&CFG.anim)requestAnimationFrame(animLoop);else animOn=false}
+// bpC / bpD: a Tervrajz témában (blue) a hajó-jelek körvonal-színe és szaggatottsága (null = a régi stílus); a draw() állítja ship-enként
+var bpC=null,bpD=0;const bpOn=()=>!!(CFG.blue&&document.documentElement.dataset.skin==='blue');
 function drawShip(s,im,X,Y,a){const k=s.t=='M'?'M':bcls(s.c),A=a!=null?a:angOf(s),v=[Math.cos(A),Math.sin(A)],kk=kkOf(A),L=S*(ICON_LEN[k]||2)*CFG.iconScale*kk,W=L*im.naturalHeight/im.naturalWidth,
   sh=CFG.iconAnchor==1?0:(L/2-S*kk/2);
  g.save();g.translate(X+S/2-v[0]*sh,Y+S/2-v[1]*sh);g.rotate(A);g.drawImage(im,-L/2,-W/2,L,W);g.restore()}
@@ -1355,8 +1358,8 @@ function drawCapsule(s,X,Y,a,dark){const k=s.t=='M'?'M':s.c,W=S*Math.max(.25,Mat
  else{const v=[Math.cos(A),Math.sin(A)],kk=kkOf(A),sh=S*Math.min(2,(ICON_LEN[k]||2))*kk*(s.t=='U'?.9:1)/2-S*kk/2;L=S*Math.min(2,(ICON_LEN[k]||2))*kk*(s.t=='U'?.9:1);cx=X+S/2-v[0]*sh;cy=Y+S/2-v[1]*sh}
  const f=L/2;g.save();g.translate(cx,cy);g.rotate(A);
  g.beginPath();g.moveTo(-f+W*.35,-W/2);g.lineTo(f*.25,-W/2);g.quadraticCurveTo(f*.85,-W*.42,f,0);g.quadraticCurveTo(f*.85,W*.42,f*.25,W/2);g.lineTo(-f+W*.35,W/2);g.quadraticCurveTo(-f,W/2,-f,0);g.quadraticCurveTo(-f,-W/2,-f+W*.35,-W/2);g.closePath();
- g.fill();g.lineWidth=1.6;g.strokeStyle=dark?'#fff':'#102030';g.stroke();
- g.fillStyle='rgba(255,255,255,.55)';
+ g.fill();g.lineWidth=bpC?1.8:1.6;g.strokeStyle=bpC||(dark?'#fff':'#102030');if(bpC&&bpD)g.setLineDash([5,3]);g.stroke();g.setLineDash([]);
+ g.fillStyle=bpC?'rgba(255,255,255,.4)':'rgba(255,255,255,.55)';
  if(s.t=='U'){g.fillRect(-f*.15,-W*.16,f*.3,W*.32)}
  else if(s.t=='M'){g.fillRect(-f*.6,-W*.28,f*.35,W*.56);g.fillRect(f*.0,-W*.28,f*.35,W*.56)}
  else if(s.t=='A'){}
@@ -1364,7 +1367,7 @@ function drawCapsule(s,X,Y,a,dark){const k=s.t=='M'?'M':s.c,W=S*Math.max(.25,Mat
  g.restore()}
 // drawMark: tengeri szimulátor-stílusú jelző (CFG.mapArt = 2): kör + vonal; a vonal hossza = a hajó mai sebessége (lépés), iránya = az irány
 function drawMark(s,X,Y,ang){const A=ang!=null?ang:angOf(s),kk=kkOf(A),v=[Math.cos(A)*kk,Math.sin(A)*kk],cx=X+S/2,cy=Y+S/2,n=Math.max(1,s.spd||1),ex=cx+v[0]*S*n,ey=cy+v[1]*S*n;
- g.beginPath();g.arc(cx,cy,S*.36,0,7);g.fill();g.strokeStyle='#000';g.lineWidth=1.5;g.stroke();
+ g.beginPath();g.arc(cx,cy,S*.36,0,7);g.fill();g.strokeStyle=bpC||'#000';g.lineWidth=bpC?1.8:1.5;if(bpC&&bpD)g.setLineDash([4,3]);g.stroke();g.setLineDash([]);
  g.beginPath();g.moveTo(cx+v[0]*S*.36,cy+v[1]*S*.36);g.lineTo(ex,ey);g.stroke();
  const a=Math.atan2(v[1],v[0]);g.beginPath();g.moveTo(ex,ey);g.lineTo(ex-Math.cos(a-.5)*S*.3,ey-Math.sin(a-.5)*S*.3);g.moveTo(ex,ey);g.lineTo(ex-Math.cos(a+.5)*S*.3,ey-Math.sin(a+.5)*S*.3);g.stroke()}
 // zoom: a pálya nagyítása / kicsinyítése (a cellaméret lépcsői); focusSel: a kijelölt hajó a látótér közepére
@@ -2079,12 +2082,12 @@ function draw(){
   for(let zx=0;zx*10<N;zx++)for(let zy=0;zy*10<N;zy++)g.fillText(col(zx+1)+(zy+1),O+(zx*10+Math.min(10,N-zx*10)/2)*S,O+(zy*10+Math.min(10,N-zy*10)/2)*S);g.restore()}   // 10×10-es zónák: A1 = bal felső
  g.fillStyle=storm?'#eef3f7':css('--fg');g.font='9px sans-serif';g.textAlign='center';
  for(let i=1;i<=N;i++){if(!(i>26&&S<18&&i%2==0))g.fillText(col(i),O+(i-.5)*S,O-8);g.fillText(i,O-12,O+(i-.5)*S+3)}
- if(sel&&sel.t=='E'&&sel.zid){const z=ZONE[sel.zid],cm=cmd();g.fillStyle='rgba(40,160,90,.18)';g.beginPath();   // a zóna (elforgatva, ha a konvoj nem délnek halad)
+ if(sel&&sel.t=='E'&&sel.zid){const z=ZONE[sel.zid],cm=cmd();g.fillStyle=bpOn()?'rgba(255,255,255,.10)':'rgba(40,160,90,.18)';g.beginPath();   // a zóna (elforgatva, ha a konvoj nem délnek halad)
   [[z[0]-.5,z[1]-.5],[z[2]+.5,z[1]-.5],[z[2]+.5,z[3]+.5],[z[0]-.5,z[3]+.5]].forEach(([p,q],i)=>{const o=toG(p,q,1),X=O+(cm.x+o[0]-.5)*S,Y=O+(cm.y+o[1]-.5)*S;i?g.lineTo(X,Y):g.moveTo(X,Y)});g.closePath();g.fill()}
  if(sel&&sel.c&&D[sel.c].gun&&D[sel.c].gun.length&&((sel.t=='E'&&(!$('fo').checked||sel.en||!sel.zid))||sel.t=='U')){const cs=[...new Set(D[sel.c].gun.map(q=>Math.min(q[1],CFG.calCap)))].sort((a,b)=>b-a);
-  cs.forEach((r,i)=>{g.strokeStyle=['#d32f2f','#f57c00','#7b1fa2','#0288d1'][i%4];g.lineWidth=1.5;g.setLineDash([5,3]);g.strokeRect(O+(sel.x-1-r)*S,O+(sel.y-1-r)*S,(2*r+1)*S,(2*r+1)*S);g.setLineDash([])})}
+  cs.forEach((r,i)=>{g.strokeStyle=(bpOn()?['#ffffff','#ffd54f','#9cc9ff','#ff8a80']:['#d32f2f','#f57c00','#7b1fa2','#0288d1'])[i%4];g.lineWidth=1.5;g.setLineDash([5,3]);g.strokeRect(O+(sel.x-1-r)*S,O+(sel.y-1-r)*S,(2*r+1)*S,(2*r+1)*S);g.setLineDash([])})}
  if(sel&&sel.tgt){const t=find(sel.tgt);if(t){g.strokeStyle='#d50000';g.lineWidth=3;g.strokeRect(O+(t.x-1)*S-2,O+(t.y-1)*S-2,S+4,S+4)}}
- g.fillStyle='#222';if(!bombHid())ships.forEach(q=>FOGH.has(q)?0:(q.bm||[]).forEach(c=>{g.beginPath();g.arc(O+(c[0]-.5)*S,O+(c[1]-.5)*S,4,0,7);g.fill()}));
+ g.fillStyle=bpOn()?'#ffffff':'#222';if(!bombHid())ships.forEach(q=>FOGH.has(q)?0:(q.bm||[]).forEach(c=>{g.beginPath();g.arc(O+(c[0]-.5)*S,O+(c[1]-.5)*S,4,0,7);g.fill()}));
  if(!bombHid())ships.forEach(q=>FOGH.has(q)?0:(q.hm||[]).forEach(c=>{g.fillStyle='#b3261e';g.fillRect(O+(c[0]-.5)*S-3,O+(c[1]-.5)*S-3,6,6)}));g.fillStyle='#222';   // hedgehog-cellák: piros négyzet
  if(CFG.bombSig&&bombHid())ships.forEach(q=>{if(q.t!='E'||q.bpend||!(q.bm||[]).length||FOGH.has(q))return;   // bombSig: a bombázó kísérő jelzése (gyűrű + 💣), a bombák helye rejtve marad
   const cx=O+(q.x-.5)*S,cy=O+(q.y-.5)*S;g.strokeStyle='#ff9800';g.lineWidth=3;g.setLineDash([4,3]);g.beginPath();g.arc(cx,cy,S*.85,0,7);g.stroke();g.setLineDash([]);g.fillStyle='#e65100';g.font='bold '+Math.max(11,Math.round(S*.55))+'px sans-serif';g.fillText('💣'+(CFG.bombSigN?q.bm.length:''),cx+S*.55,cy-S*.55)});
@@ -2100,12 +2103,14 @@ function draw(){
  const dkv=parseInt(css('--bg').slice(1,3),16)<96;
  for(const s of ships){if(FOGH.has(s))continue;const key=s.x+','+s.y,o=((cnt[key]=(cnt[key]||0)+1)-1)*4,vp=visOf(s),X=O+(vp.x-1)*S+o,Y=O+(vp.y-1)*S+o;
   g.fillStyle=s===cm?'#e0b020':s.stop?'#a1887f':(s.en&&s.t=='E')?'#d32f2f':s.sup?'#7fd6dc':s.npc?'#4fc3c8':{M:'#6f7f90',E:'#17b8c6',U:'#c62828',Z:'#d32f2f',A:'#e53935'}[s.t];   // saját kísérők: türkiz (az NPC és a támogatás világosabb), ellenség: piros
-  const cap=CFG.mapArt==3||twoOf(s),im=cap?null:mapImg(s);if(im){g.globalAlpha=.35;g.fillRect(X+1,Y+1,S-2,S-2);g.globalAlpha=1;drawShip(s,im,X,Y,vp.a)}else if(cap)drawCapsule(s,X,Y,vp.a,dkv);else if(CFG.mapArt==2)drawMark(s,X,Y,vp.a);else g.fillRect(X+1,Y+1,S-2,S-2);   // a kép alatt halvány oldal-szín; 2: kör + vonal
-  g.fillStyle='#fff';g.font='bold 8px sans-serif';if(im||CFG.mapArt==2||cap){g.lineWidth=3;g.strokeStyle='#000';g.strokeText(s.id,X+S/2,Y+S/2+3)}g.fillText(s.id,X+S/2,Y+S/2+3);
+  bpC=null;bpD=0;if(bpOn()){const en=!(s.t=='M'||(s.t=='E'&&!s.en));bpC=en?'#ffd54f':s.t=='M'?'#9cc9ff':'#ffffff';bpD=(s.t=='U'||s.t=='A')?1:0;g.fillStyle=en?'rgba(255,213,79,.18)':s.t=='M'?'rgba(156,201,255,.16)':s===cm?'rgba(255,255,255,.38)':'rgba(255,255,255,.2)'}   // Tervrajz: átlátszó kitöltés, színes körvonal
+  const cap=CFG.mapArt==3||twoOf(s),im=cap?null:mapImg(s);if(im){g.globalAlpha=.35;g.fillRect(X+1,Y+1,S-2,S-2);g.globalAlpha=1;drawShip(s,im,X,Y,vp.a)}else if(cap)drawCapsule(s,X,Y,vp.a,dkv);else if(CFG.mapArt==2)drawMark(s,X,Y,vp.a);else{g.fillRect(X+1,Y+1,S-2,S-2);if(bpC){g.strokeStyle=bpC;g.lineWidth=1.6;if(bpD)g.setLineDash([4,3]);g.strokeRect(X+1,Y+1,S-2,S-2);g.setLineDash([])}}   // a kép alatt halvány oldal-szín; 2: kör + vonal
+  g.fillStyle='#fff';g.font='bold 8px sans-serif';if(im||CFG.mapArt==2||cap){g.lineWidth=3;g.strokeStyle=bpC?'#0b3c70':'#000';g.strokeText(s.id,X+S/2,Y+S/2+3)}g.fillStyle=bpC?bpC:'#fff';g.fillText(s.id,X+S/2,Y+S/2+3);
   if(s.t=='U'&&!FOGND.has(s)){g.fillStyle='#ffeb3b';g.fillText(s.dep,X+S*.85,Y+S*.3)}   // a csak szonárral jelzett U-boat mélysége ismeretlen
   if(((s.t=='E'&&(!$('fo').checked||s.en||!s.zid))||s.t=='U'||s.t=='A')&&!s.done){g.strokeStyle='#fff';g.lineWidth=2;g.strokeRect(X+3,Y+3,S-6,S-6)}
-  if(s.dir&&!cap){const kk=kkOf(vp.a),cx=X+S/2,cy=Y+S/2;g.strokeStyle='#000';g.lineWidth=2;g.beginPath();g.moveTo(cx,cy);g.lineTo(cx+Math.cos(vp.a)*kk*S*.75,cy+Math.sin(vp.a)*kk*S*.75);g.stroke()}
-  if(s===sel){g.strokeStyle='#000';g.lineWidth=2;g.strokeRect(X,Y,S,S)}}
+  if(s.dir&&!cap){const kk=kkOf(vp.a),cx=X+S/2,cy=Y+S/2;g.strokeStyle=bpC||'#000';g.lineWidth=2;g.beginPath();g.moveTo(cx,cy);g.lineTo(cx+Math.cos(vp.a)*kk*S*.75,cy+Math.sin(vp.a)*kk*S*.75);g.stroke()}
+  if(s===sel){g.strokeStyle=bpC?'#ffffff':'#000';g.lineWidth=bpC?3:2;g.strokeRect(X,Y,S,S)}}
+ bpC=null;bpD=0;
  fogDrawMarks();decDraw();
  fxDraw();try{animKick()}catch(e){}
 }
@@ -2418,7 +2423,8 @@ applyLogPos();renderCfg();try{qbRender()}catch(e){}   // a pálya felállítás�
 //   v1.14.215 (2026-10-25) – A Hajókártyán a felső KÉSZ gomb ragadós (kStick, alap 1): a kártya görgetésekor is látszik és bárhonnan elérhető, ezért a Javítás blokk alatti második KÉSZ gomb elmarad; 0 = a régi (mindkettő, a felső nem ragadós)
 //   v1.14.216 (2026-10-25) – TERVRAJZ TÉMA, 1. LÉPÉS (blue, alap 0; a téma-választóban „Tervrajz”): kék alap fehér vonalakkal, finom rács a háttéren, műszaki (egyvonalas) betű, sarkos fehér keretes gombok és panelek; a taktikai pálya tengere kék, a rácsa fehér. A sötét téma alapjára épül (html[data-theme=dark][data-skin=blue]), a fa asztal / papír (tblOP, tblFont) kikapcsolva. Még nincs: hajó-ábrák és hajókártya-rajz, OP térkép (következő lépések)
 //   v1.14.217 (2026-10-25) – A Hajókártya szélessége állítható (sideW, px; 0 = automatikus): a Tervrajz témában (széles monospace betű) a két oszlop táblái egymásba csúsztak, ezért 0 mellett a Tervrajz témában 780 px (a képernyő 96%-ánál nem szélesebb), a többi témában a régi (400 / 560 px). A kártya két oszlopában a táblák nem lóghatnak ki (max-width)
-const VER = 'v1.14.217';
+//   v1.14.218 (2026-10-25) – TERVRAJZ TÉMA, 2. LÉPÉS: a hajó-jelek (kör+vonal, kapszula, négyzet) átlátszó kitöltésű fehér körvonalas rajzok: a saját hajó fehér, a teherhajó világoskék, az ellenség (U-boat, felszíni, repülő) sárga; az U-boat / repülő szaggatott vonallal; a kijelölt hajó vastag fehér keret; a bombák, lőtáv-keretek és a zóna fehér / sárga árnyalatúak; a Hajókártya képe kék-fehér vonalrajz (CSS szűrő). Csak a Tervrajz témában (html[data-skin=blue]); a mapArt=1 (hajókép) jelek változatlanok
+const VER = 'v1.14.218';
 // ===== MEGFIGYELŐ / TESZT MÓD (obsMode, v1.14.195) =====
 // Megfigyelő módban mindkét oldalt az AI vezérli (a kísérők is: NPC-logikával), a pálya mindent mutat (nincs köd), és a körök maguktól léptetődnek;
 // a lezárt csatákból statisztika készül (konvoj-, U-boat-, kísérő-veszteség, kimenetel), hogy látszódjon: sokféle csata születik-e, vagy egyoldalú lett a hangolás.
@@ -3830,4 +3836,5 @@ return{tfHome,tfHomeTxt,dbg:{genEv:()=>genEv(),uk:()=>evUK,stats:()=>evStats(),m
 
 })();</script>
 <script>hAApply();hfApply();hhApply();try{hlpApply()}catch(e){}CAMP.start(); // Indítás: mentett kampány betöltése vagy új kampány</script>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><filter id="bpEdge" color-interpolation-filters="sRGB" x="0" y="0" width="100%" height="100%"><feColorMatrix type="saturate" values="0"/><feConvolveMatrix order="3" kernelMatrix="-1 -1 -1 -1 8 -1 -1 -1 -1" divisor="1" preserveAlpha="true"/><feComponentTransfer><feFuncR type="linear" slope="5"/><feFuncG type="linear" slope="5"/><feFuncB type="linear" slope="5"/></feComponentTransfer></filter></svg>   <!-- bpEdge: a Tervrajz téma hajókép-szűrője: élkiemelés (fehér vonal fekete alapon), a screen keverés kék alapra teszi -->
 </body></html>
