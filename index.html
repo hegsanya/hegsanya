@@ -1,6 +1,6 @@
 <!doctype html><html lang="hu" data-theme="light"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>CEG – Konvoj kísérő kampány v1.14.236</title>
+<title>CEG – Konvoj kísérő kampány v1.14.237</title>
 <style>
 /* Színek: világos/sötét téma változókkal; a gombok és táblázatok stílusa */
 :root{--bg:#f4f1ea;--fg:#1d2733;--pn:#fff;--ln:#c9c2b3;--ac:#b3261e;--sea:#d6ecf4;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -885,7 +885,8 @@ function sqUI(s){if(!ECO.sqFx||sqWork(s)<1)return '';const ok=qok(s),g=[[-1,-1],
  return '<div style="margin-top:6px">Squid: készlet <b>'+s.qs+'</b>/'+sqCap(s.c)+' lövés, e körben '+(s.qn|0)+'/'+Math.min(sqWork(s),+ECO.sqMax||2)+'<table class="m" style="width:auto;margin:4px 0">'+t+'</table><small>Bármely szomszédos cellára (körönként minden cellára egyszer; lövésenként egyesével vagy párosával); találat, ha az U-boat a lépése után ott van.</small></div>'}
 // aiHH: az AI kísérő sortűzet ad le, ha egy már lépett U-boat a három cella egyikében van
 function aiHH(e){if(!e||!hok(e))return;const cs=hcells(e),us=ships.filter(q=>q.t=='U'&&(q.done||q.bl)&&cellsOf(q).some(c=>cs.some(k=>k[0]==c[0]&&k[1]==c[1])));if(!us.length)return;hfire(e)}
-function uPost(u){if(!u||u.t!='U')return true;ships.filter(q=>q.t=='E'&&!q.bpend).forEach(decBlast);if(!u.bl){u.bl=true;let m=u.id+': a lépések után a vízibombák kiértékelése:',any=false,hmN=0;ships.filter(q=>q.t=='E').forEach(e=>markList(e).forEach(b=>{if(b[4]=='H'&&!(b.ev||[]).includes(u.id))hmN++;const r=bOnce(u,b);if(r===null)return;any=true;m+=' '+b[3]+'→'+bAd(b[0],b[1])+r}));if(any){say(m);draw();card()}else if(hmN)say(u.id+': hedgehog / Squid ellenőrizve – nincs U-boat a célcellákban (nincs találat).')
+function uPost(u){if(!u||u.t!='U')return true;ships.filter(q=>q.t=='E'&&!q.bpend).forEach(decBlast);if(!u.bl){u.bl=true;let m=u.id+': a lépések után a vízibombák kiértékelése:',any=false,hmN=0,hHit=false;ships.filter(q=>q.t=='E').forEach(e=>markList(e).forEach(b=>{if(b[4]=='H'&&!(b.ev||[]).includes(u.id))hmN++;const r=bOnce(u,b);if(r===null)return;any=true;if(b[4]=='H')hHit=true;m+=' '+b[3]+'→'+bAd(b[0],b[1])+r}));
+  if(hmN&&!hHit)m+=(any?' |':'')+' hedgehog / Squid ellenőrizve: nincs U-boat a célcellákban (nincs találat).';if(any||hmN){say(m);draw();card()}
   if(ships.includes(u)&&fatal(u))say(u.id+': a sérülése végzetes, nem lőhet (a következő körben elsüllyed).')}
  return ships.includes(u)&&!fatal(u)}
 // uGate: az U-boat lövése előbb a lépések lelépését, majd a vízibombák kiértékelését kívánja; igaz, ha le van tiltva
@@ -2631,7 +2632,8 @@ applyLogPos();renderCfg();try{qbRender()}catch(e){}   // a pálya felállítás�
 //   v1.14.234 (2026-10-26) – OP TÉRKÉP: a szárazföldi cellákon nincs U / R / H esemény (evLand, alap 1). A szárazföld-maszk (LANDM: 20 × 42, „#” = szárazföld) az OP-térkép képéből készült (a cella több mint fele nem tenger); a kikötő-cellák (eseménymentes, „.”) változatlanok. Az 1 / 0 kapcsoló a Beállításokban
 //   v1.14.235 (2026-10-26) – ÚJ: a MEGÁLLT (vagy a találat után megálló) teherhajó ég / füstöl: fogStop (alap 20; 0 = ki) cellára látszik (az időjárás levonva); a periszkópmélységű U-boat is látja (fogStopPer, alap 1). Az észlelhetőség-táblázatban külön sor (köd-réteg)
 //   v1.14.236 (2026-10-26) – HEDGEHOG / SQUID ELLENŐRZÉS LÁTHATÓVÁ: (1) a sortűz / lövés után a napló kiírja az eredményt is („ellenőrizve: nincs U-boat a célcellákban” / „a találatot a lépése után ellenőrzöm”), nem csak a találatot; (2) JAVÍTÁS: az az U-boat, amelyik már lépett és kiértékelődött (bl), de még nem „kész”, eddig kimaradt az azonnali ellenőrzésből – most a hedgehog / Squid rá is azonnal hat; (3) az U-boat kiértékelésénél, ha volt hedgehog / Squid jel, de egyik cellában sem volt, ezt is kiírja
-const VER = 'v1.14.236';
+//   v1.14.237 (2026-10-26) – HEDGEHOG / SQUID ELLENŐRZÉS: az U-boat lépés utáni kiértékelésében a hedgehog / Squid „nincs találat” eredmény akkor is kiíródik, ha a vízibombák is hatottak (eddig ilyenkor csak a vízibomba-sor látszott, a hedgehog-ellenőrzés nem)
+const VER = 'v1.14.237';
 // ===== MEGFIGYELŐ / TESZT MÓD (obsMode, v1.14.195) =====
 // Megfigyelő módban mindkét oldalt az AI vezérli (a kísérők is: NPC-logikával), a pálya mindent mutat (nincs köd), és a körök maguktól léptetődnek;
 // a lezárt csatákból statisztika készül (konvoj-, U-boat-, kísérő-veszteség, kimenetel), hogy látszódjon: sokféle csata születik-e, vagy egyoldalú lett a hangolás.
