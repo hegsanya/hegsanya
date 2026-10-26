@@ -1,6 +1,6 @@
 <!doctype html><html lang="hu" data-theme="light"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>CEG – Konvoj kísérő kampány v1.14.226</title>
+<title>CEG – Konvoj kísérő kampány v1.14.227</title>
 <style>
 /* Színek: világos/sötét téma változókkal; a gombok és táblázatok stílusa */
 :root{--bg:#f4f1ea;--fg:#1d2733;--pn:#fff;--ln:#c9c2b3;--ac:#b3261e;--sea:#d6ecf4;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -677,7 +677,7 @@ function turnFor(s){s.tn=turn;s.bl=false;s.det=null;s.detZ=false;   // s.tn: a k
  s.mxs=mx;s.tgt=null;s.mt={};
  if(U&&CFG.subBat){const mxb=+CFG.subMax||25,bb=s.bat==null?mxb:s.bat;   // akku-keret: víz alatt a megtett lépések fogyasztanak, felszínen körönként töltődik
   s.bat=s.dep>0?Math.max(0,bb-Math.min(s.idx|0,1)):Math.min(mxb,bb+(+CFG.subRech||0))}
- s.spd=mx<1?0:(s.full?mx:R(1,mx,null,'1..max: a kör sebessége',null,null,s.id+': sebesség-kocka (max '+mx+')'));s.done=false;s.ch=[];s.idx=0;s.bm=[];s.hm=[];s.rep=false;s.gu=[];s.used=[];s.dch=false;s.xs=0;
+ s.spd=mx<1?0:(s.full?mx:R(1,mx,null,'1..max: a kör sebessége',null,null,s.id+': sebesség-kocka (max '+mx+')'));s.done=false;s.ch=[];s.idx=0;s.bm=[];s.hm=[];s.qn=0;s.rep=false;s.gu=[];s.used=[];s.dch=false;s.xs=0;
  // kormány: ha a Stand > 0, a hajó nem tud fordulni (minden irány az aktuális)
  const rudder=ru>=0&&s.st[ru]>=1;
  // lépésenként egy irány-csoport: az 1. lépésnél ±1, a 2.-nál ±2, a 3.-nál ±3; Medal: +1 irány az 1–2. lépésnél; az U-boatnál a mélység szűkíti
@@ -713,7 +713,7 @@ function ageLose(o,cls,n){const L=D[cls].mod,thr=ECO.ageThr,out=[];
   for(let r=0;r<rolls;r++){const c=L.map((m,i)=>i).filter(i=>o.dmg[i]<L[i][1]&&L[i][0]!='Legénység');if(!c.length)break;const i=c[Math.floor(Math.random()*c.length)];o.dmg[i]++;out.push(L[i][0])}}
  return out}
 function mkE(f,zid,cm,rentF){const vc=vcls(f),c=D[vc],z=ZONE[zid],o=toG(R(z[0],z[2]),R(z[1],z[3]));
- return{id:f.id,t:'E',c:vc,zid,rent:!!rentF,age:(rentF||!ECO.ageOn)?null:(f.age!=null?f.age:100),dir:+dr.value,med:f.med||0,full:false,spd:0,idx:0,bm:[],hm:[],hsF:hhHas(f,c),hs:hhHas(f,c)?(f.hs!=null?Math.min(f.hs,ECO.hhSalvo):ECO.hhSalvo):0,b:f.b!=null?Math.min(f.b,c.bomb):c.bomb,fu:f.fu!=null?f.fu:c.fuel,rq:f.rq!=null?f.rq:c.rad,sq:f.sq!=null?f.sq:c.son,hq:f.hq!=null?f.hq:ECO.hfStart,hf:f.hf!=null?f.hf:(rentF?(hfDate('new')?1:0):null),
+ return{id:f.id,t:'E',c:vc,zid,rent:!!rentF,age:(rentF||!ECO.ageOn)?null:(f.age!=null?f.age:100),dir:+dr.value,med:f.med||0,full:false,spd:0,idx:0,bm:[],hm:[],hsF:hhHas(f,c),hs:hhHas(f,c)?(f.hs!=null?Math.min(f.hs,ECO.hhSalvo):ECO.hhSalvo):0,qs:f.qs!=null?Math.min(f.qs,ECO.sqSalvo):ECO.sqSalvo,qn:0,b:f.b!=null?Math.min(f.b,c.bomb):c.bomb,fu:f.fu!=null?f.fu:c.fuel,rq:f.rq!=null?f.rq:c.rad,sq:f.sq!=null?f.sq:c.son,hq:f.hq!=null?f.hq:ECO.hfStart,hf:f.hf!=null?f.hf:(rentF?(hfDate('new')?1:0):null),
   dmg:f.dmg?f.dmg.slice():c.mod.map(()=>0),st:c.mod.map(()=>0),gu:[],used:[],xs:0,rep:false,groups:[],ch:[],done:false,sens:[],tgt:null,x:cl(cm.x+o[0],1,N),y:cl(cm.y+o[1],1,N)}}
 // applyDamage: a sérülések hatása a KÖVETKEZŐ körben érvényesül: itt süllyednek el / állnak meg a megjelölt teherhajók, a torpedótól sérült kísérők, itt dől el a végzetes U-boat sérülés, a legénység 6/6 és a >60%-os sérülés
 function applyDamage(){const msg=[];
@@ -732,7 +732,8 @@ const mi=(s,p)=>D[s.c].mod.findIndex(m=>m[0].startsWith(p));
 // ===== ÁTÉPÍTÉS: a kísérő löveg-helyei (Gun1–Gun5) cserélhetők; az átépített hajó saját „változat-osztályt” kap (D['T~G1tw.G2tw…']) =====
 const REFIT={T:{slots:['G1','G2','G3','G4','G5']},H:{slots:['G1','G2','G4','G5']}};
 const RF_OPT={G1:['tw','hh'],G2:['tw'],G3:['aa'],G4:['tw'],G5:['bomb']};
-const RF_LAB={'5in':'1×5" DP','tw':'2×4" DP','hh':'Hedgehog','aa':'AA-pár (AA4-AA5)','bomb':'+vízibomba (löveg nélkül)'};
+const rfPrice=x=>x==='hh'?ECO.refitHH:x==='sq'?ECO.sqCost:ECO.refitCost;   // egy csere ára (EGp): hedgehog / Squid / sima
+const RF_LAB={'sq':'Squid ASW mozsár (körkörös)','5in':'1×5" DP','tw':'2×4" DP','hh':'Hedgehog','aa':'AA-pár (AA4-AA5)','bomb':'+vízibomba (löveg nélkül)'};
 function rfList(rf,b){return(REFIT[b]?REFIT[b].slots:[]).filter(s=>rf&&rf[s]&&rf[s]!='5in')}
 // cname: a flottabeli hajó megjelenítendő osztály-neve: az egyéni név (f.nm), különben az automatikus
 // cnameT: taktikai hajó: ha flottabeli kísérő, az egyéni nevét mutatja
@@ -744,7 +745,7 @@ function buildVar(key,b,rf){const B=D[b],V=JSON.parse(JSON.stringify(B));V.base=
   if(x=='tw')bomb+=+(ECO.rfBombTw!=null?ECO.rfBombTw:20);if(x=='aa'&&b=='T')bomb+=+(ECO.rfBombAA!=null?ECO.rfBombAA:50);   // a T Gun3 → dupla AA: +50 vízibomba (rfBombAA)
   if(x=='bomb')bomb+=+(ECO.rfBombG5!=null?ECO.rfBombG5:50);
   const mi=mod.findIndex(m=>m[0]==s);if(mi<0)return;
-  if(x=='aa')mod[mi]=['AA4-AA5',6];else if(x=='hh')mod[mi]=['Hedgehog',6];else if(x=='bomb')mod.splice(mi,1)});
+  if(x=='aa')mod[mi]=['AA4-AA5',6];else if(x=='hh')mod[mi]=['Hedgehog',6];else if(x=='bomb')mod.splice(mi,1);else if(x=='sq')mod[mi]=['Squid',6]});
  B.gun.forEach(g=>{const s=g[2],x=rf[s];if(!x||x=='5in'){gun.push(g.slice());return}if(x=='tw'&&!gun.some(q=>q[2]==s))gun.push([s+'-105',4,s],[s+'-105',4,s])});
  V.mod=mod;V.gun=gun;V.bomb=bomb;V.n=B.n+' (átépített)';V.hfIdx=mod.findIndex(m=>m[0]=='HF/DF');if(V.hfIdx<0)V.hfIdx=null;D[key]=V}
 // uEnterDie: az U-boat belépő kockája (a kampány napról napra változtatja: követés d20, elsüllyesztés után d35 / d45); a kilépő kocka változatlan
@@ -831,17 +832,37 @@ const markList=e=>e.bm.concat(e.hm||[]);
 // hcells: a sortűz három célcellája (a pályán belül)
 function hcells(s){return [nd(s.dir-1),s.dir,nd(s.dir+1)].map(d=>[s.x+DV[d][0],s.y+DV[d][1]]).filter(c=>c[0]>=1&&c[0]<=N&&c[1]>=1&&c[1]<=N)}
 // hok: leadható-e a sortűz (van készlet, a hajó nem FULL speeden, a modul működik, a körönkénti korlát)
-function hok(s){const hi=D[s.c].mod.findIndex(m=>m[0]=='Hedgehog');return !!(ECO.hhFx&&s.hsF&&s.hs>0&&!s.done&&!s.full&&(s.hm||[]).length<3*(+ECO.hhMax||1)&&hi>=0&&s.st[hi]==0)}
+function hok(s){const hi=D[s.c].mod.findIndex(m=>m[0]=='Hedgehog');return !!(ECO.hhFx&&s.hsF&&s.hs>0&&!s.done&&!s.full&&(s.hm||[]).filter(m=>m[6]!='Q').length<3*(+ECO.hhMax||1)&&hi>=0&&s.st[hi]==0)}
 // hblast: egy hedgehog-cella hatása egy U-boatra (null = nincs ott, nem kell naplózni)
 function hblast(u,b){if(!ships.includes(u)||!cellsOf(u).some(c=>c[0]==b[0]&&c[1]==b[1]))return null;
  u.hhs=u.hhs||[];if(u.hhs.includes(b[5]))return ' (ugyanazt az U-boatot egy sortűz csak egyszer sebezheti)';
  u.hhs.push(b[5]);bst(b[3]).bhit++;u.revT=turn;
- return ' → hedgehog TALÁLAT: '+u.id+' sérül: '+hurt(u,R(0,u.dmg.length-1,u.id+': melyik modul sérül (hedgehog)','0–'+(u.dmg.length-1)+' = a modul sorszáma',b[3],v=>D[u.c].mod[v][0]),R(1,ECO.hhDmg,u.id+': a sérülés mértéke (hedgehog)','1–'+ECO.hhDmg,b[3],v=>'+'+v),b[3])+'.'+(fatal(u)?' Végzetes sérülés: a következő körben megsemmisül.':'')}
+ const q=b[6]=='Q',nm=q?'Squid':'hedgehog',mx=q?ECO.sqDmg:ECO.hhDmg;
+ return ' → '+nm+' TALÁLAT: '+u.id+' sérül: '+hurt(u,R(0,u.dmg.length-1,u.id+': melyik modul sérül ('+nm+')','0–'+(u.dmg.length-1)+' = a modul sorszáma',b[3],v=>D[u.c].mod[v][0]),R(1,mx,u.id+': a sérülés mértéke ('+nm+')','1–'+mx,b[3],v=>'+'+v),b[3])+'.'+(fatal(u)?' Végzetes sérülés: a következő körben megsemmisül.':'')}
 // hfire: a sortűz leadása (készlet −1, találat nélkül is); a már lépett U-boatokra azonnal hat, a többire az U-boat lépése után
 function hfire(s0){const s=s0||sel;if(!s||!hok(s))return;const cs=hcells(s);if(!cs.length)return;s.hs--;s.hm=s.hm||[];s.hn=(s.hn||0)+1;const sv=s.id+'#'+turn+'.'+s.hn;   // a sortűz egyedi azonosítója (egy sortűz egy U-boatot csak egyszer sebezhet)
  cs.forEach(c=>s.hm.push([c[0],c[1],0,s.id,'H',sv]));let m=s.id+': hedgehog sortűz ('+cs.map(c=>bAd(c[0],c[1])).join(', ')+'), készlet '+s.hs+'/'+ECO.hhSalvo+'.';
  const mk=s.hm.slice(-cs.length);ships.filter(q=>q.t=='U'&&q.done&&!(CFG.bombOnce&&stepAuto)).forEach(u=>mk.forEach(b=>{const r=bOnce(u,b);if(r)m+=' '+u.id+':'+r}));
  say(m);draw();card()}
+// ===== SQUID ASW MOZSÁR (sqFx, v1.14.227) =====
+// Az átépített hajó G4 / G5 helyén „Squid” modul áll. Egy sorozat = a hajó körüli 8 szomszédos cella EGYIKE (a kártyán 3×3-as választó);
+// a találat biztos, ha az U-boat a lépése után ott van (mint a hedgehognál: a jel b[4]=='H', b[6]=='Q'); sérülés: véletlen modul, 1..sqDmg érték.
+// Lőszer: s.qs (sorozat); körönként legfeljebb min(működő mozsár, sqMax) sorozat (s.qn). A hedgehog-számlálóktól független.
+function sqWork(s){if(!s||s.t!='E'||!D[s.c]||!s.st)return 0;return D[s.c].mod.filter((m,i)=>m[0]=='Squid'&&s.st[i]==0).length}
+function qok(s){return !!(ECO.sqFx&&s&&s.t=='E'&&sqWork(s)>0&&s.qs>0&&!s.done&&!s.full&&(s.qn|0)<Math.min(sqWork(s),+ECO.sqMax||2))}
+const qin=(x,y)=>x>=1&&x<=N&&y>=1&&y<=N;
+// qfire: egy sorozat a (dx,dy) szomszédos cellára (−1..1); a már lépett U-boatokra azonnal hat, a többire az U-boat lépése után
+function qfire(dx,dy,s0){const s=s0||sel;if(!s||!qok(s)||(!dx&&!dy)||Math.abs(dx)>1||Math.abs(dy)>1)return;const x=s.x+dx,y=s.y+dy;if(!qin(x,y))return;
+ s.qs--;s.qn=(s.qn|0)+1;s.qt=(s.qt|0)+1;s.hm=s.hm||[];const sv=s.id+'#'+turn+'.q'+s.qt;s.hm.push([x,y,0,s.id,'H',sv,'Q']);
+ let m=s.id+': Squid sorozat ('+bAd(x,y)+'), készlet '+s.qs+'/'+ECO.sqSalvo+'.';const mk=s.hm[s.hm.length-1];
+ ships.filter(q=>q.t=='U'&&q.done&&!(CFG.bombOnce&&stepAuto)).forEach(u=>{const r=bOnce(u,mk);if(r)m+=' '+u.id+':'+r});
+ say(m);draw();card()}
+// aiSQ: az AI kísérő Squid-sorozatot ad le minden már lépett, szomszédos cellában álló U-boatra (amíg van lőszer / mozsár)
+function aiSQ(e){if(!e)return;ships.filter(q=>q.t=='U'&&q.done).forEach(u=>{if(!qok(e))return;const c=cellsOf(u).find(k=>Math.max(Math.abs(k[0]-e.x),Math.abs(k[1]-e.y))==1);if(c)qfire(c[0]-e.x,c[1]-e.y,e)})}
+// sqUI: a kártya 3×3-as cellaválasztója (középen a hajó)
+function sqUI(s){if(!ECO.sqFx||sqWork(s)<1)return '';const ok=qok(s),g=[[-1,-1],[0,-1],[1,-1],[-1,0],[0,0],[1,0],[-1,1],[0,1],[1,1]];let t='';
+ g.forEach((d,i)=>{if(i%3==0)t+='<tr>';t+=(d[0]||d[1])?'<td><button '+(ok&&qin(s.x+d[0],s.y+d[1])?'':'disabled ')+'onclick="qfire('+d[0]+','+d[1]+')" style="min-width:44px">'+addr(s.x+d[0],s.y+d[1])+'</button></td>':'<td style="background:var(--ln)"><b>'+AR[s.dir]+'</b><br><small>hajó</small></td>';if(i%3==2)t+='</tr>'});
+ return '<div style="margin-top:6px">Squid: készlet <b>'+s.qs+'</b>/'+ECO.sqSalvo+', e körben '+(s.qn|0)+'/'+Math.min(sqWork(s),+ECO.sqMax||2)+'<table class="m" style="width:auto;margin:4px 0">'+t+'</table><small>Bármely szomszédos cellára; találat, ha az U-boat a lépése után ott van.</small></div>'}
 // aiHH: az AI kísérő sortűzet ad le, ha egy már lépett U-boat a három cella egyikében van
 function aiHH(e){if(!e||!hok(e))return;const cs=hcells(e),us=ships.filter(q=>q.t=='U'&&q.done&&cellsOf(q).some(c=>cs.some(k=>k[0]==c[0]&&k[1]==c[1])));if(!us.length)return;hfire(e)}
 function uPost(u){if(!u||u.t!='U')return true;ships.filter(q=>q.t=='E'&&!q.bpend).forEach(decBlast);if(!u.bl){u.bl=true;let m=u.id+': a lépések után a vízibombák kiértékelése:',any=false;ships.filter(q=>q.t=='E').forEach(e=>markList(e).forEach(b=>{const r=bOnce(u,b);if(r===null)return;any=true;m+=' '+b[3]+'→'+bAd(b[0],b[1])+r}));if(any){say(m);draw();card()}
@@ -1297,7 +1318,7 @@ function autoAtk(e,mv){const keep=sel;sel=e;try{if(mv){e.detZ=false;aiDrop(e);re
  aiTorpZ(e)}finally{sel=keep}}
 // aiBombOk: dobhat-e vizibombát az AI / automata kísérő (hajónként: e.aiB 1 / 0, különben a globális aiBomb)
 const aiBombOk=e=>e.aiB!=null?!!e.aiB:(CFG.aiBomb==null||!!CFG.aiBomb);
-function aiDrop(e){aiHH(e);if(!e||!(e.b>0)||e.done||!aiBombOk(e))return;const v=DV[e.dir];if(!v)return;const us=ships.filter(q=>q.t=='U'&&cheb(e,q)<=2&&((q.x-e.x)*v[0]+(q.y-e.y)*v[1])<0);if(!us.length)return;
+function aiDrop(e){aiHH(e);aiSQ(e);if(!e||!(e.b>0)||e.done||!aiBombOk(e))return;const v=DV[e.dir];if(!v)return;const us=ships.filter(q=>q.t=='U'&&cheb(e,q)<=2&&((q.x-e.x)*v[0]+(q.y-e.y)*v[1])<0);if(!us.length)return;
  if(!e.detZ){e.detZ=true;say(e.id+' (AI): U-boat a bombázási zónában (mögötte ≤ 2 cella): '+us.map(u=>u.id+' '+addr(u.x,u.y)).join(', ')+'.')}
  let best=null,bs=99;for(const k of [3,4,5]){const d=nd(e.dir+k);if(!bok(e,d))continue;const bc=bcell(e,d),o={x:bc[0],y:bc[1]};us.forEach(u=>{const c=cheb(o,u);if(c<bs){bs=c;best=d}})}
  if(best!=null)bomb(best)}
@@ -1745,14 +1766,15 @@ if(s.t=='A')info.push(['Mai sebesség / lépés',s.spd+' / '+Math.min(s.idx,s.sp
   if(man)info.push(['Mai sebesség / lépés',s.spd+(s.t=='U'&&s.dep>0?' (víz alatt csak 1)':'')+' / '+Math.min(s.idx,need(s))+(s.done?' – kész':'')],['Medal',s.med+(E?'':' · elsüllyesztett '+(s.ton||0)+' t')]);
   if(s.age!=null)info.push(['Állapot (elöregedés)',s.age+'%'+(s.age<ECO.ageThr?' – kopott':'')]);
   if(k.fuel)info.push(['Üzemanyag',(s.fu!=null?s.fu:k.fuel)+' / '+k.fuel+(s.fu!=null?' (használható: '+(s.fu-CFG.fuelReserve)+')':'')]);if(k.bomb)info.push(['Vizibomba',s.b+' / '+k.bomb+' (e körben '+s.bm.length+'/'+CFG.bombMax+')'])}
- if(E&&s.hsF)info.push(['Hedgehog',s.hs+' / '+ECO.hhSalvo+' sortűz (e körben '+Math.floor((s.hm||[]).length/3)+'/'+(+ECO.hhMax||1)+')']);
+ if(E&&sqWork(s)>0&&ECO.sqFx)info.push(['Squid',s.qs+' / '+ECO.sqSalvo+' sorozat (e körben '+(s.qn|0)+'/'+Math.min(sqWork(s),+ECO.sqMax||2)+')']);
+ if(E&&s.hsF)info.push(['Hedgehog',s.hs+' / '+ECO.hhSalvo+' sortűz (e körben '+Math.floor((s.hm||[]).filter(m=>m[6]!='Q').length/3)+'/'+(+ECO.hhMax||1)+')']);
  h+=TB(['Mező','Érték'],info);h+=fogEmitUI(s);
  if(man){
   h+=(CFG.diceMode&&s.dice&&s.t!='A')?diceUI(s):TB(['Lépés','Irányok'],s.groups.map((g,i)=>[i+1,g.map((d,j)=>'<button '+(s.ch[i]===d?'class="go" ':'')+(s.done||i!==s.idx||(s.t=='U'&&s.dep>0&&i>=1)?'disabled ':'')+'onclick="ch('+i+','+d+')">'+AR[d]+d+(i==0&&j>=g.length-s.xs?'*':'')+'</button>').join(' ')]));
   h+=jokerRow(s);h+=trUI(s);
   if(E){if(s.sens&&s.sens.length)h+=(CFG.jokerOn?TB(['Szenzor','Minőség','Stand','Dobás',CFG.fog?'Eredmény':'Joker-irány'],s.sens)+'<div style="font-size:12px;opacity:.8">Sikeres dobás (1) = egy Joker-irány: radar → véletlen 1–8; szonár / HF-DF → a legközelebbi U-boat felé (ha nincs a pályán, véletlen). Minden szenzor külön dob; a Joker-irány egyszer használható, bármelyik lépés hagyományos iránya helyett.</div>':TB(['Szenzor','Minőség','Stand','Extra irány (*)'],s.sens));
    h+=TB(['Bomba','Mező'],Array.from({length:CFG.bombMax},(_,i)=>i+1).map(n=>['B'+n,s.bm[n-1]?addr(s.bm[n-1][0],s.bm[n-1][1]):'–']));
-   h+='<div style="margin-top:6px">Bomba hátra: '+back(s).map(d=>'<button '+(bok(s,d)?'':'disabled ')+'onclick="bomb('+d+')">'+AR[d]+d+'</button>').join(' ')+(CFG.dcMove&&trOn(s)&&!(s.idx|0)?' <small style="color:#b3261e">– lépés előtt feltételes: ha nem lépsz, visszavonódik</small>':'')+'</div>'+(s.hsF&&ECO.hhFx?'<div style="margin-top:6px">Hedgehog: <button '+(hok(s)?'':'disabled ')+'onclick="hfire()">🎯 Sortűz ('+s.hs+')</button> <small>célcellák: '+hcells(s).map(c=>addr(c[0],c[1])).join(', ')+' – találat, ha az U-boat a lépése után ott van</small></div>':'')}
+   h+='<div style="margin-top:6px">Bomba hátra: '+back(s).map(d=>'<button '+(bok(s,d)?'':'disabled ')+'onclick="bomb('+d+')">'+AR[d]+d+'</button>').join(' ')+(CFG.dcMove&&trOn(s)&&!(s.idx|0)?' <small style="color:#b3261e">– lépés előtt feltételes: ha nem lépsz, visszavonódik</small>':'')+'</div>'+(s.hsF&&ECO.hhFx?'<div style="margin-top:6px">Hedgehog: <button '+(hok(s)?'':'disabled ')+'onclick="hfire()">🎯 Sortűz ('+s.hs+')</button> <small>célcellák: '+hcells(s).map(c=>addr(c[0],c[1])).join(', ')+' – találat, ha az U-boat a lépése után ott van</small></div>':'')+sqUI(s)}
   else if(s.t=='U'){h+=aiUI(s);if(CFG.decoyOn&&decAvail())h+='<div style="margin-top:6px">Csali: <button '+(decOk(s)?'':'disabled ')+'onclick="decoy()">Csali lerakása ('+decLeft(s)+')</button></div>';h+='<div style="margin-top:6px">Mélység (most): '+s.dopts.map(d=>'<button '+(s.dep===d&&s.dch?'class="go" ':'')+(s.done||s.dch?'disabled ':'')+'onclick="dep('+d+')">'+d+'</button>').join(' ')+'</div>';
    h+=TB(['Torpedó','Db','Előre (e körben)','Hátra'],[['',s.tp,s.tub.slice(0,4).filter(x=>x).length+' cső','<button '+(torpOk(s,0)?'':'disabled ')+'onclick="fire(0)">előre</button> '+(s.tub[4]?1:0)+' cső <button '+(torpOk(s,1)?'':'disabled ')+'onclick="fire(1)">hátra</button>']])}
   if(s.t=='A')h+=airUI(s);if(s.en||s.sup||s.npc)h+=aiUI(s);else if(s.t=='E'&&s.zid&&$('fo').checked)h+=aiScanHtml(s);if(s.t=='E')h+=torpUI(s);
@@ -2161,11 +2183,12 @@ function rlScan(){
   if(!best)return;const last=RLC[t.id];RLC[t.id]=turn;
   if(last==null||turn-last>=2)rlAdd(by.id+': '+best[1]+'kontakt észlelve','rc')});
  /* 2) támadás / találat: a számlálók változásából, kísérőnként, körönként, fajtánként egyszer */
- esc.forEach(o=>{const b=bst(o.id),c={bd:b.bd|0,sh:b.sh|0,tp:b.tp|0,hn:o.hn|0,hit:(b.bhit|0)+(b.shh|0)+(b.tph|0)},p=RLP[o.id];
+ esc.forEach(o=>{const b=bst(o.id),c={bd:b.bd|0,sh:b.sh|0,tp:b.tp|0,hn:o.hn|0,qt:o.qt|0,hit:(b.bhit|0)+(b.shh|0)+(b.tph|0)},p=RLP[o.id];
   if(!p){RLP[o.id]=c;return}
   const once=(kind,txt,cls)=>{const key=o.id+'|'+kind+'|'+rlLbl();if(RLD[key])return;RLD[key]=1;rlAdd(o.id+': '+txt,cls)};
   if(c.bd>p.bd)once('bd','támadok – vízibomba','ra');
   if(c.hn>p.hn)once('hn','támadok – sündisznó','ra');
+  if(c.qt>p.qt)once('qt','támadok – Squid','ra');
   if(c.sh>p.sh)once('sh','támadok – ágyú','ra');
   if(c.tp>p.tp)once('tp','támadok – torpedó','ra');
   if(c.hit>p.hit)once('hit','találat','rh');
@@ -2553,7 +2576,8 @@ applyLogPos();renderCfg();try{qbRender()}catch(e){}   // a pálya felállítás�
 //   v1.14.224 (2026-10-26) – HIBAJAVÍTÁS (rétegezett Admiral-kép): a vízibomba-állvány (dc_tight / dc_spread) a löveg-rétegek FÖLÉ került, ezért a megmaradó Gun5 (pl. 8×4″-nél tw_G5) eltűnt alatta; most az állvány kerül alulra, a löveg fölé rajzolódik
 //   v1.14.225 (2026-10-26) – ÁTÉPÍTÉS: a legördülő listában minden cserénél látszik az EGp-ára, a táblázatban a kiválasztott csere költsége (Ár oszlop), az „Átépítés indítása” gomb pedig a végösszeget mutatja (rfShowCost, alap 1)
 //   v1.14.226 (2026-10-26) – FLOTTA LAP: kiválasztás / átépítés / művelet után a lap nem ugrik vissza a tetejére, a görgetési pozíció megmarad (fltKeep, alap 1). Csak a már nyitott Flotta lap újrarajzolásánál; lapváltáskor továbbra is felülről indul
-const VER = 'v1.14.226';
+//   v1.14.227 (2026-10-26) – ÚJ: SQUID ASW MOZSÁR (sqFx, alap 1; HMCS Haida mintájára): átépítési opció a G4 / G5 helyre („Squid”, 250 EGp / hely, 1943-tól; a löveg lekerül, a kép helye üres marad). Hatás: a hajó körüli 8 szomszédos cella bármelyikére lő (a kártyán 3×3-as cellaválasztó, mint a torpedónál); a találat biztos, ha az U-boat a lépése után ott van; sérülés: véletlen modul, 1..sqDmg érték. Lőszer: 6 sorozat (sqSalvo, a kikötőben újratöltődik); körönként legfeljebb annyi sorozat, ahány működő mozsár (sqMax); az AI is használja. A hedgehog-szabálytól független (külön számlálók)
+const VER = 'v1.14.227';
 // ===== MEGFIGYELŐ / TESZT MÓD (obsMode, v1.14.195) =====
 // Megfigyelő módban mindkét oldalt az AI vezérli (a kísérők is: NPC-logikával), a pálya mindent mutat (nincs köd), és a körök maguktól léptetődnek;
 // a lezárt csatákból statisztika készül (konvoj-, U-boat-, kísérő-veszteség, kimenetel), hogy látszódjon: sokféle csata születik-e, vagy egyoldalú lett a hangolás.
@@ -2613,11 +2637,11 @@ async function obsBatch(n){if(OBS.batch)return;n=Math.max(1,Math.min(500,n|0||20
 
 
 // ===== BEÁLLÍTÁSOK (Beállítások fül): gazdaság, flotta, javítás, fejlesztés, bérelt hajó =====
-const ECO0 = { hhFx: 1, hhSalvo: 6, hhDmg: 6, hhMax: 1, hhPrice: 5, hhCls: 'FL,FM,RV,BB,BS', hhFitCost: 150, hhFitDays: 5, hhFrom: 1941, rfBombAA: 50, rfOneCal: 1, rfG5tw: 1, fleetDesel: 1, startEgp: 0, tutEgp: 200, tutAll: 0, startFleet: 'T,FL,FL,FL', maxGroup: 6, bombPrice: 1, decPen: 50, decNew: 1, decScale: 60, cvP: 100, stragDie: 30, sensFloor: '4,3,2,1,1', newLuck: 40, newWorse: 2, newMax: 4, shopDaily: 1, upgCost: 100, upgP: 50, hfCls: 'T,H,BS,BB,RV,FL,FM', hfStart: 4, hfBest: 2, hfFrom: '1941-07-01', hfNew: '1942-01-01', hfFitCost: 100, hfFitDays: 5, thrDyn: 1, thrScout: 20, thrDeep: 20, thrShadowDie: 20, thrLoseBase: 25, thrLoseWx: 10, thrLoseTurn: 15, thrLoseHit: 15, thrSink1: 35, thrSink2: 45, thrTele: 1, uAttOn: 1, uAttCut: 3, uAttRec: 0.2, uAttMin: 30, shortP: 30, shortEgp: 100, rescueOn: 1, rescueSpd: 1, rfShowCost: 1,
+const ECO0 = { sqFx: 1, sqSalvo: 6, sqCost: 250, sqYear: 1943, sqDmg: 6, sqMax: 2, hhFx: 1, hhSalvo: 6, hhDmg: 6, hhMax: 1, hhPrice: 5, hhCls: 'FL,FM,RV,BB,BS', hhFitCost: 150, hhFitDays: 5, hhFrom: 1941, rfBombAA: 50, rfOneCal: 1, rfG5tw: 1, fleetDesel: 1, startEgp: 0, tutEgp: 200, tutAll: 0, startFleet: 'T,FL,FL,FL', maxGroup: 6, bombPrice: 1, decPen: 50, decNew: 1, decScale: 60, cvP: 100, stragDie: 30, sensFloor: '4,3,2,1,1', newLuck: 40, newWorse: 2, newMax: 4, shopDaily: 1, upgCost: 100, upgP: 50, hfCls: 'T,H,BS,BB,RV,FL,FM', hfStart: 4, hfBest: 2, hfFrom: '1941-07-01', hfNew: '1942-01-01', hfFitCost: 100, hfFitDays: 5, thrDyn: 1, thrScout: 20, thrDeep: 20, thrShadowDie: 20, thrLoseBase: 25, thrLoseWx: 10, thrLoseTurn: 15, thrLoseHit: 15, thrSink1: 35, thrSink2: 45, thrTele: 1, uAttOn: 1, uAttCut: 3, uAttRec: 0.2, uAttMin: 30, shortP: 30, shortEgp: 100, rescueOn: 1, rescueSpd: 1, rfShowCost: 1,
 refitCost: 150, refitHH: 250, refitDay: 5, refitMax: 0, refitYear: 1939, hhYear: 1941, rfBombTw: 20, rfBombG5: 50, upgLo: 2, upgHi: 12,
   ageOn: 0, ageThr: 50, ageP: 50, ageStep: 1, ageW0: 5, ageW1: 7, ageW2: 10, ageW3: 15, ageW4: 25, svcCost: 100, repMode: 'daily', repP: 50, repLo: 2, repHi: 12, rentDie: 25, rentCls: 'T', rentMax: 6, startU: 'U1,U2,U3', startRaid: 'Z1,Z2,CA1' };
 const ECO = Object.assign({}, ECO0);
-const ECO_L = { hhFx: 'Hedgehog harci hatás (0/1): a felszerelt hedgehog sortűzet adhat le (a hajó iránya szerinti három elöl lévő cella; találat biztos, ha az U-boat a lépése után ott van; mélység nincs)', hhSalvo: 'Hedgehog sortűz-készlet hajónként (db); minden sortűz 1-gyel csökkenti, találat nélkül is', hhDmg: 'Hedgehog találat sebzése: 1–N pont (alap 6) egy véletlen modulon', hhMax: 'Hedgehog: legfeljebb ennyi sortűz hajónként és körönként (alap 1)', hhPrice: 'Hedgehog sortűz ára a kikötői pótláskor (EGp / sortűz)', hhCls: 'Hedgehog modult kapó osztályok (kód, vesszővel; korvett FL/FM, fregatt RV, sloop BB/BS; a modul a Szonár után kerül a listába, a grafika nem változik; újratöltés után érvényes; üres = ki)', hhFitCost: 'Hedgehog utólagos felszerelésének ára (EGp, korvett/fregatt/sloop)', hhFitDays: 'Hedgehog felszerelésének ideje (nap)', hhFrom: 'Hedgehog felszerelhető ettől az évtől (a T/H átépítés hhYear-jétől független)', rfBombAA: 'Átépítés: a T (Admiral_5x5″) Gun3 → dupla AA cseréje ennyi vízibombát ad (alap 50); a H (Admiral_4x5″) eleve AA-s és nem kap (nála az átépítés a hatótávot növelte)', rfOneCal: 'Átépítés: egy hajón egyféle kaliber lehet (0/1): dupla 4″ mellett nem maradhat szimpla 5″ (a Gun3 AA-pár, a Gun5 vízibomba vagy dupla 4″, a Gun1 hedgehog is lehet)', rfG5tw: 'Átépítés: a G5 (hátsó löveg) 1×5″ → 2×4″ (+vízibomba, mint a többi 2×4) is lehetséges (0/1); a G5 ezután már csak 2×4″ marad', fleetDesel: 'Javításra / szervizre / fejlesztésre / átépítésre küldött hajó kikerül az indulásra kijelölt kísérők közül, és a max. kíséret-létszámba csak az indulásra képes kijelölt hajók számítanak (0/1)', startEgp: 'Kezdő EGp (a tutorial jutalmain felül)', tutEgp: 'Tutorial jutalom gyakorlatonként (EGp, az új kampány kezdő pénzéhez)', tutAll: 'Bónusz az összes gyakorlat teljesítéséért (EGp)', startFleet: 'Kezdő flotta (osztálykódok vesszővel: T, H, BS, BB, RV, FL, FM)', maxGroup: 'Max kísérő egy konvojnál', decPen: 'Konvoj elutasításának büntetése (EGp)', decNew: 'Elutasítás után másnap új konvoj készül (0/1; 0 = ugyanaz a konvoj vár)', decScale: 'Az elutasítás utáni új konvoj mérete a szokásos méret %-a (min. 1 hajó)', stragDie: 'Lemaradt (megállt) teherhajó a csata végén: d1–N dobás a sérüléshez adódik; ≥ rakomány: elsüllyed (az utoljára találó U-boaté), különben bevontatják (a megmaradt rakomány EGp)', sensFloor: 'Radar / szonár legjobb elérhető minősége évenként (1939-től vesszővel; az utolsó érték a későbbi éveké; kisebb = jobb; 0 kikapcsolná az érzékelőt)', newLuck: 'Vásárolt hajó: esély (%), hogy a radarja / szonárja (külön-külön) az éves legjobb minőségű', newWorse: 'Vásárolt hajó: ha nem szerencsés, legfeljebb ennyi lépéssel gyengébb az éves legjobbnál', newMax: 'Vásárolt hajó: a radar / szonár legrosszabb (legnagyobb) minősége (4 = nem lehet gyengébb 4-nél)', shopDaily: 'Hajóbolt és fejlesztési ajánlatok naponta újrasorsolva, amíg a konvoj a kikötőben áll (1 = igen, 0 = csak új konvojnál)', cvP: 'Konvoj-készülés esélye naponta (%), az „Indulhat?” szabályon felül (100 = csak a front dönt)',
+const ECO_L = { sqFx: 'Squid ASW mozsár (0/1; v1.14.227): a G4 / G5 helyre építhető át; a hajó körüli 8 szomszédos cella bármelyikére lő, a találat biztos, ha az U-boat a lépése után ott van', sqSalvo: 'Squid: lőszer (sorozat / hajó); a kikötőben újratöltődik', sqCost: 'Squid átépítés ára (EGp / mozsár-hely)', sqYear: 'Squid: ettől az évtől építhető át', sqDmg: 'Squid: a sérülés legnagyobb értéke (1..ennyi, véletlen modulon)', sqMax: 'Squid: legfeljebb ennyi sorozat körönként (a működő mozsarak száma is korlát)', hhFx: 'Hedgehog harci hatás (0/1): a felszerelt hedgehog sortűzet adhat le (a hajó iránya szerinti három elöl lévő cella; találat biztos, ha az U-boat a lépése után ott van; mélység nincs)', hhSalvo: 'Hedgehog sortűz-készlet hajónként (db); minden sortűz 1-gyel csökkenti, találat nélkül is', hhDmg: 'Hedgehog találat sebzése: 1–N pont (alap 6) egy véletlen modulon', hhMax: 'Hedgehog: legfeljebb ennyi sortűz hajónként és körönként (alap 1)', hhPrice: 'Hedgehog sortűz ára a kikötői pótláskor (EGp / sortűz)', hhCls: 'Hedgehog modult kapó osztályok (kód, vesszővel; korvett FL/FM, fregatt RV, sloop BB/BS; a modul a Szonár után kerül a listába, a grafika nem változik; újratöltés után érvényes; üres = ki)', hhFitCost: 'Hedgehog utólagos felszerelésének ára (EGp, korvett/fregatt/sloop)', hhFitDays: 'Hedgehog felszerelésének ideje (nap)', hhFrom: 'Hedgehog felszerelhető ettől az évtől (a T/H átépítés hhYear-jétől független)', rfBombAA: 'Átépítés: a T (Admiral_5x5″) Gun3 → dupla AA cseréje ennyi vízibombát ad (alap 50); a H (Admiral_4x5″) eleve AA-s és nem kap (nála az átépítés a hatótávot növelte)', rfOneCal: 'Átépítés: egy hajón egyféle kaliber lehet (0/1): dupla 4″ mellett nem maradhat szimpla 5″ (a Gun3 AA-pár, a Gun5 vízibomba vagy dupla 4″, a Gun1 hedgehog is lehet)', rfG5tw: 'Átépítés: a G5 (hátsó löveg) 1×5″ → 2×4″ (+vízibomba, mint a többi 2×4) is lehetséges (0/1); a G5 ezután már csak 2×4″ marad', fleetDesel: 'Javításra / szervizre / fejlesztésre / átépítésre küldött hajó kikerül az indulásra kijelölt kísérők közül, és a max. kíséret-létszámba csak az indulásra képes kijelölt hajók számítanak (0/1)', startEgp: 'Kezdő EGp (a tutorial jutalmain felül)', tutEgp: 'Tutorial jutalom gyakorlatonként (EGp, az új kampány kezdő pénzéhez)', tutAll: 'Bónusz az összes gyakorlat teljesítéséért (EGp)', startFleet: 'Kezdő flotta (osztálykódok vesszővel: T, H, BS, BB, RV, FL, FM)', maxGroup: 'Max kísérő egy konvojnál', decPen: 'Konvoj elutasításának büntetése (EGp)', decNew: 'Elutasítás után másnap új konvoj készül (0/1; 0 = ugyanaz a konvoj vár)', decScale: 'Az elutasítás utáni új konvoj mérete a szokásos méret %-a (min. 1 hajó)', stragDie: 'Lemaradt (megállt) teherhajó a csata végén: d1–N dobás a sérüléshez adódik; ≥ rakomány: elsüllyed (az utoljára találó U-boaté), különben bevontatják (a megmaradt rakomány EGp)', sensFloor: 'Radar / szonár legjobb elérhető minősége évenként (1939-től vesszővel; az utolsó érték a későbbi éveké; kisebb = jobb; 0 kikapcsolná az érzékelőt)', newLuck: 'Vásárolt hajó: esély (%), hogy a radarja / szonárja (külön-külön) az éves legjobb minőségű', newWorse: 'Vásárolt hajó: ha nem szerencsés, legfeljebb ennyi lépéssel gyengébb az éves legjobbnál', newMax: 'Vásárolt hajó: a radar / szonár legrosszabb (legnagyobb) minősége (4 = nem lehet gyengébb 4-nél)', shopDaily: 'Hajóbolt és fejlesztési ajánlatok naponta újrasorsolva, amíg a konvoj a kikötőben áll (1 = igen, 0 = csak új konvojnál)', cvP: 'Konvoj-készülés esélye naponta (%), az „Indulhat?” szabályon felül (100 = csak a front dönt)',
   ageOn: 'ELÖREGEDÉS bekapcsolva (0/1): a hajó állapota (%) romlik, a küszöb alatt modulok kopnak', ageThr: 'Elöregedés: küszöb (%): ez alatt kopnak a modulok (a fele alatt 2, a harmada alatt 3 dobás / elvesztett %)', ageP: 'Elöregedés: esély (%) körönként, ha a hajó FULL sebességgel lépett (taktikai lap)', ageStep: 'Elöregedés: elvesztett % egy eseménynél', ageW0: 'Elöregedés: napi esély (%) W0 időjárású mezőn (OP: a távolság is kopik; konvoj / TF hajói)', ageW1: 'Elöregedés: napi esély (%) W1 időjárású mezőn (OP)', ageW2: 'Elöregedés: napi esély (%) W2 időjárású mezőn (OP)', ageW3: 'Elöregedés: napi esély (%) W3 időjárású mezőn (OP)', ageW4: 'Elöregedés: napi esély (%) W4 időjárású mezőn (OP)', svcCost: 'Szerviz ára 100% kopásnál (EGp); arányosan: a hiányzó % szerint (50% hiány = fele ár). Az állapotot 100%-ra állítja; az ideje is arányos a javítás felső napjával (repHi)',
   bombPrice: 'Vizibomba ára (EGp / db)', upgCost: 'Fejlesztés ára (EGp / szenzor-minőség)', upgP: 'Egy fejlesztés elérhetőségének esélye (%)', hfCls: 'HF/DF modult kapó osztályok (kód, vesszővel; a modul a Radar után kerül a listába; újratöltés után érvényes)', hfStart: 'HF/DF induló minőség (kisebb = jobb)', hfFrom: 'HF/DF: ettől a naptól (ÉÉÉÉ-HH-NN) szerelhető fel a kikötőben (előtte nincs HF/DF irány)', hfNew: 'HF/DF: ettől a naptól az új (vásárolt) hajók már felszerelve érkeznek', hfFitCost: 'HF/DF felszerelésének ára (EGp)', hfFitDays: 'HF/DF felszerelésének ideje (nap)',
   thrDyn: 'Konvojfenyegetés napról napra (0/1): a csaták hatása a következő napokra (felderített konvoj, követés, lenyomás, elsüllyedés utáni szünet)', thrScout: 'Felderített konvoj: ha ma volt eseménye, holnap ennyivel (%) nő az események esélye', thrDeep: 'Lenyomták a mélybe: ha a csata végén egy U-boat mélysége > 4, holnap ennyivel (%) csökken az események esélye', thrShadowDie: 'Követés: a követő U-boat belépő kockája (dX; a kilépő marad a Beállítások d25)', thrLoseBase: 'Követés: napi esély (%), hogy az U-boat elveszti a konvojt (alap)', thrLoseWx: 'Követés: + % az időjárás miatt (az 2 fölötti időjárás-fokonként)', thrLoseTurn: 'Követés: + % ha a konvoj irányt váltott', thrLoseHit: 'Követés: + % ha a kísérők megsebezték / elűzték az U-boatot', thrSink1: 'Egy U-boat elsüllyesztése után a belépő kocka (dX) a következő napon', thrSink2: 'Két elsüllyesztés után a belépő kocka (dX); naponta egy fokkal áll vissza a d25 felé', uAttOn: 'U-boat veszteség (0/1): minden elsüllyesztett U-boat csökkenti a napi U-események számát (az OP-napi eseménygeneráláshoz használt U-boat-létszámot)', uAttCut: 'Egy elsüllyesztett U-boat ennyi hajóval csökkenti a fenyegetés-görbe létszámát (a görbe: operatív U-boatok száma a dátum szerint)', uAttRec: 'A veszteség napi pótlása (hajó / nap): az új építések', uAttMin: 'A létszám legalább ennyi %-a marad a görbének (alsó korlát)', thrTele: 'Mozgásképtelen kísérő, ha túléli (50%): a legközelebbi kikötőbe kerül (0 = marad a konvojnál, elvontatták)', shortP: 'Kikötői hiány: esély (%), hogy az új konvoj célkikötőjében hiány van', shortEgp: 'Kikötői hiány: jutalom (EGp) a konvoj megérkezésekor (csak jutalom, nincs büntetés)', rescueOn: 'Mentés (0/1): a csata végén a kormány KO / mozgásképtelen kísérőnél a döntési papír (megmented-e, kapjon-e védelmet). 0 = a régi szabály (50% elvész, a túlélő kikötőbe kerül)', rescueSpd: 'A vontató / mentő kötelék (TF) sebessége (cella / nap)', rfShowCost: 'Átépítés: az árak megjelenítése (0/1; v1.14.225): a listában a csere ára, az Ár oszlop és a végösszeg a gombon',
@@ -2757,7 +2781,7 @@ const CAMP = {
     this.voy = { code: conv.name, from: conv.from, to: conv.to, d0: day, m, battles: 0, bombs: 0, fuel: 0, ubSunk: 0, events: [], sailed: false, short: ECO.shortP > 0 && R(1, 100) <= ECO.shortP };
     if (!this.thr) this.thrInit(); this.thr.shadow = null; this.thr.ev = 0; this.thr.deep = 0; this.thr.hit = 0;   // új konvoj: a követés és a függő hatások nem öröklődnek
     for (const id in this.ub) { const p = this.ub[id]; if (!p.dead) { p.dmg = p.dmg.map(() => 0); p.tp = 14; } }   // az U-boatok sérülései és torpedói az új úton újak
-    this.fleet.filter(f => f.loc === conv.from).forEach(f => { f.fu = D[vcls(f)].fuel; });                          // a kikötőben az üzemanyag-feltöltés ingyenes és azonnali
+    this.fleet.filter(f => f.loc === conv.from).forEach(f => { f.fu = D[vcls(f)].fuel; f.qs = null; });                          // a kikötőben az üzemanyag-feltöltés ingyenes és azonnali
     this.rollShop(conv.from); this.rollOffers(conv.from); this.autoSelect();
     this.log.push('[' + day + '. nap] Új konvoj: ' + conv.name + ' (' + conv.from + ' → ' + conv.to + '), ' + n + ' teherhajó, kikötő: ' + conv.from + '.');
     this.save(); this.refresh();
@@ -2838,7 +2862,7 @@ const CAMP = {
       } else if (f.st === 'svc' && this.t >= f.rd) {
         f.age = 100; f.st = 'ready'; this.log.push(f.id + ' szervize kész (' + f.loc + '), állapot 100%.');
       } else if (f.st === 'refit' && this.t >= f.rd) {
-        const cap0 = D[vcls(f)].bomb; f.rf = f.rfNew || f.rf; delete f.rfNew; if (f.nmNew) { f.nm = f.nmNew; } delete f.nmNew; this.normFleet(); const k1 = D[vcls(f)]; f.b = Math.min(k1.bomb, (f.b || 0) + Math.max(0, k1.bomb - cap0)); f.st = 'ready'; this.log.push(f.id + ' átépítése kész (' + cname(f) + ', vízibomba-készlet ' + k1.bomb + ').');
+        const cap0 = D[vcls(f)].bomb; f.rf = f.rfNew || f.rf; delete f.rfNew; f.qs = null; if (f.nmNew) { f.nm = f.nmNew; } delete f.nmNew; this.normFleet(); const k1 = D[vcls(f)]; f.b = Math.min(k1.bomb, (f.b || 0) + Math.max(0, k1.bomb - cap0)); f.st = 'ready'; this.log.push(f.id + ' átépítése kész (' + cname(f) + ', vízibomba-készlet ' + k1.bomb + ').');
       } else if (f.st === 'upg' && this.t >= f.rd) {
         (f.up || []).forEach(w => { if (w === 'rad') f.rq--; else if (w === 'hf') f.hq--; else if (w === 'hfi') { f.hf = 1; f.hq = ECO.hfStart; } else if (w === 'hhi') { f.hh = 1; f.hs = ECO.hhSalvo; } else f.sq--; }); f.up = []; f.st = 'ready'; this.log.push(f.id + ' fejlesztése kész.');
       }
@@ -2913,22 +2937,22 @@ const CAMP = {
   leaveInPort() {
     const ids = this.fleet.filter(f => f.tsel && f.loc === 'convoy'); if (!this.voy || !this.voy.sailed || !ids.length) { alert('Jelölj ki a konvojjal úton lévő hajókat a „Kötelék” oszlopban.'); return; }
     const port = OPG.portAtConvoy(); if (!port) { alert('A konvoj nem kikötő-cellában áll (' + OPG.convoyCell() + ').'); return; }
-    ids.forEach(f => { f.loc = port; f.tsel = false; f.sel = false; f.fu = D[vcls(f)].fuel; }); this.log.push('[' + OPG.day() + '. nap] ' + ids.map(f => f.id).join(', ') + ' a kikötőben maradt: ' + port + '.'); this.save(); this.refresh(); this.fleetView();
+    ids.forEach(f => { f.loc = port; f.tsel = false; f.sel = false; f.fu = D[vcls(f)].fuel; f.qs = null; }); this.log.push('[' + OPG.day() + '. nap] ' + ids.map(f => f.id).join(', ') + ' a kikötőben maradt: ' + port + '.'); this.save(); this.refresh(); this.fleetView();
   },
   // ===== Átépítés (löveg-helyek cseréje) =====
   rfYear() { try { return new Date(OPG.dateMs()).getUTCFullYear(); } catch (e) { return 1939; } },
-  rfAllowed(f, s) { const c = (f.rf && f.rf[s]) || '5in', yr = this.rfYear(); let a = []; if (c === '5in') { a = RF_OPT[s].slice(); if (s === 'G5' && ECO.rfG5tw) a.unshift('tw'); } else if (c === 'tw' && s === 'G1') a = ['hh']; if (yr < ECO.hhYear) a = a.filter(x => x !== 'hh'); return a; },
+  rfAllowed(f, s) { const c = (f.rf && f.rf[s]) || '5in', yr = this.rfYear(); let a = []; if (c === '5in') { a = RF_OPT[s].slice(); if (s === 'G5' && ECO.rfG5tw) a.unshift('tw'); } else if (c === 'tw' && s === 'G1') a = ['hh']; if (yr < ECO.hhYear) a = a.filter(x => x !== 'hh'); if (c === '5in' && (s === 'G4' || s === 'G5') && ECO.sqFx && yr >= ECO.sqYear) a.push('sq'); return a; },
   rfCalc(f) { const B = REFIT[f.cls], d = this.rfDraft[f.id] || {}; let n = 0, cost = 0, hh = 0;
-    B.slots.forEach(s => { const c = (f.rf && f.rf[s]) || '5in', x = d[s] || '5in'; if (x !== c) { n++; cost += x === 'hh' ? ECO.refitHH : ECO.refitCost; if (x === 'hh') hh++; } });
+    B.slots.forEach(s => { const c = (f.rf && f.rf[s]) || '5in', x = d[s] || '5in'; if (x !== c) { n++; cost += rfPrice(x); if (x === 'hh') hh++; } });
     const tw = B.slots.some(s => d[s] === 'tw'), five = B.slots.some(s => !d[s] || d[s] === '5in');
     let days = n * ECO.refitDay; if (ECO.refitMax > 0) days = Math.min(days, ECO.refitMax);
     const mix = !!(ECO.rfOneCal && tw && five); return { n, cost, days, ok: !mix, mix }; },
   // rfSuggest: névjavaslat az átépítési tervből: Admiral_<db>x<kaliber>″ [hegd] <típus> (pl. 3 dupla 4″ = 6x4″; a hedgehog „hegd”)
   rfSuggest(f, d) {
-    const B = REFIT[f.cls]; let n5 = 0, n4 = 0, hh = 0;
-    B.slots.forEach(s => { const x = d[s] || '5in'; if (x === '5in') n5++; else if (x === 'tw') n4 += 2; else if (x === 'hh') hh++; });
+    const B = REFIT[f.cls]; let n5 = 0, n4 = 0, hh = 0, sq = 0;
+    B.slots.forEach(s => { const x = d[s] || '5in'; if (x === '5in') n5++; else if (x === 'tw') n4 += 2; else if (x === 'hh') hh++; else if (x === 'sq') sq++; });
     const base = D[f.cls].n, pre = base.split('_')[0], suf = base.replace(/^\S+/, '');
-    return pre + '_' + (n4 ? n4 + 'x4″' : n5 + 'x5″') + (hh ? ' hegd' : '') + (suf.startsWith(' ') ? suf : ' ' + suf);
+    return pre + '_' + (n4 ? n4 + 'x4″' : n5 + 'x5″') + (hh ? ' hegd' : '') + (sq ? ' Squid' : '') + (suf.startsWith(' ') ? suf : ' ' + suf);
   },
   // rfNameNow: az átépítéshez megadott név (ha a játékos átírta), különben a javaslat
   rfNameNow(f) { const e = this.rfNm && this.rfNm[f.id]; return e && e.edited ? e.v : this.rfSuggest(f, this.rfDraft[f.id] || f.rf || {}); },
@@ -2951,8 +2975,8 @@ const CAMP = {
     if (!this.rfDraft) this.rfDraft = {}; if (!this.rfDraft[f.id]) this.rfDraft[f.id] = Object.assign({}, f.rf || {});
     const d = this.rfDraft[f.id], c = this.rfCalc(f);
     h += TB(ECO.rfShowCost ? ['Hely', 'Most', 'Átépítés', 'Ár (EGp)'] : ['Hely', 'Most', 'Átépítés'], B.slots.map(s => { const cur = (f.rf && f.rf[s]) || '5in', al = this.rfAllowed(f, s), sel = d[s] || '5in';
-      const so = [cur].concat(al).map(x => '<option value="' + x + '"' + (x === sel ? ' selected' : '') + '>' + RF_LAB[x] + (x === 'tw' ? ' (+' + ECO.rfBombTw + ' vízibomba)' : x === 'bomb' ? ' (+' + ECO.rfBombG5 + ')' : '') + (ECO.rfShowCost && x !== cur ? ' – ' + (x === 'hh' ? ECO.refitHH : ECO.refitCost) + ' EGp' : '') + '</option>').join('');
-      return [s + (s === 'G3' && f.cls === 'T' ? '' : ''), RF_LAB[cur], (al.length ? '<select onchange="CAMP.rfSet(\'' + f.id + '\',\'' + s + '\',this.value)">' + so + '</select>' : '–')].concat(ECO.rfShowCost ? [sel !== cur ? '<b>' + (sel === 'hh' ? ECO.refitHH : ECO.refitCost) + '</b>' : '–'] : []); }));
+      const so = [cur].concat(al).map(x => '<option value="' + x + '"' + (x === sel ? ' selected' : '') + '>' + RF_LAB[x] + (x === 'tw' ? ' (+' + ECO.rfBombTw + ' vízibomba)' : x === 'bomb' ? ' (+' + ECO.rfBombG5 + ')' : '') + (ECO.rfShowCost && x !== cur ? ' – ' + rfPrice(x) + ' EGp' : '') + '</option>').join('');
+      return [s + (s === 'G3' && f.cls === 'T' ? '' : ''), RF_LAB[cur], (al.length ? '<select onchange="CAMP.rfSet(\'' + f.id + '\',\'' + s + '\',this.value)">' + so + '</select>' : '–')].concat(ECO.rfShowCost ? [sel !== cur ? '<b>' + rfPrice(sel) + '</b>' : '–'] : []); }));
     h += '<div style="margin:4px 0">Az átépített hajó új neve: <input type="text" id="rfn_' + f.id + '" value="' + this.rfNameNow(f).replace(/"/g, '&quot;') + '" style="width:240px" onchange="CAMP.rfNameSet(\'' + f.id + '\',this.value)"> <small>(javaslat az új lövegekből; átírhatod, az átépítés végén lép életbe)</small></div>';
     h += '<div>' + (c.mix ? '<b style="color:#b3261e">Dupla 4" ágyúk mellett nem maradhat szimpla 5": a Gun3 legyen AA-pár (+' + ECO.rfBombAA + ' vízibomba, csak T), a Gun5 vízibomba vagy dupla 4" (a többi ágyú dupla 4" vagy hedgehog).</b>' : c.n ? 'Költség: <b>' + c.cost + ' EGp</b>, idő: <b>' + c.days + ' nap</b> (' + c.n + ' hely)' + (c.cost > this.egp ? ' – <b style="color:#b3261e">nincs elég EGp</b>' : '') : 'Nincs módosítás.') + ' <button ' + (c.n && c.ok && c.cost <= this.egp ? '' : 'disabled ') + 'onclick="CAMP.refit(\'' + f.id + '\')">Átépítés indítása' + (ECO.rfShowCost && c.n ? ' – ' + c.cost + ' EGp' : '') + '</button></div></div>';
     return h;
@@ -2990,7 +3014,7 @@ const CAMP = {
     u.ships.forEach(sid => { const f = this.get(sid); if (f) f.loc = 'convoy'; }); OPG.tfRemove(id); this.log.push(id + ' csatlakozott a konvojhoz.'); this.save(); this.refresh(); this.fleetView();
   },
   // dockTF: a kötelék kikötött: a hajók a kikötőben állnak, az üzemanyag-feltöltés ingyenes és azonnali (az OP hívja)
-  dockTF(u, port) { u.ships.forEach(id => { const f = this.get(id); if (f) { f.loc = port; f.fu = D[vcls(f)].fuel; f.dis = false; } }); this.log.push('[' + OPG.day() + '. nap] ' + u.id + ' kikötött: ' + port + '.'); this.save(); this.refresh(); },
+  dockTF(u, port) { u.ships.forEach(id => { const f = this.get(id); if (f) { f.loc = port; f.fu = D[vcls(f)].fuel; f.qs = null; f.dis = false; } }); this.log.push('[' + OPG.day() + '. nap] ' + u.id + ' kikötött: ' + port + '.'); this.save(); this.refresh(); },
 
   // ===== TUTORIAL / KÜLDETÉSEK: a kiképzés elkülönül a valódi kampánytól (a kampány állapota eltéve marad, a mentés nem íródik felül) =====
   // startMission: egy gyakorlat indítása: csak a D2 (Admiral_5x5″, T) van, az OP-n a célcella jelölve; a 3. gyakorlatban 4 NPC kísérő is van
@@ -3141,7 +3165,7 @@ const CAMP = {
     this.battleGroup().forEach(f => {
       const s = ships.find(q => q.id === f.id && !q.rent);
       if (!s) { f.loc = 'lost'; f.st = 'lost'; rep.push(f.id + ' elveszett'); return; }
-      if (!tf) v.bombs += f.b - s.b; f.b = s.b; if (s.hsF) f.hs = s.hs; f.dmg = s.dmg.slice(); if (s.age != null) f.age = s.age; f.med = s.med; f.fu = s.fu; f.rq = s.rq; f.sq = s.sq; if (s.hq != null) f.hq = s.hq;
+      if (!tf) v.bombs += f.b - s.b; f.b = s.b; if (s.hsF) f.hs = s.hs; if (D[s.c].mod.some(m => m[0] === 'Squid')) f.qs = s.qs; f.dmg = s.dmg.slice(); if (s.age != null) f.age = s.age; f.med = s.med; f.fu = s.fu; f.rq = s.rq; f.sq = s.sq; if (s.hq != null) f.hq = s.hq;
       this.careerAdd(f);   // pályafutás-statisztika: a csata eredményei a hajó nevére íródnak
       const dd = dec[f.id];
       if (dd && dd.act === 'sink') { f.loc = 'lost'; f.st = 'lost'; if (f.med > 0) { this.medQ.push(f.med); } rep.push(f.id + ' súlyosan sérült: a kíséret felvette a legénységet, a hajót elsüllyesztették' + (f.med > 0 ? '; a Medálja (' + f.med + ') a következő vásárolt hajóé' : '')); return; }
@@ -3155,7 +3179,7 @@ const CAMP = {
         const why = f.fu <= CFG.fuelReserve ? 'elfogyott az üzemanyaga' : 'nem tud mozogni vagy kormányozni';
         if (R(0, 1)) { f.loc = 'lost'; f.st = 'lost'; rep.push(f.id + ' elveszett (' + why + ', nem sikerült elvontatni)'); }
         else { const pt = ECO.thrTele && !this.mission ? OPG.nearPort(this.ev.cell) : null;
-          if (pt) { f.loc = pt; f.sel = false; f.st = 'ready'; f.fu = D[vcls(f)].fuel; rep.push(f.id + ' (' + why + ') túlélte: a legközelebbi kikötőbe (' + pt + ') került, ott javítható'); } else rep.push(f.id + ' (' + why + ') elvontatták'); }
+          if (pt) { f.loc = pt; f.sel = false; f.st = 'ready'; f.fu = D[vcls(f)].fuel; f.qs = null; rep.push(f.id + ' (' + why + ') túlélte: a legközelebbi kikötőbe (' + pt + ') került, ott javítható'); } else rep.push(f.id + ' (' + why + ') elvontatták'); }
       }
       const six = s.dmg.filter((x, i) => x >= M[i][1]).length;
       if (f.st !== 'lost' && d > 0) rep.push(f.id + ' sérült (a nem 6/6 modulok másnapra kijavulnak; 6/6: ' + six + ' db)');
@@ -3300,6 +3324,7 @@ const CAMP = {
     h += '<div style="font-size:13px">Hely: ' + (f.loc === 'convoy' ? 'a konvojjal úton' : f.loc) + ' · állapot: ' + st + ' · összes sérülés: ' + dsum + ' / ' + life + ' (' + Math.round(dsum / life * 100) + '%) · radar ' + f.rq + ' / szonár ' + f.sq + (k.hfIdx != null && (f.hf || hfDate('from')) ? ' / HF-DF ' + (f.hf ? f.hq : 'nincs') : '') + ' · bomba ' + f.b + '/' + k.bomb + ' · üzemanyag ' + f.fu + '/' + k.fuel + ' · Medal ' + f.med + (ECO.ageOn ? ' · kor ' + (f.age == null ? 100 : f.age) + '%' : '') + '</div>';
     { const pc = q => q > 0 ? Math.round(100 / q) + '%' : '–', one = (nm, q, key, fl) => '<li><b>' + nm + '</b>: minőség ' + q + ' → Joker-esély ' + pc(q) + ' (jó időben)' + (q > fl ? '; fejlesztve ' + (q - 1) + ' → ' + pc(q - 1) + (f.off && f.off[key] ? ' – <b>most fejleszthető</b>' : '') : '; a legjobb elérhető szint') + '</li>';
       let li = ''; if (k.mod.some(m => m[0].startsWith('Radar'))) li += one('Radar', f.rq, 'rad', this.sensFloor()); if (k.mod.some(m => m[0].startsWith('Sonar')) && f.sq) li += one('Szonár', f.sq, 'son', this.sensFloor()); if (k.hfIdx != null && (f.hf || hfDate('from'))) li += f.hf ? one('HF/DF', f.hq, 'hf', ECO.hfBest) : '<li><b>HF/DF</b>: nincs felszerelve (nem ad irányt)' + (hfDate('from') ? (f.off && f.off.hfi ? ' – <b>most felszerelhető</b> (' + ECO.hfFitCost + ' EGp, ' + ECO.hfFitDays + ' nap, kikötőben)' : ' – kikötőben felszerelhető (' + ECO.hfFitCost + ' EGp, ' + ECO.hfFitDays + ' nap)') : ' – csak ' + ECO.hfFrom + ' után szerelhető fel') + '</li>';
+      if (k.mod.some(m => m[0] === 'Squid')) li += '<li><b>Squid</b>: ' + k.mod.filter(m => m[0] === 'Squid').length + ' mozsár · sorozat ' + (f.qs == null ? ECO.sqSalvo : f.qs) + ' / ' + ECO.sqSalvo + ' (a kikötőben újratöltődik)</li>';
       if (k.hhIdx != null) li += f.hh ? '<li><b>Hedgehog</b>: felszerelve · sortűz ' + (f.hs == null ? ECO.hhSalvo : f.hs) + ' / ' + ECO.hhSalvo + '</li>' : '<li><b>Hedgehog</b>: nincs felszerelve' + (this.rfYear() >= ECO.hhFrom ? (f.off && f.off.hhi ? ' – <b>most felszerelhető</b> (' + ECO.hhFitCost + ' EGp, ' + ECO.hhFitDays + ' nap, kikötőben)' : ' – kikötőben felszerelhető (' + ECO.hhFitCost + ' EGp, ' + ECO.hhFitDays + ' nap)') : ' – csak ' + ECO.hhFrom + ' után szerelhető fel') + '</li>';
       if (li) h += '<div style="font-size:12px;margin:4px 0"><b>Szenzorok</b> (a sikeres dobás egy egyszer használható Joker-irányt ad; a kisebb minőség a jobb; rossz időben az esély csökken' + (hfDate('from') ? ', kivéve a HF/DF-et' : '') + '):<ul style="margin:2px 0 2px 18px;padding:0">' + li + '</ul></div>'; }
     h += this.careerHTML(f);
@@ -3364,6 +3389,7 @@ const CAMP = {
       ['Konvojfenyegetés', ['thrDyn', 'thrScout', 'thrDeep', 'thrSink1', 'thrSink2']],
       ['U-boat veszteség', ['uAttOn', 'uAttCut', 'uAttRec', 'uAttMin']],
       ['Követés', ['thrShadowDie', 'thrLoseBase', 'thrLoseWx', 'thrLoseTurn', 'thrLoseHit']],
+      ['Squid ASW mozsár', ['sqFx', 'sqSalvo', 'sqCost', 'sqYear', 'sqDmg', 'sqMax']],
       ['Átépítés és Hedgehog', ['rfShowCost', 'refitCost', 'refitHH', 'refitDay', 'refitMax', 'refitYear', 'hhYear', 'rfBombTw', 'rfBombG5', 'rfBombAA', 'rfOneCal', 'rfG5tw']],
       ['Mentés és vontatás', ['thrTele', 'rescueOn', 'rescueSpd']],
       ['Bérelt hajók', ['rentDie', 'rentCls', 'rentMax']]
