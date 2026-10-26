@@ -1,6 +1,6 @@
 <!doctype html><html lang="hu" data-theme="light"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>CEG – Konvoj kísérő kampány v1.14.229</title>
+<title>CEG – Konvoj kísérő kampány v1.14.230</title>
 <style>
 /* Színek: világos/sötét téma változókkal; a gombok és táblázatok stílusa */
 :root{--bg:#f4f1ea;--fg:#1d2733;--pn:#fff;--ln:#c9c2b3;--ac:#b3261e;--sea:#d6ecf4;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -1236,7 +1236,7 @@ const decLeft=u=>u.dc==null?(+CFG.decoyN||0):u.dc;   // hátralévő csalik
 const decAvail=()=>{if(!CFG.decoyFrom)return true;try{const d=new Date(OPG.dateMs()).toISOString().slice(0,10).replace(/-/g,'');return +d>=+CFG.decoyFrom}catch(e){return true}};
 const decOk=u=>!!(CFG.decoyOn&&decAvail()&&u&&u.t=='U'&&!u.done&&u.dep>0&&decLeft(u)>0&&u.dcT!==turn);   // körönként legfeljebb 1, csak merülten
 // decoy: a csali lerakása az U-boat jelenlegi cellájába (az U-boat ezután továbbhalad)
-function decoy(u){u=u||sel;if(!decOk(u))return;u.dc=decLeft(u)-1;u.dcT=turn;DEC.push({x:u.x,y:u.y,dep:u.dep,t0:turn,by:u.id});
+function decoy(u){u=u||sel;if(!decOk(u))return;u.dc=decLeft(u)-1;u.dcT=turn;DEC.push({x:u.x,y:u.y,dep:u.dep,t0:turn,by:u.id,dir:u.dir,c:u.c});
  if(!CFG.fog)say(u.id+': csali lerakva '+addr(u.x,u.y)+' ('+(+CFG.decoyTurns||2)+' körig érvényes, hátra: '+u.dc+').');   // ködben a napló nem árulja el
  draw();card()}
 // decExpire: lejárt csalik törlése (newTurn)
@@ -1250,6 +1250,9 @@ function decSeen(d,V,w){return ships.some(e=>{if(e.t!='E'||fogSideOf(e)!==V)retu
 function decBlast(s){if(!s||!DEC.length)return;const R_=Math.max(0,CFG.decoyKill|0);
  (s.bm||[]).forEach(b=>{DEC=DEC.filter(d=>{if(Math.max(Math.abs(d.x-b[0]),Math.abs(d.y-b[1]))>R_)return true;if(!CFG.fog)say('Csali megsemmisült '+addr(d.x,d.y)+' (vízibomba robbant a közelében).');return false})})}
 // decDraw: a csali kirajzolása. Köd nélkül mindenkinek; ködben az U-boat oldalának (X) mindig, a kísérőknek (A) csak ha észlelték („U?” hamis kontaktus)
+// decGhosts: a kísérő oldalon látott csalik „szellem-U-boatként” (ugyanaz a rajz, mint a valódinak: kép, irány, azonosító; a mélység nem ismert)
+function decGhosts(){if(!CFG.decoyOn||!DEC.length)return [];const V=CFG.fog?fogViewer():null;if(!CFG.fog||V==='X')return [];
+ return DEC.filter(d=>FOGD.includes(d)).map(d=>({id:d.by,t:'U',c:d.c||'VIIC',x:d.x,y:d.y,dir:d.dir||5,dep:d.dep,done:true,nd:true,decoyG:true,dmg:[],st:[]}))}
 function decDraw(){if(!CFG.decoyOn||!DEC.length)return;const V=CFG.fog?fogViewer():null;
  DEC.forEach(d=>{let own=!CFG.fog||V==='X';if(!own&&!FOGD.includes(d))return;
   const cx=O+(d.x-.5)*S,cy=O+(d.y-.5)*S;g.save();g.textAlign='center';g.textBaseline='middle';g.setLineDash([3,3]);g.lineWidth=2;
@@ -1257,8 +1260,7 @@ function decDraw(){if(!CFG.decoyOn||!DEC.length)return;const V=CFG.fog?fogViewer
    g.strokeStyle='#6a1b9a';g.beginPath();g.arc(cx,cy,S*.4,0,7);g.stroke();g.setLineDash([]);
    g.fillStyle='#6a1b9a';g.font='bold 8px sans-serif';g.fillText('csali',cx,cy-2);g.font='7px sans-serif';g.fillText((d.t0+Math.max(1,CFG.decoyTurns|0)-turn)+'k',cx,cy+7)}
   else{   // a kísérőnek TÖKÉLETESEN úgy néz ki, mint egy szonárral jelzett valódi U-boat (azonosító, mélység nélkül) – nem árulja el, hogy hamis
-   g.setLineDash([]);g.fillStyle='#c62828';g.fillRect(cx-S/2+2,cy-S/2+2,S-4,S-4);
-   g.fillStyle='#fff';g.font='bold 8px sans-serif';g.fillText(d.by,cx,cy)}
+   /* a kísérő oldali rajzot a fő ciklus végzi (decGhosts) – itt nincs külön jelölő */}
   g.restore()})}
 // ===== FELSZÍNI HAJÓK TORPEDÓJA (a torpedó-modullal rendelkező kísérők és az ellenséges Z / CA) =====
 // Készlet: sfTp (10), egyszerre legfeljebb 5 (a csövek véletlenszerűen töltődnek be körönként, mint az U-boatnál: a Torp modul sérülése rontja az esélyt).
@@ -2263,12 +2265,12 @@ function draw(){
  ships.forEach(q=>{if(q.det&&q.t=='E'&&!FOGH.has(q)){const u=ships.find(z=>z.id===q.det&&z.t=='U');if(u&&!FOGH.has(u)){g.save();g.strokeStyle='#ff9800';g.lineWidth=2;g.setLineDash([6,4]);g.beginPath();g.moveTo(O+(q.x-.5)*S,O+(q.y-.5)*S);g.lineTo(O+(u.x-.5)*S,O+(u.y-.5)*S);g.stroke();g.restore()}}});   // észlelés: narancs szaggatott vonal az AI-kísérőtől az U-boatig
  const cm=ships.length&&cmd(),cnt={};
  const dkv=parseInt(css('--bg').slice(1,3),16)<96;
- for(const s of ships){if(FOGH.has(s))continue;const key=s.x+','+s.y,o=((cnt[key]=(cnt[key]||0)+1)-1)*4,vp=visOf(s),X=O+(vp.x-1)*S+o,Y=O+(vp.y-1)*S+o;
+ for(const s of ships.concat(decGhosts())){if(FOGH.has(s))continue;const key=s.x+','+s.y,o=((cnt[key]=(cnt[key]||0)+1)-1)*4,vp=visOf(s),X=O+(vp.x-1)*S+o,Y=O+(vp.y-1)*S+o;
   g.fillStyle=s===cm?'#e0b020':s.stop?'#a1887f':(s.en&&s.t=='E')?'#d32f2f':s.sup?'#7fd6dc':s.npc?'#4fc3c8':{M:'#6f7f90',E:'#17b8c6',U:'#c62828',Z:'#d32f2f',A:'#e53935'}[s.t];   // saját kísérők: türkiz (az NPC és a támogatás világosabb), ellenség: piros
   bpC=null;bpD=0;if(bpOn()){const en=!(s.t=='M'||(s.t=='E'&&!s.en));bpC=en?'#ffd54f':s.t=='M'?'#9cc9ff':'#ffffff';bpD=(s.t=='U'||s.t=='A')?1:0;g.fillStyle=en?'rgba(255,213,79,.18)':s.t=='M'?'rgba(156,201,255,.16)':s===cm?'rgba(255,255,255,.38)':'rgba(255,255,255,.2)'}   // Tervrajz: átlátszó kitöltés, színes körvonal
   const cap=CFG.mapArt==3||twoOf(s),im=cap?null:mapImg(s);if(im){g.globalAlpha=.35;g.fillRect(X+1,Y+1,S-2,S-2);g.globalAlpha=1;drawShip(s,im,X,Y,vp.a)}else if(cap)drawCapsule(s,X,Y,vp.a,dkv);else if(CFG.mapArt==2)drawMark(s,X,Y,vp.a);else{g.fillRect(X+1,Y+1,S-2,S-2);if(bpC){g.strokeStyle=bpC;g.lineWidth=1.6;if(bpD)g.setLineDash([4,3]);g.strokeRect(X+1,Y+1,S-2,S-2);g.setLineDash([])}}   // a kép alatt halvány oldal-szín; 2: kör + vonal
   g.fillStyle='#fff';g.font='bold 8px sans-serif';if(im||CFG.mapArt==2||cap){g.lineWidth=3;g.strokeStyle=bpC?'#0b3c70':'#000';g.strokeText(s.id,X+S/2,Y+S/2+3)}g.fillStyle=bpC?bpC:'#fff';g.fillText(s.id,X+S/2,Y+S/2+3);
-  if(s.t=='U'&&!FOGND.has(s)){g.fillStyle='#ffeb3b';g.fillText(s.dep,X+S*.85,Y+S*.3)}   // a csak szonárral jelzett U-boat mélysége ismeretlen
+  if(s.t=='U'&&!FOGND.has(s)&&!s.nd){g.fillStyle='#ffeb3b';g.fillText(s.dep,X+S*.85,Y+S*.3)}   // a csak szonárral jelzett U-boat mélysége ismeretlen
   if(((s.t=='E'&&(!$('fo').checked||s.en||!s.zid))||s.t=='U'||s.t=='A')&&!s.done){g.strokeStyle='#fff';g.lineWidth=2;g.strokeRect(X+3,Y+3,S-6,S-6)}
   if(s.dir&&!cap){const kk=kkOf(vp.a),cx=X+S/2,cy=Y+S/2;g.strokeStyle=bpC||'#000';g.lineWidth=2;g.beginPath();g.moveTo(cx,cy);g.lineTo(cx+Math.cos(vp.a)*kk*S*.75,cy+Math.sin(vp.a)*kk*S*.75);g.stroke()}
   if(s===sel){g.strokeStyle=bpC?'#ffffff':'#000';g.lineWidth=bpC?3:2;g.strokeRect(X,Y,S,S)}}
@@ -2597,7 +2599,8 @@ applyLogPos();renderCfg();try{qbRender()}catch(e){}   // a pálya felállítás�
 //   v1.14.227 (2026-10-26) – ÚJ: SQUID ASW MOZSÁR (sqFx, alap 1; HMCS Haida mintájára): átépítési opció a G4 / G5 helyre („Squid”, 250 EGp / hely, 1943-tól; a löveg lekerül, a kép helye üres marad). Hatás: a hajó körüli 8 szomszédos cella bármelyikére lő (a kártyán 3×3-as cellaválasztó, mint a torpedónál); a találat biztos, ha az U-boat a lépése után ott van; sérülés: véletlen modul, 1..sqDmg érték. Lőszer: 6 sorozat (sqSalvo, a kikötőben újratöltődik); körönként legfeljebb annyi sorozat, ahány működő mozsár (sqMax); az AI is használja. A hedgehog-szabálytól független (külön számlálók)
 //   v1.14.228 (2026-10-26) – SQUID PONTOSÍTÁS: (1) lőszer MOZSÁRONKÉNT 6 lövés (egy lövés = egy cella; kéttornyúnál 12), a közös készlet; körönként legfeljebb annyi lövés, ahány működő mozsár (egy megsérült mozsárral csak 1 lő); (2) ugyanarra a cellára körönként nem lehet kétszer lőni (nem kell szomszédosnak lenniük); (3) átépíthető szimpla 5″-es, dupla 4″-es és leszerelt (vízibombás) Gun5 / Gun4 helyre is – a vízibomba-készlet automatikusan csökken (−50 / −20); (4) a két mozsár külön modul („Squid G4” / „Squid G5”), külön sérüléssel
 //   v1.14.229 (2026-10-26) – ÚJ: FAT TORPEDÓ (fatOn, alap 1; 1943. márciustól, fatFrom): az U-boat kártyáján a „FAT” jelölőnégyzettel (az AI fatAiP % eséllyel) a torpedó fatRun cellát egyenesen fut, majd a kilövési irányához igazodva cikkcakkban halad (a kilövési irányra merőlegesen jobbra fatLeg, balra 2·fatLeg, jobbra 2·fatLeg … cellát, közben 1 cellát előre), összesen fatLen (alap 12) cellát; körönként 3 cellát tesz meg. A cikkcakk-szakaszon a találat fix esély (d6 ≤ fatHit teherhajónál, ≤ fatHitE hadihajónál), az egyenes szakaszon a TDC-dobás. Csak az ellenfelet találja
-const VER = 'v1.14.229';
+//   v1.14.230 (2026-10-26) – CSALI GRAFIKA: a kísérő oldalon a csali pontosan úgy rajzolódik, mint egy valódi U-boat (ugyanaz a kép / jelölő, irány, azonosító; mélység nélkül), a rajzoló ciklus „szellem-U-boatként” veszi fel (decGhosts) – nem különböztethető meg. Az U-boat oldalon a csali továbbra is lila „csali” jelölésű
+const VER = 'v1.14.230';
 // ===== MEGFIGYELŐ / TESZT MÓD (obsMode, v1.14.195) =====
 // Megfigyelő módban mindkét oldalt az AI vezérli (a kísérők is: NPC-logikával), a pálya mindent mutat (nincs köd), és a körök maguktól léptetődnek;
 // a lezárt csatákból statisztika készül (konvoj-, U-boat-, kísérő-veszteség, kimenetel), hogy látszódjon: sokféle csata születik-e, vagy egyoldalú lett a hangolás.
