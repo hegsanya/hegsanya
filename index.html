@@ -1,6 +1,6 @@
 <!doctype html><html lang="hu" data-theme="light"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>CEG – Konvoj kísérő kampány v1.14.223</title>
+<title>CEG – Konvoj kísérő kampány v1.14.224</title>
 <style>
 /* Színek: világos/sötét téma változókkal; a gombok és táblázatok stílusa */
 :root{--bg:#f4f1ea;--fg:#1d2733;--pn:#fff;--ln:#c9c2b3;--ac:#b3261e;--sea:#d6ecf4;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -472,7 +472,8 @@ function layKeys(k){const b=String(k).split('~')[0],v=String(k).split('~')[1]||'
  return out}
 // layFor: a változat összeállított képe (data URL, gyorsítótárazva); amíg a rétegek töltődnek: ''
 function layFor(k){if(layState!=2){layLoad();return ''}const ks=layKeys(k),key=ks.join(','),h=LAYC[key];if(h)return h;
- const cv=document.createElement('canvas');cv.width=519;cv.height=154;const g=cv.getContext('2d');g.drawImage(LAYI.base,0,0);ks.forEach(x=>{if(LAYI[x])g.drawImage(LAYI[x],0,0)});
+ const cv=document.createElement('canvas');cv.width=519;cv.height=154;const g=cv.getContext('2d');g.drawImage(LAYI.base,0,0);/* a vízibomba-állvány (dc_*) kerül alulra, hogy a hátsó löveg (Gun5) ne tűnjön el alatta */
+ ks.slice().sort((a,b)=>(/^dc_/.test(b)?1:0)-(/^dc_/.test(a)?1:0)).forEach(x=>{if(LAYI[x])g.drawImage(LAYI[x],0,0)});
  try{return LAYC[key]=cv.toDataURL('image/png')}catch(e){return ''}}
 function sideFor(k){const b=String(k).split('~')[0],R=(typeof REFIT!=='undefined')&&REFIT[b];if(!R||(typeof CFG!=='undefined'&&!CFG.sideLay))return '';if(CFG.sideLay>=2){const u2=layFor(k);if(u2)return u2}   // sideLay=2: rétegezett kép; amíg nem töltődött be, a legközelebbi kész kép
  const v=String(k).split('~')[1]||'';let n5=0,n4=0,hh=0,dc=0;
@@ -2549,7 +2550,8 @@ applyLogPos();renderCfg();try{qbRender()}catch(e){}   // a pálya felállítás�
 //   v1.14.221 (2026-10-26) – ÚJ: RÁDIÓNAPLÓ (rLog, alap 1; csak a kísérő oldal): kis, tologatható, bezárható ablak (📻 gomb a műveleti sávon), tömör sorok: „K5 D2: szonár kontakt észlelve”, „támadok – vízibomba”, „találat”, „kontakt elsüllyesztve”. Egy célról csak egy kontakt-sor (a legjobb szenzor: látható > radar > szonár > propeller zaj > HF/DF); támadás / találat kísérőnként, körönként, fajtánként egyszer; nem kerül a naplóba, ha a nézőpont az U-boat oldala (bombHid)
 //   v1.14.222 (2026-10-26) – RÁDIÓNAPLÓ az U-BOAT OLDALRA: ha a nézőpont az U-boat, az ablak a saját észleléseit és eseményeit mutatja (periszkóp / propeller zaj / ping / látható kontakt a kísérőről vagy a konvojról, torpedó, találat, elsüllyesztett hajó, sérülés, elsüllyedés). A két oldal sorai külön tárolódnak, a nézőpont váltásakor a megfelelő jelenik meg – az ellenfél adata nem szivárog át
 //   v1.14.223 (2026-10-26) – OP TÉRKÉP: az esemény- (U/R/H/K) és a zóna-betűk fehér körvonala (háttere) elmarad, a betű átlátszó hátterű (opHalo, alap 0; 1 = a régi fehér körvonal)
-const VER = 'v1.14.223';
+//   v1.14.224 (2026-10-26) – HIBAJAVÍTÁS (rétegezett Admiral-kép): a vízibomba-állvány (dc_tight / dc_spread) a löveg-rétegek FÖLÉ került, ezért a megmaradó Gun5 (pl. 8×4″-nél tw_G5) eltűnt alatta; most az állvány kerül alulra, a löveg fölé rajzolódik
+const VER = 'v1.14.224';
 // ===== MEGFIGYELŐ / TESZT MÓD (obsMode, v1.14.195) =====
 // Megfigyelő módban mindkét oldalt az AI vezérli (a kísérők is: NPC-logikával), a pálya mindent mutat (nincs köd), és a körök maguktól léptetődnek;
 // a lezárt csatákból statisztika készül (konvoj-, U-boat-, kísérő-veszteség, kimenetel), hogy látszódjon: sokféle csata születik-e, vagy egyoldalú lett a hangolás.
