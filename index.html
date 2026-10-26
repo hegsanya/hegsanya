@@ -1,6 +1,6 @@
 <!doctype html><html lang="hu" data-theme="light"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>CEG – Konvoj kísérő kampány v1.14.235</title>
+<title>CEG – Konvoj kísérő kampány v1.14.236</title>
 <style>
 /* Színek: világos/sötét téma változókkal; a gombok és táblázatok stílusa */
 :root{--bg:#f4f1ea;--fg:#1d2733;--pn:#fff;--ln:#c9c2b3;--ac:#b3261e;--sea:#d6ecf4;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -857,7 +857,8 @@ function hblast(u,b){if(!ships.includes(u)||!cellsOf(u).some(c=>c[0]==b[0]&&c[1]
 // hfire: a sortűz leadása (készlet −1, találat nélkül is); a már lépett U-boatokra azonnal hat, a többire az U-boat lépése után
 function hfire(s0){const s=s0||sel;if(!s||!hok(s))return;const cs=hcells(s);if(!cs.length)return;s.hs--;s.hm=s.hm||[];s.hn=(s.hn||0)+1;const sv=s.id+'#'+turn+'.'+s.hn;   // a sortűz egyedi azonosítója (egy sortűz egy U-boatot csak egyszer sebezhet)
  cs.forEach(c=>s.hm.push([c[0],c[1],0,s.id,'H',sv]));let m=s.id+': hedgehog sortűz ('+cs.map(c=>bAd(c[0],c[1])).join(', ')+'), készlet '+s.hs+'/'+ECO.hhSalvo+'.';
- const mk=s.hm.slice(-cs.length);ships.filter(q=>q.t=='U'&&q.done&&!(CFG.bombOnce&&stepAuto)).forEach(u=>mk.forEach(b=>{const r=bOnce(u,b);if(r)m+=' '+u.id+':'+r}));
+ const mk=s.hm.slice(-cs.length);let hh_=false;const uD=ships.filter(q=>q.t=='U'&&(q.done||q.bl)&&!(CFG.bombOnce&&stepAuto)),uP=ships.filter(q=>q.t=='U'&&!(q.done||q.bl));uD.forEach(u=>mk.forEach(b=>{const r=bOnce(u,b);if(r){m+=' '+u.id+':'+r;hh_=true}}));
+ if(uD.length&&!hh_)m+=' Ellenőrizve: nincs U-boat a célcellákban.';if(uP.length)m+=' ('+uP.map(q=>q.id).join(', ')+': a találatot a lépése után ellenőrzöm.)';
  say(m);draw();card()}
 // ===== SQUID ASW MOZSÁR (sqFx, v1.14.227) =====
 // Az átépített hajó G4 / G5 helyén „Squid” modul áll. Egy sorozat = a hajó körüli 8 szomszédos cella EGYIKE (a kártyán 3×3-as választó);
@@ -873,17 +874,18 @@ const qin=(x,y)=>x>=1&&x<=N&&y>=1&&y<=N;
 function qfire(dx,dy,s0){const s=s0||sel;if(!s||!qok(s)||(!dx&&!dy)||Math.abs(dx)>1||Math.abs(dy)>1)return;const x=s.x+dx,y=s.y+dy;if(!qin(x,y)||qUsed(s,x,y))return;
  s.qs--;s.qn=(s.qn|0)+1;s.qt=(s.qt|0)+1;s.hm=s.hm||[];const sv=s.id+'#'+turn+'.q'+s.qt;s.hm.push([x,y,0,s.id,'H',sv,'Q']);
  let m=s.id+': Squid lövés ('+bAd(x,y)+'), készlet '+s.qs+'/'+sqCap(s.c)+'.';const mk=s.hm[s.hm.length-1];
- ships.filter(q=>q.t=='U'&&q.done&&!(CFG.bombOnce&&stepAuto)).forEach(u=>{const r=bOnce(u,mk);if(r)m+=' '+u.id+':'+r});
+ let hh_=false;const uD=ships.filter(q=>q.t=='U'&&(q.done||q.bl)&&!(CFG.bombOnce&&stepAuto)),uP=ships.filter(q=>q.t=='U'&&!(q.done||q.bl));uD.forEach(u=>{const r=bOnce(u,mk);if(r){m+=' '+u.id+':'+r;hh_=true}});
+ if(uD.length&&!hh_)m+=' Ellenőrizve: nincs U-boat a célcellán.';if(uP.length)m+=' ('+uP.map(q=>q.id).join(', ')+': a találatot a lépése után ellenőrzöm.)';
  say(m);draw();card()}
 // aiSQ: az AI kísérő Squid-sorozatot ad le minden már lépett, szomszédos cellában álló U-boatra (amíg van lőszer / mozsár)
-function aiSQ(e){if(!e)return;ships.filter(q=>q.t=='U'&&q.done).forEach(u=>{if(!qok(e))return;const c=cellsOf(u).find(k=>Math.max(Math.abs(k[0]-e.x),Math.abs(k[1]-e.y))==1);if(c)qfire(c[0]-e.x,c[1]-e.y,e)})}
+function aiSQ(e){if(!e)return;ships.filter(q=>q.t=='U'&&(q.done||q.bl)).forEach(u=>{if(!qok(e))return;const c=cellsOf(u).find(k=>Math.max(Math.abs(k[0]-e.x),Math.abs(k[1]-e.y))==1);if(c)qfire(c[0]-e.x,c[1]-e.y,e)})}
 // sqUI: a kártya 3×3-as cellaválasztója (középen a hajó)
 function sqUI(s){if(!ECO.sqFx||sqWork(s)<1)return '';const ok=qok(s),g=[[-1,-1],[0,-1],[1,-1],[-1,0],[0,0],[1,0],[-1,1],[0,1],[1,1]];let t='';
  g.forEach((d,i)=>{if(i%3==0)t+='<tr>';t+=(d[0]||d[1])?'<td><button '+(ok&&qin(s.x+d[0],s.y+d[1])&&!qUsed(s,s.x+d[0],s.y+d[1])?'':'disabled ')+'onclick="qfire('+d[0]+','+d[1]+')" style="min-width:44px">'+addr(s.x+d[0],s.y+d[1])+'</button></td>':'<td style="background:var(--ln)"><b>'+AR[s.dir]+'</b><br><small>hajó</small></td>';if(i%3==2)t+='</tr>'});
  return '<div style="margin-top:6px">Squid: készlet <b>'+s.qs+'</b>/'+sqCap(s.c)+' lövés, e körben '+(s.qn|0)+'/'+Math.min(sqWork(s),+ECO.sqMax||2)+'<table class="m" style="width:auto;margin:4px 0">'+t+'</table><small>Bármely szomszédos cellára (körönként minden cellára egyszer; lövésenként egyesével vagy párosával); találat, ha az U-boat a lépése után ott van.</small></div>'}
 // aiHH: az AI kísérő sortűzet ad le, ha egy már lépett U-boat a három cella egyikében van
-function aiHH(e){if(!e||!hok(e))return;const cs=hcells(e),us=ships.filter(q=>q.t=='U'&&q.done&&cellsOf(q).some(c=>cs.some(k=>k[0]==c[0]&&k[1]==c[1])));if(!us.length)return;hfire(e)}
-function uPost(u){if(!u||u.t!='U')return true;ships.filter(q=>q.t=='E'&&!q.bpend).forEach(decBlast);if(!u.bl){u.bl=true;let m=u.id+': a lépések után a vízibombák kiértékelése:',any=false;ships.filter(q=>q.t=='E').forEach(e=>markList(e).forEach(b=>{const r=bOnce(u,b);if(r===null)return;any=true;m+=' '+b[3]+'→'+bAd(b[0],b[1])+r}));if(any){say(m);draw();card()}
+function aiHH(e){if(!e||!hok(e))return;const cs=hcells(e),us=ships.filter(q=>q.t=='U'&&(q.done||q.bl)&&cellsOf(q).some(c=>cs.some(k=>k[0]==c[0]&&k[1]==c[1])));if(!us.length)return;hfire(e)}
+function uPost(u){if(!u||u.t!='U')return true;ships.filter(q=>q.t=='E'&&!q.bpend).forEach(decBlast);if(!u.bl){u.bl=true;let m=u.id+': a lépések után a vízibombák kiértékelése:',any=false,hmN=0;ships.filter(q=>q.t=='E').forEach(e=>markList(e).forEach(b=>{if(b[4]=='H'&&!(b.ev||[]).includes(u.id))hmN++;const r=bOnce(u,b);if(r===null)return;any=true;m+=' '+b[3]+'→'+bAd(b[0],b[1])+r}));if(any){say(m);draw();card()}else if(hmN)say(u.id+': hedgehog / Squid ellenőrizve – nincs U-boat a célcellákban (nincs találat).')
   if(ships.includes(u)&&fatal(u))say(u.id+': a sérülése végzetes, nem lőhet (a következő körben elsüllyed).')}
  return ships.includes(u)&&!fatal(u)}
 // uGate: az U-boat lövése előbb a lépések lelépését, majd a vízibombák kiértékelését kívánja; igaz, ha le van tiltva
@@ -2628,7 +2630,8 @@ applyLogPos();renderCfg();try{qbRender()}catch(e){}   // a pálya felállítás�
 //   v1.14.233 (2026-10-26) – ÚJ: ÉSZLELHETŐSÉG (detTab, detRings; ködben): a kijelölt SAJÁ oldali hajó kártyáján táblázat, hogy az ellenfél érzékelői milyen messziről veszik észre (látás, periszkóp, radar, hallás, konvojzaj, aktív szonár / ping, HF/DF; az időjárás levonva; U-boatnál a mélység és a zaj szerint, teherhajónál a konvojzaj mélységsávonként); a „kör a pályán” jelölővel (detRings) a tartományok négyzetként a térképen is látszanak (a hatótáv-körökhöz hasonlóan). Az ellenfél hajójánál nem jelenik meg (nem árul el semmit)
 //   v1.14.234 (2026-10-26) – OP TÉRKÉP: a szárazföldi cellákon nincs U / R / H esemény (evLand, alap 1). A szárazföld-maszk (LANDM: 20 × 42, „#” = szárazföld) az OP-térkép képéből készült (a cella több mint fele nem tenger); a kikötő-cellák (eseménymentes, „.”) változatlanok. Az 1 / 0 kapcsoló a Beállításokban
 //   v1.14.235 (2026-10-26) – ÚJ: a MEGÁLLT (vagy a találat után megálló) teherhajó ég / füstöl: fogStop (alap 20; 0 = ki) cellára látszik (az időjárás levonva); a periszkópmélységű U-boat is látja (fogStopPer, alap 1). Az észlelhetőség-táblázatban külön sor (köd-réteg)
-const VER = 'v1.14.235';
+//   v1.14.236 (2026-10-26) – HEDGEHOG / SQUID ELLENŐRZÉS LÁTHATÓVÁ: (1) a sortűz / lövés után a napló kiírja az eredményt is („ellenőrizve: nincs U-boat a célcellákban” / „a találatot a lépése után ellenőrzöm”), nem csak a találatot; (2) JAVÍTÁS: az az U-boat, amelyik már lépett és kiértékelődött (bl), de még nem „kész”, eddig kimaradt az azonnali ellenőrzésből – most a hedgehog / Squid rá is azonnal hat; (3) az U-boat kiértékelésénél, ha volt hedgehog / Squid jel, de egyik cellában sem volt, ezt is kiírja
+const VER = 'v1.14.236';
 // ===== MEGFIGYELŐ / TESZT MÓD (obsMode, v1.14.195) =====
 // Megfigyelő módban mindkét oldalt az AI vezérli (a kísérők is: NPC-logikával), a pálya mindent mutat (nincs köd), és a körök maguktól léptetődnek;
 // a lezárt csatákból statisztika készül (konvoj-, U-boat-, kísérő-veszteség, kimenetel), hogy látszódjon: sokféle csata születik-e, vagy egyoldalú lett a hangolás.
