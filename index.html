@@ -1,6 +1,6 @@
 <!doctype html><html lang="hu" data-theme="light"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>CEG – Konvoj kísérő kampány v1.14.231</title>
+<title>CEG – Konvoj kísérő kampány v1.14.232</title>
 <style>
 /* Színek: világos/sötét téma változókkal; a gombok és táblázatok stílusa */
 :root{--bg:#f4f1ea;--fg:#1d2733;--pn:#fff;--ln:#c9c2b3;--ac:#b3261e;--sea:#d6ecf4;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -1252,7 +1252,7 @@ function decBlast(s){if(!s||!DEC.length)return;const R_=Math.max(0,CFG.decoyKill
 // decDraw: a csali kirajzolása. Köd nélkül mindenkinek; ködben az U-boat oldalának (X) mindig, a kísérőknek (A) csak ha észlelték („U?” hamis kontaktus)
 // decGhosts: a kísérő oldalon látott csalik „szellem-U-boatként” (ugyanaz a rajz, mint a valódinak: kép, irány, azonosító; a mélység nem ismert)
 function decGhosts(){if(!CFG.decoyOn||!DEC.length)return [];const V=CFG.fog?fogViewer():null;if(!CFG.fog||V==='X')return [];
- return DEC.filter(d=>FOGD.includes(d)).map(d=>({id:d.by,t:'U',c:d.c||'VIIC',x:d.x,y:d.y,dir:d.dir||5,dep:d.dep,done:true,nd:true,decoyG:true,dmg:[],st:[]}))}
+ return DEC.filter(d=>FOGD.includes(d)).map(d=>({id:d.by,t:'U',c:d.c||'VIIC',x:d.x,y:d.y,dir:d.dir||5,dep:d.dep,done:(()=>{const o=ships.find(q=>q.id===d.by&&q.t=='U');return o?!!o.done:true})(),nd:true,decoyG:true,dmg:[],st:[]}))}
 function decDraw(){if(!CFG.decoyOn||!DEC.length)return;const V=CFG.fog?fogViewer():null;
  DEC.forEach(d=>{let own=!CFG.fog||V==='X';if(!own&&!FOGD.includes(d))return;
   const cx=O+(d.x-.5)*S,cy=O+(d.y-.5)*S;g.save();g.textAlign='center';g.textBaseline='middle';g.setLineDash([3,3]);g.lineWidth=2;
@@ -2601,7 +2601,8 @@ applyLogPos();renderCfg();try{qbRender()}catch(e){}   // a pálya felállítás�
 //   v1.14.229 (2026-10-26) – ÚJ: FAT TORPEDÓ (fatOn, alap 1; 1943. márciustól, fatFrom): az U-boat kártyáján a „FAT” jelölőnégyzettel (az AI fatAiP % eséllyel) a torpedó fatRun cellát egyenesen fut, majd a kilövési irányához igazodva cikkcakkban halad (a kilövési irányra merőlegesen jobbra fatLeg, balra 2·fatLeg, jobbra 2·fatLeg … cellát, közben 1 cellát előre), összesen fatLen (alap 12) cellát; körönként 3 cellát tesz meg. A cikkcakk-szakaszon a találat fix esély (d6 ≤ fatHit teherhajónál, ≤ fatHitE hadihajónál), az egyenes szakaszon a TDC-dobás. Csak az ellenfelet találja
 //   v1.14.230 (2026-10-26) – CSALI GRAFIKA: a kísérő oldalon a csali pontosan úgy rajzolódik, mint egy valódi U-boat (ugyanaz a kép / jelölő, irány, azonosító; mélység nélkül), a rajzoló ciklus „szellem-U-boatként” veszi fel (decGhosts) – nem különböztethető meg. Az U-boat oldalon a csali továbbra is lila „csali” jelölésű
 //   v1.14.231 (2026-10-26) – OP: a kötelék (TF) Üzemanyag oszlopában MINDEN kikötő látszik a távolságával (cella, légvonalban), a legközelebbi elöl; zöld = az üzemanyag elég odáig, piros = nem (fuelPorts, alap 1; a fuelWarn kapcsolóval együtt)
-const VER = 'v1.14.231';
+//   v1.14.232 (2026-10-26) – CSALI: a fehér „még nem lépett” keret a csali körül is megjelenik, ugyanakkor, mint a gazdája (U-boat) körül (decGhosts: a done állapotot a gazdától veszi); a kép / irány / azonosító továbbra is ugyanabból a rajzolóból jön, így az U-boat grafikájának változása a csalira is átjön
+const VER = 'v1.14.232';
 // ===== MEGFIGYELŐ / TESZT MÓD (obsMode, v1.14.195) =====
 // Megfigyelő módban mindkét oldalt az AI vezérli (a kísérők is: NPC-logikával), a pálya mindent mutat (nincs köd), és a körök maguktól léptetődnek;
 // a lezárt csatákból statisztika készül (konvoj-, U-boat-, kísérő-veszteség, kimenetel), hogy látszódjon: sokféle csata születik-e, vagy egyoldalú lett a hangolás.
