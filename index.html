@@ -1,6 +1,6 @@
 <!doctype html><html lang="hu" data-theme="light"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>CEG – Konvoj kísérő kampány v1.14.245</title>
+<title>CEG – Konvoj kísérő kampány v1.14.246</title>
 <style>
 /* Színek: világos/sötét téma változókkal; a gombok és táblázatok stílusa */
 :root{--bg:#f4f1ea;--fg:#1d2733;--pn:#fff;--ln:#c9c2b3;--ac:#b3261e;--sea:#d6ecf4;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -387,6 +387,7 @@ body.opN #vOP #o_notes>div:not(#zz):nth-child(2n)::before{transform:rotate(2deg)
 <button id="bff" title="Ködben: léptet a következő kontaktusig (kézi egységek egyenesen, az AI az AI-val)">⏩ Gyorstekerés</button>
 <button id="bsum" onclick="showSummary()">Összesítés</button> <button class="go" id="bend" onclick="CAMP.end()">Csata vége → OP</button>
 <label>Irány <select id="dr"></select></label>
+<!-- Konvoj-elrendezés (v1.14.246): a műveleti sávra került; turn 0-n azonnal átrendez --><select id="cvl" title="Konvoj-elrendezés: a csata legelején azonnal átrendez, később a következő csatára érvényes" onchange="cvRelayout()"><option value="">Elrendezés: alap</option><option value="0">Lyuk középen</option><option value="1">Kitöltött sorok</option><option value="2">Véletlen</option></select>
 <label><input type="checkbox" id="fo" checked> automata kíséret</label>
 <label id="aiAllW" title="Az ellenség (U-boat, felszíni hajók, repülők) AI-vezérelt vagy kézi. Váltáskor a hajónkénti beállítások törlődnek. Részletek: Beállítások → Ellenség AI">Ellenség: <select id="aiAll" onchange="aiAllSet(this.value)"><option value="1">AI</option><option value="0">Kézi</option><option value="x" disabled>Vegyes</option></select></label>
 <button id="t_advb" title="Nagyítás, kézi dobás, időjárás, effektek megjelenítése / elrejtése" onclick="advTog('t_adv','ceg_tadv')">⚙</button><span id="t_adv" style="display:none"><button id="zfit" title="A pálya kitölti a képernyő szélességét" onclick="zoomFit()">⤢</button> <button id="sidebtn" title="Hajókártya / napló panel" onclick="sideShow(2)">📋</button><button id="dlbtn" title="Kockanapló: az összes címkézett dobás (ki, mit, mennyit dobott, mi lett az eredménye)" onclick="dlogShow()">🎲</button><button id="zo" title="Kicsinyítés">−</button><button id="zi" title="Nagyítás">+</button><button id="zf" title="A kijelölt hajó a látótér közepére">⌖</button>
@@ -428,7 +429,7 @@ tesztcsaták <input id="obs_n" type="number" min="1" max="500" value="20" style=
 <details class="lay"><summary>Csata-beállítások, ellenség belépése, zónák</summary>
 <table class="m top">
 <tr><th>Commodore</th><th>Hajók (önálló pályán)</th><th>Új pálya</th></tr>
-<tr><td><input type="text" id="cm" value="M7" style="width:56px"></td><td><input type="number" id="n" min="12" max="50" value="36" style="width:56px"></td><td><button id="br">Új pálya</button> <select id="cvl" title="Konvoj-elrendezés: a csata legelején azonnal átrendez, később a következő csatára érvényes" onchange="cvRelayout()"><option value="">Elrendezés: alap</option><option value="0">Lyuk középen</option><option value="1">Kitöltött sorok</option><option value="2">Véletlen</option></select></td></tr>
+<tr><td><input type="text" id="cm" value="M7" style="width:56px"></td><td><input type="number" id="n" min="12" max="50" value="36" style="width:56px"></td><td><button id="br">Új pálya</button></td></tr>
 <tr><th>Ellenség belépése</th><td colspan="2"><button id="bu">U-boat</button> <button id="bz">Felszíni hajó</button> <button id="ba">Repülő</button></td></tr>
 <tr><th>Kísérő-zóna</th><td colspan="2"><button id="bd">Rajzolás (kijelölt kísérő)</button> <button id="bm" title="Gomb be, majd húzd a zónát az egérrel a pályán">Zóna mozgatása</button> <button id="bo" title="A kijelölt kísérő zónája visszakerül az eredeti helyére">Alap zóna</button> csere: <select id="sw"></select> <button id="bw">Csere</button></td></tr>
 </table>
@@ -2667,6 +2668,7 @@ applyLogPos();renderCfg();try{qbRender()}catch(e){}   // a pálya felállítás�
 //   v1.14.234 (2026-10-26) – OP TÉRKÉP: a szárazföldi cellákon nincs U / R / H esemény (evLand, alap 1). A szárazföld-maszk (LANDM: 20 × 42, „#” = szárazföld) az OP-térkép képéből készült (a cella több mint fele nem tenger); a kikötő-cellák (eseménymentes, „.”) változatlanok. Az 1 / 0 kapcsoló a Beállításokban
 //   v1.14.235 (2026-10-26) – ÚJ: a MEGÁLLT (vagy a találat után megálló) teherhajó ég / füstöl: fogStop (alap 20; 0 = ki) cellára látszik (az időjárás levonva); a periszkópmélységű U-boat is látja (fogStopPer, alap 1). Az észlelhetőség-táblázatban külön sor (köd-réteg)
 //   v1.14.236 (2026-10-26) – HEDGEHOG / SQUID ELLENŐRZÉS LÁTHATÓVÁ: (1) a sortűz / lövés után a napló kiírja az eredményt is („ellenőrizve: nincs U-boat a célcellákban” / „a találatot a lépése után ellenőrzöm”), nem csak a találatot; (2) JAVÍTÁS: az az U-boat, amelyik már lépett és kiértékelődött (bl), de még nem „kész”, eddig kimaradt az azonnali ellenőrzésből – most a hedgehog / Squid rá is azonnal hat; (3) az U-boat kiértékelésénél, ha volt hedgehog / Squid jel, de egyik cellában sem volt, ezt is kiírja
+//   v1.14.246 (2026-10-28) – AZ „ELRENDEZÉS” VÁLASZTÓ A MŰVELETI SÁVRA KERÜLT (Kör léptetése sáv, az Irány mellé): a rejtett beállítás-táblából kikerült, így mindig látszik.
 //   v1.14.245 (2026-10-28) – JAVÍTÁS / BŐVÍTÉS: az „Elrendezés” választó átállítása a csata legelején (turn 0, még senki nem lépett) azonnal átrendezi a konvojt (cvRelayout): a teherhajók új helyre kerülnek, a kísérők a Commodore elmozdulásával tolódnak. Később a választó a következő csatára érvényes. (cvPlan / cvXY kiemelve.)
 //   v1.14.244 (2026-10-28) – ÚJ: KONVOJ-ELRENDEZÉS (cvLayout, cvMinW; a Taktikai lap „Elrendezés” választója): 0 = a régi (12 hajó / sor, az utolsó sor közepén lyuk); 1 = KITÖLTÖTT sorok: a sor szélessége cvMinW (8)..12 között csökken, amíg az utolsó sor is megtelik (vagy a lehető legjobban), a keskenyebb konvoj ugyanarra a középre áll (az eskort-zónák helyesek maradnak); 2 = csatánként véletlen. Az új csata elején érvényes (a kampány-csatánál a választó állása számít).
 //   v1.14.243 (2026-10-27) – ÚJ: sumFuel (alap 1): a Csata-összesítés Kíséret táblájában új „Üzemanyag: fogyott / maradt” oszlop – a csatában ténylegesen elfogyasztott üzemanyag (bst().fc, a lépett cella × fuelCell összege; átlag egység / cella) és a maradék, így látszik, mennyit visz el egy csata (korábban csak a lépett cellák száma volt látható).
@@ -2676,7 +2678,7 @@ applyLogPos();renderCfg();try{qbRender()}catch(e){}   // a pálya felállítás�
 //   v1.14.239 (2026-10-26) – ÚJ: (1) LUT torpedó (lutOn, alap 1; 1944. januártól): az U-boat kártyán „LUT” jelölőnégyzet (az AI lutAiP %); a FAT utóda: lutLen 18 cella, lutRun 6 egyenes, lutLeg 3 fél-szélesség, találat teherhajón d6 ≤ lutHit (3), hadihajón ≤ lutHitE (1); ha FAT is be van jelölve, a LUT számít. (2) LÉGPERISZKÓP / SCHNORCHEL (schOn, alap 1; 1944. júniustól; csak szabad mozgásnál): 1/8-as mélységen a kártya „Légperiszkóp” jelölőnégyzetével a dízel hajt: az akku nem fogy, hanem schRech (2) cellát tölt körönként, max schSpd (2) lépés, kimerült akkuval is halad; kiesett dízelnél nem működik; az AI az akku fele alatt automatikusan használja.
 //   v1.14.238 (2026-10-26) – SZABAD MOZGÁS: az U-boat a belső játékterületen (pl. 80-as táblán az 50×50-esen) bárhol léphet be, nem csak a szélén (uInner, alapból BE; KI = a régi szél-belépés uEdge szerint).
 //   v1.14.237 (2026-10-26) – HEDGEHOG / SQUID ELLENŐRZÉS: az U-boat lépés utáni kiértékelésében a hedgehog / Squid „nincs találat” eredmény akkor is kiíródik, ha a vízibombák is hatottak (eddig ilyenkor csak a vízibomba-sor látszott, a hedgehog-ellenőrzés nem)
-const VER = 'v1.14.245';
+const VER = 'v1.14.246';
 // ===== MEGFIGYELŐ / TESZT MÓD (obsMode, v1.14.195) =====
 // Megfigyelő módban mindkét oldalt az AI vezérli (a kísérők is: NPC-logikával), a pálya mindent mutat (nincs köd), és a körök maguktól léptetődnek;
 // a lezárt csatákból statisztika készül (konvoj-, U-boat-, kísérő-veszteség, kimenetel), hogy látszódjon: sokféle csata születik-e, vagy egyoldalú lett a hangolás.
