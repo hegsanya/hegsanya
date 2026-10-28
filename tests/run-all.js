@@ -52,6 +52,33 @@ await T(b,'Kampány: esemény → csata → vége → OP',(fx)=>{CAMP.restore(fx
  return{ok:CAMP.fleet.length>0&&document.getElementById('o_bw')!=null,info:'csata vége lefutott, battle='+(!!CAMP.battle)+', flotta='+CAMP.fleet.length}},fx);
 // 9) mentő-akció / üzemanyag: kifogyott hajó a mentés rendszerben (fuelStrand)
 await T(b,'Üzemanyag-mentés függvények léteznek',()=>({ok:typeof OPG.fuelStrand==='function'&&typeof CAMP.rescueHTML==='function',info:''}));
+// 10) üzemanyag-mentés (a fixture TF24 / D7 esete): mentő-lista, vontatás, kikötői feltöltés
+await T(b,'Mentőakció: TF24 → vontatás → feltöltés',(fx)=>{CAMP.restore(fx);const o={};
+ const u=OPG.units().find(x=>x.id=='TF24');if(!u)return{ok:false,info:'nincs TF24 a mentésben'};
+ const h=CAMP.rescueHTML();o.list=/üzemanyag nélkül/.test(h);
+ const u2=OPG.units().find(x=>x.id=='TF24');
+ const id=OPG.tfNew(['D8'],'Liverpool',5);const ru=OPG.units().find(x=>x.id==id);ru.r=u2.r;ru.c=u2.c;
+ o.btn=/Bevontat/.test(CAMP.rescueHTML());
+ CAMP.rescueTow('TF24',id);const ru2=OPG.units().find(x=>x.id==id);o.tow=!!ru2.tow;
+ CAMP.dockTF(ru2,'Liverpool');const d7=CAMP.get('D7');o.d7=d7.fu;o.dis=d7.dis;
+ return{ok:o.list&&o.btn&&o.tow&&!d7.dis&&d7.fu>0,info:JSON.stringify(o)}},fx);
+// 11) torpedó: FAT-pálya, LUT-pálya és a kilövés a kézi U-boattal
+await T(b,'Torpedó: FAT / LUT pálya, kilövés',()=>{CFG.turnRule=1;CFG.subBat=1;CFG.lutFrom=0;CFG.schFrom=0;try{obsToggle();obsNew()}catch(e){}
+ const o={};const u=ships.find(q=>q.t=='U')||uEnter('U9');sel=u;
+ const f=fatCells({x:30,y:30,d:3}),l=fatCells({x:30,y:30,d:3,lut:1});o.fat=f.length;o.lut=l.length;
+ u.dep=0;u.tp=5;u.tub=[1,1,1,1,1];u.done=false;u.lutM=0;const n0=torps.length;try{fire(0)}catch(e){return{ok:false,info:'fire: '+e.message}}
+ o.torps=torps.length-n0;
+ return{ok:f.length>0&&l.length>f.length&&o.torps>=1,info:JSON.stringify(o)}});
+// 12) LUT és légperiszkóp (schnorchel): elérhetőség, akku-fogyasztás és kártya
+await T(b,'LUT és légperiszkóp (schUse, needMax, kártya)',()=>{CFG.turnRule=1;CFG.subBat=1;CFG.lutFrom=0;CFG.schFrom=0;try{obsToggle();obsNew()}catch(e){}
+ const o={};const u=ships.find(q=>q.t=='U')||uEnter('U9');sel=u;
+ o.avail=[lutAvail(),schAvail()];
+ u.dep=1;u.spd=5;u.dmg=u.dmg.map(()=>0);u.st=u.st||u.dmg.map(()=>0);u.schM=1;u.bat=5;
+ const use1=schUse(u),need1=needMax(u);u.schM=0;const need0=needMax(u);u.schM=1;
+ try{card()}catch(e){return{ok:false,info:'card: '+e.message}}
+ const h=document.body.innerHTML;o.card=[/LUT torpedó/.test(h),/Légperiszkóp/.test(h)];
+ CFG.schOn=0;const useOff=schUse(u);
+ return{ok:o.avail[0]&&o.avail[1]&&o.card[0]&&o.card[1]&&use1!==useOff,info:JSON.stringify({o,use1,need1,need0,useOff})}});
 await b.close();
 let bad=0;for(const r of results){console.log((r.ok?'  OK   ':'  HIBA ')+r.name+(r.info?'  ['+r.info+']':'')+(r.errs.length?'  JS-hibák: '+r.errs.join(' | '):''));if(!r.ok)bad++}
 console.log(bad?('\n'+bad+' / '+results.length+' teszt BUKOTT'):('\nMind a '+results.length+' teszt rendben'));process.exit(bad?1:0)})();
