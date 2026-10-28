@@ -1,6 +1,6 @@
 <!doctype html><html lang="hu" data-theme="light"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>CEG – Konvoj kísérő kampány v1.14.244</title>
+<title>CEG – Konvoj kísérő kampány v1.14.245</title>
 <style>
 /* Színek: világos/sötét téma változókkal; a gombok és táblázatok stílusa */
 :root{--bg:#f4f1ea;--fg:#1d2733;--pn:#fff;--ln:#c9c2b3;--ac:#b3261e;--sea:#d6ecf4;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -428,7 +428,7 @@ tesztcsaták <input id="obs_n" type="number" min="1" max="500" value="20" style=
 <details class="lay"><summary>Csata-beállítások, ellenség belépése, zónák</summary>
 <table class="m top">
 <tr><th>Commodore</th><th>Hajók (önálló pályán)</th><th>Új pálya</th></tr>
-<tr><td><input type="text" id="cm" value="M7" style="width:56px"></td><td><input type="number" id="n" min="12" max="50" value="36" style="width:56px"></td><td><button id="br">Új pálya</button> <select id="cvl" title="Konvoj-elrendezés a következő csata elején"><option value="">Elrendezés: alap</option><option value="0">Lyuk középen</option><option value="1">Kitöltött sorok</option><option value="2">Véletlen</option></select></td></tr>
+<tr><td><input type="text" id="cm" value="M7" style="width:56px"></td><td><input type="number" id="n" min="12" max="50" value="36" style="width:56px"></td><td><button id="br">Új pálya</button> <select id="cvl" title="Konvoj-elrendezés: a csata legelején azonnal átrendez, később a következő csatára érvényes" onchange="cvRelayout()"><option value="">Elrendezés: alap</option><option value="0">Lyuk középen</option><option value="1">Kitöltött sorok</option><option value="2">Véletlen</option></select></td></tr>
 <tr><th>Ellenség belépése</th><td colspan="2"><button id="bu">U-boat</button> <button id="bz">Felszíni hajó</button> <button id="ba">Repülő</button></td></tr>
 <tr><th>Kísérő-zóna</th><td colspan="2"><button id="bd">Rajzolás (kijelölt kísérő)</button> <button id="bm" title="Gomb be, majd húzd a zónát az egérrel a pályán">Zóna mozgatása</button> <button id="bo" title="A kijelölt kísérő zónája visszakerül az eredeti helyére">Alap zóna</button> csere: <select id="sw"></select> <button id="bw">Csere</button></td></tr>
 </table>
@@ -654,11 +654,24 @@ function cvWidth(n){let m=+CFG.cvLayout||0;try{const v=$('cvl').value;if(v!=='')
  const lo=Math.max(3,Math.min(12,+CFG.cvMinW||8));let best=12,bf=-1;
  for(let W=12;W>=lo;W--){const r=n%W,fill=r==0?1:r/W;if(fill>bf+1e-9){bf=fill;best=W}}   /* a nagyobb szélesség nyer egyenlő kitöltésnél (előbb vizsgálva) */
  return best}
+// cvPlan: a konvoj sorbeosztása n hajóra: W hajó / sor, rows sor, rem a hiányos utolsó sor hajószáma, ord az utolsó sor kitöltési sorrendje (szélről befelé, a lyuk középen), off: a keskenyebb konvoj ugyanarra a középre áll, így az eskort-zónák helyesek maradnak
+function cvPlan(n){const W=cvWidth(n);return {W,rows:Math.ceil(n/W),rem:n%W,ord:Array.from({length:W},(_,k)=>k%2?W-1-(k-1)/2:k/2),off:(12-W)/2}}
+// cvXY: az i-edik teherhajó helye (a konvoj saját rendszerében, még a pályára helyezés előtt)
+function cvXY(i,P){const row=Math.floor(i/P.W),last=row==P.rows-1&&P.rem>0,c=(last?P.ord[i%P.W]:i%P.W)+P.off;return toG(3*c,-2*row)}
+// cvRelayout: a csata legelején (még senki nem lépett) átrendezi a konvojt a választó szerint; a kísérők a Commodore elmozdulásával együtt tolódnak. Igaz, ha megtörtént
+function cvRelayout(){const ms=ships.filter(s=>s.t=='M');
+ if(!ms.length||turn>0||ships.some(q=>q.t=='E'&&!q.en&&((q.idx|0)>0||q.done))){say('A konvoj már csak a csata legelején rendezhető át (amíg senki nem lépett). Új csata / Új pálya kell.');return false}
+ const c0=cmd(),ox=c0.x,oy=c0.y,P=cvPlan(ms.length);
+ ms.forEach((s,i)=>{const p=cvXY(i,P);s.x=p[0];s.y=p[1]});
+ placeConvoy();
+ const c1=cmd(),dx=c1.x-ox,dy=c1.y-oy;
+ ships.filter(q=>q.t=='E'&&!q.en).forEach(q=>{q.x+=dx;q.y+=dy});   /* a kísérők a Commodore-hoz képest ugyanott maradnak */
+ say('A konvoj elrendezése: '+P.W+' hajó / sor, '+P.rows+' sor.');draw();card();return true}
 function reset(){dxCancel();DLOG=[];applyBoard();FOGM={};DEC=[];FOGD=[];HEARR={};BS={};KL=[];if(typeof NZLOG!=='undefined'&&NZLOG)NZLOG.length=0;SUMSHOWN=false;FX=[];BFQ.length=0;try{rlReset()}catch(e){}trail={};lastPos={};paths={};bombMarks=[];
- const cmp=typeof CAMP!=='undefined'&&CAMP.battle,mer=cmp?(CAMP.ev&&CAMP.ev.unit?[]:CAMP.voy.m.filter(q=>!q.gone)):null,n=cmp?mer.length:cl(+$('n').value||36,12,50),W=cvWidth(n),rows=Math.ceil(n/W),rem=n%W,ord=Array.from({length:W},(_,k)=>k%2?W-1-(k-1)/2:k/2),off=(12-W)/2;   /* W: hajó / sor; ord: az utolsó sor kitöltési sorrendje (szélről befelé, a lyuk középen); off: a keskenyebb konvoj ugyanarra a középre áll, így az eskort-zónák helyesek maradnak */
+ const cmp=typeof CAMP!=='undefined'&&CAMP.battle,mer=cmp?(CAMP.ev&&CAMP.ev.unit?[]:CAMP.voy.m.filter(q=>!q.gone)):null,n=cmp?mer.length:cl(+$('n').value||36,12,50),P=cvPlan(n),W=P.W,rows=P.rows;
  $('tn').textContent=0;ships=[];torps=[];store={};dead={};supSlots=[];raid={};raidDead={};airDone=false;airN=0;turn=0;sel=null;stopped=false;pool={U:['U10','U13','U12'],Z:['Z1','Z2','CA1'],A:['R1','R2','R3']};
- for(let i=0;i<n;i++){const row=Math.floor(i/W),last=row==rows-1&&rem>0,c=(last?ord[i%W]:i%W)+off;
-  {const mm=cmp?mer[i]:{id:'M'+(i+1),tons:R(25,95)*100,cp:R(CFG.cpLo,CFG.cpHi),aa:R(CFG.aaLo,CFG.aaHi),cd:0};ships.push({id:mm.id,t:'M',tons:mm.tons,cp:mm.cp,aa:mm.aa,cd:mm.cd,stop:false,x:toG(3*c,-2*row)[0],y:toG(3*c,-2*row)[1]})}}
+ for(let i=0;i<n;i++){const pxy=cvXY(i,P);
+  {const mm=cmp?mer[i]:{id:'M'+(i+1),tons:R(25,95)*100,cp:R(CFG.cpLo,CFG.cpHi),aa:R(CFG.aaLo,CFG.aaHi),cd:0};ships.push({id:mm.id,t:'M',tons:mm.tons,cp:mm.cp,aa:mm.aa,cd:mm.cd,stop:false,x:pxy[0],y:pxy[1]})}}
  placeConvoy();   // az alakzat elforgatása a konvoj irányába és elhelyezése a pályán
   const cm=find($('cm').value.trim().toUpperCase())||find('M7')||ships[0]||{x:Math.round((LO+HI)/2),y:Math.round((LO+HI)/2),id:'-'};
  // kísérők: a kampány konvojjal haladó csoportja (a flotta hajói), a helyük (zóna) a SLOT_ORDER szerint; az üres helyekre bérelt hajók jöhetnek (d25)
@@ -2654,6 +2667,7 @@ applyLogPos();renderCfg();try{qbRender()}catch(e){}   // a pálya felállítás�
 //   v1.14.234 (2026-10-26) – OP TÉRKÉP: a szárazföldi cellákon nincs U / R / H esemény (evLand, alap 1). A szárazföld-maszk (LANDM: 20 × 42, „#” = szárazföld) az OP-térkép képéből készült (a cella több mint fele nem tenger); a kikötő-cellák (eseménymentes, „.”) változatlanok. Az 1 / 0 kapcsoló a Beállításokban
 //   v1.14.235 (2026-10-26) – ÚJ: a MEGÁLLT (vagy a találat után megálló) teherhajó ég / füstöl: fogStop (alap 20; 0 = ki) cellára látszik (az időjárás levonva); a periszkópmélységű U-boat is látja (fogStopPer, alap 1). Az észlelhetőség-táblázatban külön sor (köd-réteg)
 //   v1.14.236 (2026-10-26) – HEDGEHOG / SQUID ELLENŐRZÉS LÁTHATÓVÁ: (1) a sortűz / lövés után a napló kiírja az eredményt is („ellenőrizve: nincs U-boat a célcellákban” / „a találatot a lépése után ellenőrzöm”), nem csak a találatot; (2) JAVÍTÁS: az az U-boat, amelyik már lépett és kiértékelődött (bl), de még nem „kész”, eddig kimaradt az azonnali ellenőrzésből – most a hedgehog / Squid rá is azonnal hat; (3) az U-boat kiértékelésénél, ha volt hedgehog / Squid jel, de egyik cellában sem volt, ezt is kiírja
+//   v1.14.245 (2026-10-28) – JAVÍTÁS / BŐVÍTÉS: az „Elrendezés” választó átállítása a csata legelején (turn 0, még senki nem lépett) azonnal átrendezi a konvojt (cvRelayout): a teherhajók új helyre kerülnek, a kísérők a Commodore elmozdulásával tolódnak. Később a választó a következő csatára érvényes. (cvPlan / cvXY kiemelve.)
 //   v1.14.244 (2026-10-28) – ÚJ: KONVOJ-ELRENDEZÉS (cvLayout, cvMinW; a Taktikai lap „Elrendezés” választója): 0 = a régi (12 hajó / sor, az utolsó sor közepén lyuk); 1 = KITÖLTÖTT sorok: a sor szélessége cvMinW (8)..12 között csökken, amíg az utolsó sor is megtelik (vagy a lehető legjobban), a keskenyebb konvoj ugyanarra a középre áll (az eskort-zónák helyesek maradnak); 2 = csatánként véletlen. Az új csata elején érvényes (a kampány-csatánál a választó állása számít).
 //   v1.14.243 (2026-10-27) – ÚJ: sumFuel (alap 1): a Csata-összesítés Kíséret táblájában új „Üzemanyag: fogyott / maradt” oszlop – a csatában ténylegesen elfogyasztott üzemanyag (bst().fc, a lépett cella × fuelCell összege; átlag egység / cella) és a maradék, így látszik, mennyit visz el egy csata (korábban csak a lépett cellák száma volt látható).
 //   v1.14.242 (2026-10-27) – ÚJ: tfRescue (alap 1): a kötelék (TF) csatájának végén is felkínálja a mentést (kormány KO / mozgásképtelen / elfogyott üzemanyag): „megmented?” és védő kijelölése, mint a konvojcsatánál; igen: a hajó (és a védője) külön mentő kötelékbe válik az eredeti TF-ből a csata helyén (várakozik / vontatják, a Mentés résznél bevontatható), nem: legénység-felvétel és elsüllyesztés. 0 = a régi 50%-os elvesztés / elvontatás. Az üzemanyag miatt mentendő hajó „üzemanyag nélkül” jelölést kap.
@@ -2662,7 +2676,7 @@ applyLogPos();renderCfg();try{qbRender()}catch(e){}   // a pálya felállítás�
 //   v1.14.239 (2026-10-26) – ÚJ: (1) LUT torpedó (lutOn, alap 1; 1944. januártól): az U-boat kártyán „LUT” jelölőnégyzet (az AI lutAiP %); a FAT utóda: lutLen 18 cella, lutRun 6 egyenes, lutLeg 3 fél-szélesség, találat teherhajón d6 ≤ lutHit (3), hadihajón ≤ lutHitE (1); ha FAT is be van jelölve, a LUT számít. (2) LÉGPERISZKÓP / SCHNORCHEL (schOn, alap 1; 1944. júniustól; csak szabad mozgásnál): 1/8-as mélységen a kártya „Légperiszkóp” jelölőnégyzetével a dízel hajt: az akku nem fogy, hanem schRech (2) cellát tölt körönként, max schSpd (2) lépés, kimerült akkuval is halad; kiesett dízelnél nem működik; az AI az akku fele alatt automatikusan használja.
 //   v1.14.238 (2026-10-26) – SZABAD MOZGÁS: az U-boat a belső játékterületen (pl. 80-as táblán az 50×50-esen) bárhol léphet be, nem csak a szélén (uInner, alapból BE; KI = a régi szél-belépés uEdge szerint).
 //   v1.14.237 (2026-10-26) – HEDGEHOG / SQUID ELLENŐRZÉS: az U-boat lépés utáni kiértékelésében a hedgehog / Squid „nincs találat” eredmény akkor is kiíródik, ha a vízibombák is hatottak (eddig ilyenkor csak a vízibomba-sor látszott, a hedgehog-ellenőrzés nem)
-const VER = 'v1.14.244';
+const VER = 'v1.14.245';
 // ===== MEGFIGYELŐ / TESZT MÓD (obsMode, v1.14.195) =====
 // Megfigyelő módban mindkét oldalt az AI vezérli (a kísérők is: NPC-logikával), a pálya mindent mutat (nincs köd), és a körök maguktól léptetődnek;
 // a lezárt csatákból statisztika készül (konvoj-, U-boat-, kísérő-veszteség, kimenetel), hogy látszódjon: sokféle csata születik-e, vagy egyoldalú lett a hangolás.
