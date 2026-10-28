@@ -79,14 +79,16 @@ await T(b,'LUT és légperiszkóp (schUse, needMax, kártya)',()=>{CFG.turnRule=
  const h=document.body.innerHTML;o.card=[/LUT torpedó/.test(h),/Légperiszkóp/.test(h)];
  CFG.schOn=0;const useOff=schUse(u);
  return{ok:o.avail[0]&&o.avail[1]&&o.card[0]&&o.card[1]&&use1!==useOff,info:JSON.stringify({o,use1,need1,need0,useOff})}});
-// 13) küldetések: sorsolás, lap, indítás, cellák érintése, kikötés → jutalom, mentés
-await T(b,'Küldetések: sorsolás → indítás → teljesítés → EGp',(fx)=>{CAMP.restore(fx);ECO.misP=100;for(let i=0;i<3;i++)CAMP.newDay();const o={};
+// 13) küldetések (v1.14.250, jelentkezés nélkül): sorsolás, lap, kötelék indítása, cellák érintése az útvonalon, kikötés → jutalom (két küldetés egy úton), mentés
+await T(b,'Küldetések: sorsolás → TF útvonal → kikötés → EGp',(fx)=>{CAMP.restore(fx);ECO.misP=100;for(let i=0;i<3;i++)CAMP.newDay();const o={};
  o.n=MIS.list().length;MIS.view();o.html=document.getElementById('vMIS').innerHTML.length;
  const rd=CAMP.fleet.filter(f=>CAMP.inPort(f)&&f.st==='ready'&&!CAMP.worn(f));rd.filter(f=>f.loc===rd[0].loc).slice(0,2).forEach(f=>f.tsel=true);
- const m=MIS.list()[0];MIS.send(m.id);const u=OPG.units().find(x=>x.id===m.unit);if(!u)return{ok:false,info:'nem indult kötelék'};
- m.cells.forEach(a=>MIS.visit(u,a));const e0=CAMP.egp;MIS.dock(u,m.port);CAMP.dockTF(u,m.port);
+ const n0=OPG.units().length;MIS.launch();const u=OPG.units()[OPG.units().length-1];if(OPG.units().length!==n0+1)return{ok:false,info:'nem indult kötelék'};
+ const ms=MIS.list().slice(0,2);ms.forEach(m=>m.cells.forEach(a=>u.route.push([a,0,'-',OPG.day()])));   /* a TF „bejárta” két küldetés celláit */
+ const early=MIS.arrive({id:'X',route:[]},'teszt');   /* üres útvonal: semmi sem teljesül */
+ const e0=CAMP.egp,sum=ms.reduce((a,m)=>a+m.egp,0),left=MIS.list().length;MIS.arrive(u,'teszt');
  const saved=JSON.stringify(CAMP.pack().c.mis);
- return{ok:o.n>=1&&o.html>5000&&CAMP.egp===e0+m.egp&&!MIS.list().includes(m),info:'küldetés='+o.n+', EGp '+e0+'→'+CAMP.egp}},fx);
+ return{ok:o.n>=2&&o.html>5000&&early===''&&CAMP.egp===e0+sum&&MIS.list().length===left-ms.length,info:'küldetés='+o.n+', EGp '+e0+'→'+CAMP.egp+' (két küldetés egy úton)'}},fx);
 await b.close();
 let bad=0;for(const r of results){console.log((r.ok?'  OK   ':'  HIBA ')+r.name+(r.info?'  ['+r.info+']':'')+(r.errs.length?'  JS-hibák: '+r.errs.join(' | '):''));if(!r.ok)bad++}
 console.log(bad?('\n'+bad+' / '+results.length+' teszt BUKOTT'):('\nMind a '+results.length+' teszt rendben'));process.exit(bad?1:0)})();

@@ -1,6 +1,6 @@
 <!doctype html><html lang="hu" data-theme="light"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>CEG – Konvoj kísérő kampány v1.14.249</title>
+<title>CEG – Konvoj kísérő kampány v1.14.250</title>
 <style>
 /* Színek: világos/sötét téma változókkal; a gombok és táblázatok stílusa */
 :root{--bg:#f4f1ea;--fg:#1d2733;--pn:#fff;--ln:#c9c2b3;--ac:#b3261e;--sea:#d6ecf4;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -2673,6 +2673,7 @@ applyLogPos();renderCfg();try{qbRender()}catch(e){}   // a pálya felállítás�
 //   v1.14.234 (2026-10-26) – OP TÉRKÉP: a szárazföldi cellákon nincs U / R / H esemény (evLand, alap 1). A szárazföld-maszk (LANDM: 20 × 42, „#” = szárazföld) az OP-térkép képéből készült (a cella több mint fele nem tenger); a kikötő-cellák (eseménymentes, „.”) változatlanok. Az 1 / 0 kapcsoló a Beállításokban
 //   v1.14.235 (2026-10-26) – ÚJ: a MEGÁLLT (vagy a találat után megálló) teherhajó ég / füstöl: fogStop (alap 20; 0 = ki) cellára látszik (az időjárás levonva); a periszkópmélységű U-boat is látja (fogStopPer, alap 1). Az észlelhetőség-táblázatban külön sor (köd-réteg)
 //   v1.14.236 (2026-10-26) – HEDGEHOG / SQUID ELLENŐRZÉS LÁTHATÓVÁ: (1) a sortűz / lövés után a napló kiírja az eredményt is („ellenőrizve: nincs U-boat a célcellákban” / „a találatot a lépése után ellenőrzöm”), nem csak a találatot; (2) JAVÍTÁS: az az U-boat, amelyik már lépett és kiértékelődött (bl), de még nem „kész”, eddig kimaradt az azonnali ellenőrzésből – most a hedgehog / Squid rá is azonnal hat; (3) az U-boat kiértékelésénél, ha volt hedgehog / Squid jel, de egyik cellában sem volt, ezt is kiírja
+//   v1.14.250 (2026-10-28) – KÜLDETÉSEK: nincs jelentkezés – a küldetés független a köteléktől: bármelyik TF teljesíti, ha a kiírása óta (az útvonala alapján) minden célcellát érintett és utána kikötött VAGY csatlakozott a konvojhoz; egy út több küldetést is teljesíthet. Új hajó-táblázat a Küldetések lapon: állapot (kész / konvojban / úton TF / szerviz), hely, hatótáv (cella) és a távolság a küldetések legközelebbi még érintetlen cellájától (piros, ha több a hatótávnál); Kötelék indítása a kikötőből és Leválasztás a konvojról a lapról. Az OP-térképen minden nyitott küldetés cellái látszanak (az érintett zöld).
 //   v1.14.249 (2026-10-28) – ÚJ: KÜLDETÉSEK lap (misOn, alap 1) a Flotta mellett – első típus a JÁRŐR: a kiíró kikötő célcellákat ad (misN), a játékos a kikötőben álló, kész hajókból (legfeljebb misShips) köteléket indít; a küldetés akkor teljesül, ha a TF mind a cellát érintette és utána bármelyik kikötőbe visszaért (jutalom: misEGp × cellák). Naponta misP % eséllyel új küldetés (legfeljebb misMax kiírva, határidő misDays nap, büntetés nélkül lejár). Régies papírlap, kicsinyített egyszínű térkép a célcellákkal; az OP-térképen a vállalt küldetés cellái X-szel látszanak (az érintett zöld); a nav-gomb villog, ha új küldetés van. Mentés: CAMP.mis. Beállítások: Küldetések csoport.
 //   v1.14.248 (2026-10-28) – ÚJ BEÁLLÍTÁS escAvoid (alap 1) + escAvoidPen (alap 2): az AI-vezérelt (automata) kísérő a lépés kiválasztásakor kerüli a mezőt, amelyen másik kísérő vagy teherhajó áll (büntetés a lépés értékében); az ütközés-szabály (autoNoCol) változatlan, és ha nincs más út, a foglalt mezőre is léphet.
 //   v1.14.247 (2026-10-28) – JAVÍTÁS (OP lap, konvoj-irány): (1) cvStrict = 0 esetén a konvoj iránya nem igazodott a lépéshez (az Irány-választó a régi maradt), és a jelölt cellák csak ±45°-ot mutattak a cvTurn 2 / 3 ellenére – most a jelölés mindig a cvTurn szerinti, az irány pedig a megtett lépés irányához áll (cvFollow, alap 1; 0 = régi). (2) A cvTurn / cvStrict / tfTurn átállítása azonnal újrarajzolja az OP-térképet.
@@ -2686,7 +2687,7 @@ applyLogPos();renderCfg();try{qbRender()}catch(e){}   // a pálya felállítás�
 //   v1.14.239 (2026-10-26) – ÚJ: (1) LUT torpedó (lutOn, alap 1; 1944. januártól): az U-boat kártyán „LUT” jelölőnégyzet (az AI lutAiP %); a FAT utóda: lutLen 18 cella, lutRun 6 egyenes, lutLeg 3 fél-szélesség, találat teherhajón d6 ≤ lutHit (3), hadihajón ≤ lutHitE (1); ha FAT is be van jelölve, a LUT számít. (2) LÉGPERISZKÓP / SCHNORCHEL (schOn, alap 1; 1944. júniustól; csak szabad mozgásnál): 1/8-as mélységen a kártya „Légperiszkóp” jelölőnégyzetével a dízel hajt: az akku nem fogy, hanem schRech (2) cellát tölt körönként, max schSpd (2) lépés, kimerült akkuval is halad; kiesett dízelnél nem működik; az AI az akku fele alatt automatikusan használja.
 //   v1.14.238 (2026-10-26) – SZABAD MOZGÁS: az U-boat a belső játékterületen (pl. 80-as táblán az 50×50-esen) bárhol léphet be, nem csak a szélén (uInner, alapból BE; KI = a régi szél-belépés uEdge szerint).
 //   v1.14.237 (2026-10-26) – HEDGEHOG / SQUID ELLENŐRZÉS: az U-boat lépés utáni kiértékelésében a hedgehog / Squid „nincs találat” eredmény akkor is kiíródik, ha a vízibombák is hatottak (eddig ilyenkor csak a vízibomba-sor látszott, a hedgehog-ellenőrzés nem)
-const VER = 'v1.14.249';
+const VER = 'v1.14.250';
 // ===== MEGFIGYELŐ / TESZT MÓD (obsMode, v1.14.195) =====
 // Megfigyelő módban mindkét oldalt az AI vezérli (a kísérők is: NPC-logikával), a pálya mindent mutat (nincs köd), és a körök maguktól léptetődnek;
 // a lezárt csatákból statisztika készül (konvoj-, U-boat-, kísérő-veszteség, kimenetel), hogy látszódjon: sokféle csata születik-e, vagy egyoldalú lett a hangolás.
@@ -2827,47 +2828,54 @@ const MIS = {
       cells.push(OPG.addr(ok[0], ok[1])); cr = ok[0]; cc = ok[1];
     }
     CAMP.misN = (CAMP.misN | 0) + 1;
-    const m = { id: 'K' + CAMP.misN, type: 'patrol', port, cells, due: CAMP.t + Math.max(1, ECO.misDays | 0), egp: Math.round((+ECO.misEGp || 0) * n), unit: null, isNew: true };
+    const m = { id: 'K' + CAMP.misN, type: 'patrol', port, cells, due: CAMP.t + Math.max(1, ECO.misDays | 0), egp: Math.round((+ECO.misEGp || 0) * n), day: OPG.day(), isNew: true };
     this.list().push(m); CAMP.log.push('[Új küldetés] ' + m.id + ': járőr, kiíró kikötő: ' + port + ', ' + n + ' célcella (' + cells.join(', ') + '), jutalom ' + m.egp + ' EGp, határidő: ' + ECO.misDays + ' nap.');
     return m;
   },
-  // daily: napváltáskor: a lejárt, el nem indított küldetések törlése; a már nem létező kötelékhez kötött küldetések felszabadítása; új küldetés sorsolása
+  // daily: napváltáskor: a lejárt küldetések törlése (büntetés nélkül); új küldetés sorsolása
   daily() {
     if (!this.on()) return;
-    const L = this.list(), live = new Set(OPG.units().map(u => u.id));
-    L.forEach(m => { if (m.unit && !live.has(m.unit)) m.unit = null; });
-    for (let i = L.length - 1; i >= 0; i--) { const m = L[i]; if (!m.unit && m.due < CAMP.t) { CAMP.log.push('[Küldetés lejárt] ' + m.id + ' (' + m.port + ') – nem vállaltad, büntetés nélkül.'); L.splice(i, 1); } }
+    const L = this.list();
+    for (let i = L.length - 1; i >= 0; i--) { const m = L[i]; if (m.due < CAMP.t) { CAMP.log.push('[Küldetés lejárt] ' + m.id + ' (' + m.port + ') – büntetés nélkül.'); L.splice(i, 1); } }
     if (L.length < (ECO.misMax | 0) && Math.random() * 100 < (+ECO.misP || 0)) this.gen();
   },
   get(id) { return this.list().find(m => m.id === id) || null; },
-  // visit: a kötelék egy cellára lépett: ha a küldetés célcellája, érintettnek számít
+  // got: a kötelék útvonalából a küldetés kiírása óta érintett célcellák
+  got(u, m) { const rt = (u.route || []).filter(x => x[3] == null || x[3] >= m.day).map(x => x[0]); return m.cells.filter(a => rt.includes(a)); },
+  // best: a küldetés legjobb haladása a kint lévő kötelékek között: {n: érintett cellák száma, u: a kötelék azonosítója}
+  best(m) { let b = { n: 0, u: null, cells: [] }; OPG.units().forEach(u => { const g = this.got(u, m); if (g.length > b.n) b = { n: g.length, u: u.id, cells: g }; }); return b; },
+  // visit: a kötelék egy cellára lépett: üzenet, ha egy nyitott küldetés célcellája
   visit(u, a) {
-    if (!u.mis) return; const m = this.get(u.mis); if (!m || !m.cells.includes(a)) return;
-    u.vis = u.vis || []; if (u.vis.includes(a)) return; u.vis.push(a);
-    OPG.say && OPG.say(m.id + ': ' + a + ' érintve (' + u.vis.length + '/' + m.cells.length + ').' + (u.vis.length >= m.cells.length ? ' Minden cella megvan – térj vissza egy kikötőbe!' : ''));
+    if (!this.on()) return;
+    this.list().forEach(m => { const i = m.cells.indexOf(a); if (i < 0) return; const g = this.got(u, m).length;
+      OPG.say && OPG.say(m.id + '.' + (i + 1) + ' (' + a + ') érintve: ' + u.id + ' ' + g + '/' + m.cells.length + (g >= m.cells.length ? ' – minden cella megvan, térj vissza kikötőbe / a konvojhoz!' : '') + ' '); });
   },
-  // dock: a kötelék kikötött (a CAMP.dockTF előtt hívja az OP): ha minden cellát érintette, a küldetés teljesül; különben nyitva marad
-  dock(u, port) {
-    if (!u.mis) return; const m = this.get(u.mis); if (!m) return;
-    const done = (u.vis || []).length >= m.cells.length;
-    if (done) { CAMP.egp += m.egp; CAMP.earned = (CAMP.earned || 0) + m.egp; CAMP.log.push('[Küldetés teljesítve] ' + m.id + ' (' + u.id + '), kikötő: ' + port + ': +' + m.egp + ' EGp.'); const L = this.list(); L.splice(L.indexOf(m), 1); }
-    else { m.unit = null; CAMP.log.push('[Küldetés nem teljesült] ' + m.id + ': ' + u.id + ' ' + (u.vis || []).length + '/' + m.cells.length + ' cellát érintett, a küldetés újra kiírva (határidő: ' + Math.max(0, m.due - CAMP.t) + ' nap).'); }
-    u.mis = null; u.vis = [];
-  },
-  // send: kötelék indítása a küldetésre a Flotta „Kötelék” oszlopában kijelölt hajókból (egy kikötőből, legfeljebb misShips)
-  send(id) {
-    const m = this.get(id); if (!m) return; if (m.unit) { alert('Erre a küldetésre már úton van egy kötelék: ' + m.unit); return; }
-    const ids = CAMP.fleet.filter(f => f.tsel && CAMP.inPort(f) && f.st === 'ready' && !CAMP.worn(f));
-    if (!ids.length) { alert('Jelölj ki kikötőben álló, kész hajókat (a lista fölött).'); return; }
-    if (ids.some(f => f.loc !== ids[0].loc)) { alert('A kötelék hajói egy kikötőben álljanak.'); return; }
-    if (ids.length > (ECO.misShips | 0)) { alert('Egy küldetésre legfeljebb ' + ECO.misShips + ' hajó küldhető.'); return; }
-    const port = ids[0].loc, tf = OPG.tfNew(ids.map(f => f.id), port, 5), u = OPG.units().find(x => x.id === tf);
-    if (u) { u.mis = m.id; u.vis = []; }
-    ids.forEach(f => { f.loc = tf; f.tsel = false; f.sel = false; }); m.unit = tf; m.isNew = false;
-    CAMP.log.push(tf + ' kötelék indult ' + port + ' kikötőből a(z) ' + m.id + ' küldetésre: ' + ids.map(f => f.id).join(', ') + '.');
-    CAMP.save(); CAMP.refresh(); this.view();
+  // arrive: a kötelék kikötött / csatlakozott a konvojhoz (a hívó eltávolítja a köteléket): az összes nyitott küldetés ellenőrzése; a teljesítettek jutalma jóváíródik. Visszaadja a teljesített küldetések szövegét
+  arrive(u, where) {
+    if (!this.on()) return ''; const L = this.list(); let txt = '';
+    for (let i = L.length - 1; i >= 0; i--) { const m = L[i];
+      if (this.got(u, m).length >= m.cells.length) { CAMP.egp += m.egp; CAMP.earned = (CAMP.earned || 0) + m.egp; CAMP.log.push('[Küldetés teljesítve] ' + m.id + ' (' + u.id + ', ' + where + '): +' + m.egp + ' EGp.'); txt += ' ' + m.id + ' teljesítve: +' + m.egp + ' EGp.'; L.splice(i, 1); } }
+    return txt;
   },
   tog(id) { const f = CAMP.get(id); if (f) { f.tsel = !f.tsel; this.view(); } },
+  // launch: a Flotta lap „makeTF” mintájára kötelék indítása a kijelölt, kikötőben álló, kész hajókból (egy kikötőből, legfeljebb misShips); nincs küldetés-hozzárendelés
+  launch() {
+    const ids = CAMP.fleet.filter(f => f.tsel && CAMP.inPort(f) && f.st === 'ready' && !CAMP.worn(f));
+    if (!ids.length) { alert('Jelölj ki kikötőben álló, kész hajókat.'); return; }
+    if (ids.some(f => f.loc !== ids[0].loc)) { alert('A kötelék hajói egy kikötőben álljanak.'); return; }
+    if (ids.length > (ECO.misShips | 0)) { alert('Egy kötelékben legfeljebb ' + ECO.misShips + ' hajó indulhat.'); return; }
+    const port = ids[0].loc, tf = OPG.tfNew(ids.map(f => f.id), port, 5);
+    ids.forEach(f => { f.loc = tf; f.tsel = false; f.sel = false; });
+    CAMP.log.push(tf + ' kötelék indult ' + port + ' kikötőből: ' + ids.map(f => f.id).join(', ') + '.'); CAMP.save(); CAMP.refresh(); this.view();
+  },
+  // detach: a konvojjal úton lévő kijelölt hajók leválasztása önálló köteléknek (a konvoj mostani cellájából)
+  detach() {
+    const ids = CAMP.fleet.filter(f => f.tsel && f.loc === 'convoy');
+    if (!CAMP.voy || !CAMP.voy.sailed || !ids.length) { alert('Jelölj ki a konvojjal úton lévő hajókat.'); return; }
+    if (ids.length > (ECO.misShips | 0)) { alert('Egy kötelékben legfeljebb ' + ECO.misShips + ' hajó indulhat.'); return; }
+    const id = OPG.tfDetach(ids.map(f => f.id)); ids.forEach(f => { f.loc = id; f.tsel = false; });
+    CAMP.log.push(id + ' leválasztva a konvojról: ' + ids.map(f => f.id).join(', ') + ' (' + OPG.convoyCell() + ').'); CAMP.save(); CAMP.refresh(); this.view();
+  },
   // newCount: a még meg nem nézett küldetések száma (a villogó jelzéshez)
   newCount() { return this.on() ? this.list().filter(m => m.isNew).length : 0; },
   // navBlink: a „Küldetések” gomb villog, ha új küldetés van (és megjelenik / eltűnik a kapcsoló szerint)
@@ -2875,20 +2883,26 @@ const MIS = {
     const b = document.getElementById('nMIS'); if (!b) return; b.style.display = this.on() ? '' : 'none';
     b.classList.toggle('misBlink', this.newCount() > 0); b.textContent = 'Küldetések' + (this.newCount() ? ' (' + this.newCount() + ' új)' : '');
   },
-  // opMarks: az OP-térkép SVG-jelölése: a vállalt küldetések célcellái (X; az érintett zöld, kiszürkült) – az OP rajzolása hívja
+  // opMarks: az OP-térkép SVG-jelölése: a nyitott küldetések célcellái (X; ha valamelyik kötelék már érintette, zöld) – az OP rajzolása hívja
   opMarks(px) {
     if (!this.on()) return ''; let h = '';
-    this.list().forEach(m => {
-      if (!m.unit) return; const u = OPG.units().find(x => x.id === m.unit), vis = (u && u.vis) || [];
-      m.cells.forEach((a, i) => { const [x, y] = px(a), ok = vis.includes(a), col = ok ? '#2e7d32' : '#b3261e';
+    this.list().forEach(m => { const bs = this.best(m);
+      m.cells.forEach((a, i) => { const [x, y] = px(a), ok = bs.cells.includes(a), col = ok ? '#2e7d32' : '#b3261e';
         h += '<g stroke="' + col + '" stroke-width="3" opacity="' + (ok ? .6 : 1) + '"><line x1="' + (x - 9) + '" y1="' + (y - 9) + '" x2="' + (x + 9) + '" y2="' + (y + 9) + '"/><line x1="' + (x - 9) + '" y1="' + (y + 9) + '" x2="' + (x + 9) + '" y2="' + (y - 9) + '"/></g>' +
           '<text x="' + (x + 11) + '" y="' + (y + 4) + '" font-size="11" font-weight="700" fill="' + col + '">' + m.id + '.' + (i + 1) + '</text>'; });
     });
     return h;
   },
-  // view: a Küldetések lap: régies papírlap, kicsinyített egyszínű térkép a célcellákkal; mellette a küldetések listája és a hajók kijelölése
+  // pos: egy hajó helye az OP-térképen: [sor, oszlop] és szöveges állapot (kikötőben / konvojban / TF-ben)
+  pos(f) {
+    if (f.loc === 'convoy') { const a = OPG.convoyCell(); return { rc: OPG.parse(a), where: 'konvojban (' + a + ')' }; }
+    const P = OPG.ports(); if (P[f.loc]) return { rc: OPG.parse(P[f.loc]), where: 'kikötőben: ' + f.loc };
+    const u = OPG.units().find(x => x.id === f.loc); if (u) return { rc: [u.r, u.c], where: 'úton: ' + u.id + ' (' + OPG.cellOf(u) + ')' };
+    return { rc: null, where: f.loc || '?' };
+  },
+  // view: a Küldetések lap: régies papírlap, kicsinyített egyszínű térkép a célcellákkal; mellette a küldetések listája; alatta a hajók táblázata (állapot, hely, távolság a küldetések legközelebbi cellájától)
   view() {
-    const L = this.list(), cs = 14, W = 42 * cs, H = 20 * cs, ink = '#5b4630';
+    const L = this.list(), cs = 14, W = 42 * cs, H = 20 * cs, ink = '#5b4630', dist = (p, a) => { if (!p) return null; const q = OPG.parse(a); return Math.max(Math.abs(p[0] - q[0]), Math.abs(p[1] - q[1])); };
     L.forEach(m => { m.isNew = false; });
     let svg = '<svg viewBox="0 0 ' + W + ' ' + H + '" width="100%" style="max-width:' + W + 'px;background:#efe3c4;border:2px solid ' + ink + '">';
     for (let r = 0; r < 20; r++) for (let c = 0; c < 42; c++) if (OPG.landAt(r, c)) svg += '<rect x="' + c * cs + '" y="' + r * cs + '" width="' + cs + '" height="' + cs + '" fill="#c9b78e"/>';
@@ -2897,18 +2911,24 @@ const MIS = {
     this.ports().forEach(n => { const [r, c] = OPG.parse(OPG.ports()[n]); svg += '<circle cx="' + (c + .5) * cs + '" cy="' + (r + .5) * cs + '" r="4" fill="' + ink + '"/><text x="' + ((c + .5) * cs + 6) + '" y="' + ((r + .5) * cs - 4) + '" font-size="10" fill="' + ink + '" font-family="Courier New,monospace">' + n + '</text>'; });
     L.forEach(m => m.cells.forEach((a, i) => { const [r, c] = OPG.parse(a), x = (c + .5) * cs, y = (r + .5) * cs;
       svg += '<g stroke="#8b1a10" stroke-width="2.2"><line x1="' + (x - 5) + '" y1="' + (y - 5) + '" x2="' + (x + 5) + '" y2="' + (y + 5) + '"/><line x1="' + (x - 5) + '" y1="' + (y + 5) + '" x2="' + (x + 5) + '" y2="' + (y - 5) + '"/></g><text x="' + (x + 7) + '" y="' + (y + 4) + '" font-size="10" font-weight="700" fill="#8b1a10" font-family="Courier New,monospace">' + m.id + '.' + (i + 1) + '</text>'; }));
+    OPG.units().forEach(u => { svg += '<circle cx="' + (u.c + .5) * cs + '" cy="' + (u.r + .5) * cs + '" r="5" fill="none" stroke="#1a4a8b" stroke-width="2"/><text x="' + ((u.c + .5) * cs + 7) + '" y="' + ((u.r + .5) * cs + 12) + '" font-size="9" fill="#1a4a8b" font-family="Courier New,monospace">' + u.id + '</text>'; });
     svg += '</svg>';
-    const ready = CAMP.fleet.filter(f => CAMP.inPort(f) && f.st === 'ready' && !CAMP.worn(f)), sel = ready.filter(f => f.tsel).length;
-    let ships = ready.length ? ready.map(f => '<label style="display:inline-block;margin:2px 8px 2px 0;white-space:nowrap"><input type="checkbox" ' + (f.tsel ? 'checked ' : '') + 'onchange="MIS.tog(\'' + f.id + '\')"> ' + f.id + ' <small>(' + D[vcls(f)].n + ', ' + f.loc + ')</small></label>').join('') : '<i>Nincs kikötőben álló, kész hajó.</i>';
-    let list = L.length ? L.map(m => {
-      const u = m.unit ? OPG.units().find(x => x.id === m.unit) : null, vis = u && u.vis ? u.vis.length : 0;
-      return '<div style="border:1px dashed ' + ink + ';padding:6px 8px;margin:6px 0"><b>' + m.id + ' – járőr</b> <small>(' + m.port + ')</small><br>Célcellák: ' + m.cells.map((a, i) => (u && u.vis && u.vis.includes(a) ? '<s>' + a + '</s>' : a)).join(' → ') + '<br>Jutalom: <b>' + m.egp + ' EGp</b> · ' +
-        (m.unit ? 'úton: <b>' + m.unit + '</b> (' + vis + '/' + m.cells.length + (vis >= m.cells.length ? ', térjen vissza kikötőbe' : '') + ')' : 'határidő: ' + Math.max(0, m.due - CAMP.t) + ' nap <button onclick="MIS.send(\'' + m.id + '\')">Indítás a kijelölt hajókkal (' + sel + ')</button>') + '</div>';
-    }).join('') : '<i>Most nincs kiírt küldetés.</i>';
+    // a küldetések listája: cellák (az érintettek áthúzva), haladás, jutalom, határidő
+    const list = L.length ? L.map(m => { const bs = this.best(m);
+      return '<div style="border:1px dashed ' + ink + ';padding:6px 8px;margin:6px 0"><b>' + m.id + ' – járőr</b> <small>(kiírta: ' + m.port + ')</small><br>Célcellák: ' + m.cells.map(a => bs.cells.includes(a) ? '<s>' + a + '</s>' : a).join(' → ') +
+        '<br>Jutalom: <b>' + m.egp + ' EGp</b> · határidő: ' + Math.max(0, m.due - CAMP.t) + ' nap' + (bs.n ? ' · legjobb haladás: <b>' + bs.u + ' ' + bs.n + '/' + m.cells.length + '</b>' : '') + '</div>'; }).join('') : '<i>Most nincs kiírt küldetés.</i>';
+    // a hajók táblázata: állapot, hely, távolság a küldetések legközelebbi (még nem érintett) cellájától, a hatótáv (üzemanyag) cellában
+    const fl = CAMP.fleet.filter(f => !f.lost), ready = f => CAMP.inPort(f) && f.st === 'ready' && !CAMP.worn(f), sel = fl.filter(f => f.tsel).length;
+    let tb = '<table style="border-collapse:collapse;width:100%;font-size:12px"><tr style="text-align:left;border-bottom:1px solid ' + ink + '"><th></th><th>Hajó</th><th>Állapot</th><th>Hely</th><th>⛽</th>' + L.map(m => '<th>' + m.id + '</th>').join('') + '</tr>';
+    fl.forEach(f => { const p = this.pos(f), st = ready(f) ? 'kész / szabad' : f.loc === 'convoy' ? 'konvojban' : (CAMP.inPort(f) ? 'szerviz / javítás' : 'úton (TF)'), can = ready(f) || f.loc === 'convoy', fc = CAMP.fuelCells(f.fu || 0);
+      tb += '<tr style="border-bottom:1px dotted ' + ink + '"><td>' + (can ? '<input type="checkbox" ' + (f.tsel ? 'checked ' : '') + 'onchange="MIS.tog(\'' + f.id + '\')">' : '') + '</td><td><b>' + f.id + '</b> <small>' + D[vcls(f)].n + '</small></td><td>' + st + '</td><td>' + p.where + '</td><td>' + fc + '</td>' +
+        L.map(m => { const bs = this.best(m), left = m.cells.filter(a => !bs.cells.includes(a)), ds = left.map(a => dist(p.rc, a)).filter(x => x != null), d = ds.length ? Math.min(...ds) : null; return '<td style="color:' + (d != null && d > fc ? '#a00' : 'inherit') + '">' + (d == null ? '–' : d) + '</td>'; }).join('') + '</tr>'; });
+    tb += '</table>';
     document.getElementById('vMIS').innerHTML = '<div style="background:#f4ead0;color:' + ink + ';border:2px solid ' + ink + ';border-radius:4px;padding:12px;font-family:\'Courier New\',monospace;box-shadow:0 2px 10px rgba(0,0,0,.35)">' +
-      '<h2 style="margin:0 0 8px">Küldetések</h2><div style="display:flex;flex-wrap:wrap;gap:14px"><div style="flex:1 1 560px">' + svg + '</div><div style="flex:1 1 300px">' + list +
-      '<div style="margin-top:10px"><b>Hajók kijelölése</b> (kikötőben álló, kész; legfeljebb ' + ECO.misShips + ')<br>' + ships + '</div></div></div>' +
-      '<p style="font-size:12px;margin:8px 0 0">Szabály: a kötelék minden célcellát érint, majd bármelyik kikötőbe visszaér – ekkor jár a jutalom. A kötelék úton nem vehet részt a konvoj kísérésében.</p></div>';
+      '<h2 style="margin:0 0 8px">Küldetések</h2><div style="display:flex;flex-wrap:wrap;gap:14px"><div style="flex:1 1 560px">' + svg + '</div><div style="flex:1 1 300px">' + list + '</div></div>' +
+      '<div style="margin-top:12px"><b>Hajók</b> – a számok a legközelebbi még érintetlen célcella távolsága cellában (piros: több, mint a hatótáv); ⛽ = hatótáv cellában.<br>' +
+      '<button onclick="MIS.launch()">Kötelék indítása a kijelölt (kikötői) hajókkal (' + sel + ')</button> <button onclick="MIS.detach()">Leválasztás a konvojról (a kijelölt konvoj-kísérők)</button><div style="max-height:380px;overflow:auto;margin-top:6px">' + tb + '</div></div>' +
+      '<p style="font-size:12px;margin:8px 0 0">Szabály: nincs jelentkezés – bármelyik kötelék teljesíti a küldetést, ha a kiírása óta minden célcellát érintett, majd kikötőbe ér vagy csatlakozik a konvojhoz. Egy út több küldetést is teljesíthet; a megszakított út haladása elvész.</p></div>';
     this.navBlink(); showView('MIS');
   },
 };
@@ -3234,7 +3254,7 @@ const CAMP = {
     if (u.tow) { alert(id + ' mentő kötelék (súlyosan sérült hajóval): nem csatlakozhat a konvojhoz, vidd kikötőbe.'); return; }
     if (OPG.convoyCell() !== OPG.cellOf(u)) { alert(id + ' nincs a konvoj cellájában (' + OPG.convoyCell() + ').'); return; }
     if (this.group().length + u.ships.length > ECO.maxGroup) { alert('Nincs elég szabad hely a konvoj kíséretében (max ' + ECO.maxGroup + ').'); return; }
-    u.ships.forEach(sid => { const f = this.get(sid); if (f) f.loc = 'convoy'; }); OPG.tfRemove(id); this.log.push(id + ' csatlakozott a konvojhoz.'); this.save(); this.refresh(); this.fleetView();
+    let mt = ''; try { mt = MIS.arrive(u, 'a konvojhoz csatlakozva'); } catch (e) { } u.ships.forEach(sid => { const f = this.get(sid); if (f) f.loc = 'convoy'; }); OPG.tfRemove(id); if (mt) alert('Küldetés:' + mt); this.log.push(id + ' csatlakozott a konvojhoz.'); this.save(); this.refresh(); this.fleetView();
   },
   // dockTF: a kötelék kikötött: a hajók a kikötőben állnak, az üzemanyag-feltöltés ingyenes és azonnali (az OP hívja)
   dockTF(u, port) { u.ships.forEach(id => { const f = this.get(id); if (f) { f.loc = port; f.fu = D[vcls(f)].fuel; f.qs = null; f.dis = false; f.fdry = 0; } }); this.log.push('[' + OPG.day() + '. nap] ' + u.id + ' kikötött: ' + port + '.'); this.save(); this.refresh(); },
@@ -3918,7 +3938,7 @@ function dockBtn(el,u){if(!u||!(CFG.tfDockR>=0))return;const p=tfDockNear(u);if(
 // tfDock: a kötelék kiköt a közeli kikötőben (nem kell lépés és üzemanyag; a hajók feltöltődnek)
 function tfDock(id){const u=units.find(x=>x.id===id);if(!u)return;const p=tfDockNear(u);
  if(!p){say(u.id+': nincs kikötő a közelben (legfeljebb '+(CFG.tfDockR|0)+' cellára kell lennie).');return}
- try{MIS.dock(u,p)}catch(e){}CAMP.dockTF(u,p);units=units.filter(x=>x!==u);nextAct();say(u.id+' kikötött: '+p+'. A hajók feltöltődtek, a kikötőben állnak (javítás, bomba, fejlesztés a Flotta fülön).');draw();CAMP.save()}
+ let mt='';try{mt=MIS.arrive(u,p)}catch(e){}CAMP.dockTF(u,p);units=units.filter(x=>x!==u);nextAct();say(u.id+' kikötött: '+p+'. A hajók feltöltődtek, a kikötőben állnak (javítás, bomba, fejlesztés a Flotta fülön).'+mt);draw();CAMP.save()}
 // routeTable: az útvonal-táblázat: naponként egy sor, egységenként egy oszlop-csoport (cella, front, esemény)
 function routeTable(all,cols){const dk=(x,i)=>x[3]!=null?x[3]:i,days=[...new Set(all.flatMap(u=>u.route.map((x,i)=>dk(x,i))))].sort((a,b)=>a-b);
  let h='<thead><tr><th>Nap</th>'+all.map((u,i)=>'<th colspan="3" style="background:'+cols[i%cols.length]+';color:#fff">'+u.id+'</th>').join('')+'</tr><tr><th></th>'+all.map(()=>'<th>Cella</th><th>Front</th><th>Esemény</th>').join('')+'</tr></thead><tbody>';
@@ -3942,7 +3962,7 @@ function pickTF(r,c){const u=units.find(x=>x.id===act);if(!u)return;
  u.ships.forEach(id=>{const f=CAMP.get(id);if(f&&!f.dis)f.fu-=(+CFG.opFuel||160)});
  const a=addr(r,c),w=W[r][c],port=Object.keys(PORTS).find(n=>PORTS[n]===a),e=port?'-':evAt(r,c);
  u.route.push([a,w,e,day]);
- if(port){try{MIS.dock(u,port)}catch(e){}CAMP.dockTF(u,port);units=units.filter(x=>x!==u);nextAct();say(u.id+' kikötött: '+port+'. A hajók a kikötőben állnak (javítás, bomba, fejlesztés a Flotta fülön).');draw();CAMP.save();return}
+ if(port){let mt='';try{mt=MIS.arrive(u,port)}catch(e){}CAMP.dockTF(u,port);units=units.filter(x=>x!==u);nextAct();say(u.id+' kikötött: '+port+'. A hajók a kikötőben állnak (javítás, bomba, fejlesztés a Flotta fülön).'+mt);draw();CAMP.save();return}
  if(tut&&a===tut.target){u.moved=true;u.left=0;say('Megérkeztél a célhoz: '+a+'. A taktikai pálya következik.');draw();CAMP.missionArrive();return}
  if(e!='-'){u.moved=true;u.left=0;say('Taktikai esemény! ('+e+') '+u.id+' a(z) '+a+' cellában – belépés a taktikai térképre.');draw();CAMP.event(e,a,w,5,u.id);return}
  if(u.left<1){u.moved=true;nextAct()}
