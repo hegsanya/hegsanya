@@ -1,6 +1,6 @@
 <!doctype html><html lang="hu" data-theme="light"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>CEG – Konvoj kísérő kampány v1.14.252</title>
+<title>CEG – Konvoj kísérő kampány v1.14.253</title>
 <style>
 /* Színek: világos/sötét téma változókkal; a gombok és táblázatok stílusa */
 :root{--bg:#f4f1ea;--fg:#1d2733;--pn:#fff;--ln:#c9c2b3;--ac:#b3261e;--sea:#d6ecf4;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -273,6 +273,11 @@ body.noHlp .hlp{display:none}
 .dxfx .fxk{animation-duration:var(--fx);animation-fill-mode:both;animation-play-state:paused;transform-box:fill-box;transform-origin:center}
 .dxfx.play .fxk{animation-play-state:running}
 .dxfx .ex{fill:#ff9800}.dxfx.hit .ex{fill:#e53935}.dxfx.miss .ex{fill:#90a4ae}
+/* v1.14.253: a Küldetések lap témái: világos = régies papírlap, sötét / fehér / tervrajz a téma színeivel */
+.misSheet{--mp:#f4ead0;--mi:#5b4630;--ml:#c9b78e;--msea:#efe3c4;--mx:#8b1a10;--mt:#1a4a8b}
+:root[data-theme="dark"] .misSheet{--mp:var(--pn);--mi:var(--fg);--ml:rgba(255,255,255,.14);--msea:var(--bg);--mx:#ff8a7a;--mt:#6ab0ff}
+:root[data-theme="white"] .misSheet{--mp:#fff;--mi:#202124;--ml:#e2e2e2;--msea:#fff;--mx:#b3261e;--mt:#1565c0}
+:root[data-theme="dark"][data-skin="blue"] .misSheet{--mp:#0e467f;--mi:#eaf3ff;--ml:rgba(255,255,255,.2);--msea:#0d4a8a;--mx:#ffd479;--mt:#fff}
 @keyframes misBl{0%,100%{background:#f4c542;color:#000}50%{background:#fff3c4;color:#000}}
 .misBlink{animation:misBl 1s infinite;font-weight:700}
 @keyframes fxDrop{from{transform:translateY(0)}to{transform:translateY(30px)}}
@@ -2673,6 +2678,7 @@ applyLogPos();renderCfg();try{qbRender()}catch(e){}   // a pálya felállítás�
 //   v1.14.234 (2026-10-26) – OP TÉRKÉP: a szárazföldi cellákon nincs U / R / H esemény (evLand, alap 1). A szárazföld-maszk (LANDM: 20 × 42, „#” = szárazföld) az OP-térkép képéből készült (a cella több mint fele nem tenger); a kikötő-cellák (eseménymentes, „.”) változatlanok. Az 1 / 0 kapcsoló a Beállításokban
 //   v1.14.235 (2026-10-26) – ÚJ: a MEGÁLLT (vagy a találat után megálló) teherhajó ég / füstöl: fogStop (alap 20; 0 = ki) cellára látszik (az időjárás levonva); a periszkópmélységű U-boat is látja (fogStopPer, alap 1). Az észlelhetőség-táblázatban külön sor (köd-réteg)
 //   v1.14.236 (2026-10-26) – HEDGEHOG / SQUID ELLENŐRZÉS LÁTHATÓVÁ: (1) a sortűz / lövés után a napló kiírja az eredményt is („ellenőrizve: nincs U-boat a célcellákban” / „a találatot a lépése után ellenőrzöm”), nem csak a találatot; (2) JAVÍTÁS: az az U-boat, amelyik már lépett és kiértékelődött (bl), de még nem „kész”, eddig kimaradt az azonnali ellenőrzésből – most a hedgehog / Squid rá is azonnal hat; (3) az U-boat kiértékelésénél, ha volt hedgehog / Squid jel, de egyik cellában sem volt, ezt is kiírja
+//   v1.14.253 (2026-10-28) – A Küldetések lap követi a témát: világos = régies papírlap, sötét / fehér / Tervrajz a téma színeivel (CSS változók: --mp papír, --mi tinta, --ml szárazföld, --msea tenger, --mx jelölés, --mt kötelék).
 //   v1.14.252 (2026-10-28) – A kezdő romboló D1 (startD1, alap 1; 0 = a régi, Excelből örökölt D2). A tutorial továbbra is D2-vel megy; futó kampányt nem érint, csak az Új kampányt.
 //   v1.14.251 (2026-10-28) – ÚJ KAMPÁNYNÁL VÁLASZTHATÓ A KEZDŐ ROMBOLÓ (startAsk, alap 1): az „Új kampány” megerősítése után ablak: T (Admiral 5x5″, 4680 üzemanyag) vagy H (Admiral 4x5″, 5500); a három korvett fix. A választás a startFleet első T / H elemét írja át (a beállítás megmarad). 0 = a startFleet szerint indul.
 //   v1.14.250 (2026-10-28) – KÜLDETÉSEK: nincs jelentkezés – a küldetés független a köteléktől: bármelyik TF teljesíti, ha a kiírása óta (az útvonala alapján) minden célcellát érintett és utána kikötött VAGY csatlakozott a konvojhoz; egy út több küldetést is teljesíthet. Új hajó-táblázat a Küldetések lapon: állapot (kész / konvojban / úton TF / szerviz), hely, hatótáv (cella) és a távolság a küldetések legközelebbi még érintetlen cellájától (piros, ha több a hatótávnál); Kötelék indítása a kikötőből és Leválasztás a konvojról a lapról. Az OP-térképen minden nyitott küldetés cellái látszanak (az érintett zöld).
@@ -2689,7 +2695,7 @@ applyLogPos();renderCfg();try{qbRender()}catch(e){}   // a pálya felállítás�
 //   v1.14.239 (2026-10-26) – ÚJ: (1) LUT torpedó (lutOn, alap 1; 1944. januártól): az U-boat kártyán „LUT” jelölőnégyzet (az AI lutAiP %); a FAT utóda: lutLen 18 cella, lutRun 6 egyenes, lutLeg 3 fél-szélesség, találat teherhajón d6 ≤ lutHit (3), hadihajón ≤ lutHitE (1); ha FAT is be van jelölve, a LUT számít. (2) LÉGPERISZKÓP / SCHNORCHEL (schOn, alap 1; 1944. júniustól; csak szabad mozgásnál): 1/8-as mélységen a kártya „Légperiszkóp” jelölőnégyzetével a dízel hajt: az akku nem fogy, hanem schRech (2) cellát tölt körönként, max schSpd (2) lépés, kimerült akkuval is halad; kiesett dízelnél nem működik; az AI az akku fele alatt automatikusan használja.
 //   v1.14.238 (2026-10-26) – SZABAD MOZGÁS: az U-boat a belső játékterületen (pl. 80-as táblán az 50×50-esen) bárhol léphet be, nem csak a szélén (uInner, alapból BE; KI = a régi szél-belépés uEdge szerint).
 //   v1.14.237 (2026-10-26) – HEDGEHOG / SQUID ELLENŐRZÉS: az U-boat lépés utáni kiértékelésében a hedgehog / Squid „nincs találat” eredmény akkor is kiíródik, ha a vízibombák is hatottak (eddig ilyenkor csak a vízibomba-sor látszott, a hedgehog-ellenőrzés nem)
-const VER = 'v1.14.252';
+const VER = 'v1.14.253';
 // ===== MEGFIGYELŐ / TESZT MÓD (obsMode, v1.14.195) =====
 // Megfigyelő módban mindkét oldalt az AI vezérli (a kísérők is: NPC-logikával), a pálya mindent mutat (nincs köd), és a körök maguktól léptetődnek;
 // a lezárt csatákból statisztika készül (konvoj-, U-boat-, kísérő-veszteség, kimenetel), hogy látszódjon: sokféle csata születik-e, vagy egyoldalú lett a hangolás.
@@ -2904,16 +2910,16 @@ const MIS = {
   },
   // view: a Küldetések lap: régies papírlap, kicsinyített egyszínű térkép a célcellákkal; mellette a küldetések listája; alatta a hajók táblázata (állapot, hely, távolság a küldetések legközelebbi cellájától)
   view() {
-    const L = this.list(), cs = 14, W = 42 * cs, H = 20 * cs, ink = '#5b4630', dist = (p, a) => { if (!p) return null; const q = OPG.parse(a); return Math.max(Math.abs(p[0] - q[0]), Math.abs(p[1] - q[1])); };
+    const L = this.list(), cs = 14, W = 42 * cs, H = 20 * cs, ink = 'var(--mi)', dist = (p, a) => { if (!p) return null; const q = OPG.parse(a); return Math.max(Math.abs(p[0] - q[0]), Math.abs(p[1] - q[1])); };
     L.forEach(m => { m.isNew = false; });
-    let svg = '<svg viewBox="0 0 ' + W + ' ' + H + '" width="100%" style="max-width:' + W + 'px;background:#efe3c4;border:2px solid ' + ink + '">';
-    for (let r = 0; r < 20; r++) for (let c = 0; c < 42; c++) if (OPG.landAt(r, c)) svg += '<rect x="' + c * cs + '" y="' + r * cs + '" width="' + cs + '" height="' + cs + '" fill="#c9b78e"/>';
-    for (let i = 1; i < 42; i++) svg += '<line x1="' + i * cs + '" y1="0" x2="' + i * cs + '" y2="' + H + '" stroke="' + ink + '" stroke-opacity=".12"/>';
-    for (let i = 1; i < 20; i++) svg += '<line x1="0" y1="' + i * cs + '" x2="' + W + '" y2="' + i * cs + '" stroke="' + ink + '" stroke-opacity=".12"/>';
-    this.ports().forEach(n => { const [r, c] = OPG.parse(OPG.ports()[n]); svg += '<circle cx="' + (c + .5) * cs + '" cy="' + (r + .5) * cs + '" r="4" fill="' + ink + '"/><text x="' + ((c + .5) * cs + 6) + '" y="' + ((r + .5) * cs - 4) + '" font-size="10" fill="' + ink + '" font-family="Courier New,monospace">' + n + '</text>'; });
+    let svg = '<svg viewBox="0 0 ' + W + ' ' + H + '" width="100%" style="max-width:' + W + 'px;background:var(--msea);border:2px solid ' + ink + '">';
+    for (let r = 0; r < 20; r++) for (let c = 0; c < 42; c++) if (OPG.landAt(r, c)) svg += '<rect x="' + c * cs + '" y="' + r * cs + '" width="' + cs + '" height="' + cs + '" style="fill:var(--ml)"/>';
+    for (let i = 1; i < 42; i++) svg += '<line x1="' + i * cs + '" y1="0" x2="' + i * cs + '" y2="' + H + '" style="stroke:var(--mi)" stroke-opacity=".12"/>';
+    for (let i = 1; i < 20; i++) svg += '<line x1="0" y1="' + i * cs + '" x2="' + W + '" y2="' + i * cs + '" style="stroke:var(--mi)" stroke-opacity=".12"/>';
+    this.ports().forEach(n => { const [r, c] = OPG.parse(OPG.ports()[n]); svg += '<circle cx="' + (c + .5) * cs + '" cy="' + (r + .5) * cs + '" r="4" style="fill:var(--mi)"/><text x="' + ((c + .5) * cs + 6) + '" y="' + ((r + .5) * cs - 4) + '" font-size="10" style="fill:var(--mi)" font-family="Courier New,monospace">' + n + '</text>'; });
     L.forEach(m => m.cells.forEach((a, i) => { const [r, c] = OPG.parse(a), x = (c + .5) * cs, y = (r + .5) * cs;
-      svg += '<g stroke="#8b1a10" stroke-width="2.2"><line x1="' + (x - 5) + '" y1="' + (y - 5) + '" x2="' + (x + 5) + '" y2="' + (y + 5) + '"/><line x1="' + (x - 5) + '" y1="' + (y + 5) + '" x2="' + (x + 5) + '" y2="' + (y - 5) + '"/></g><text x="' + (x + 7) + '" y="' + (y + 4) + '" font-size="10" font-weight="700" fill="#8b1a10" font-family="Courier New,monospace">' + m.id + '.' + (i + 1) + '</text>'; }));
-    OPG.units().forEach(u => { svg += '<circle cx="' + (u.c + .5) * cs + '" cy="' + (u.r + .5) * cs + '" r="5" fill="none" stroke="#1a4a8b" stroke-width="2"/><text x="' + ((u.c + .5) * cs + 7) + '" y="' + ((u.r + .5) * cs + 12) + '" font-size="9" fill="#1a4a8b" font-family="Courier New,monospace">' + u.id + '</text>'; });
+      svg += '<g style="stroke:var(--mx)" stroke-width="2.2"><line x1="' + (x - 5) + '" y1="' + (y - 5) + '" x2="' + (x + 5) + '" y2="' + (y + 5) + '"/><line x1="' + (x - 5) + '" y1="' + (y + 5) + '" x2="' + (x + 5) + '" y2="' + (y - 5) + '"/></g><text x="' + (x + 7) + '" y="' + (y + 4) + '" font-size="10" font-weight="700" style="fill:var(--mx)" font-family="Courier New,monospace">' + m.id + '.' + (i + 1) + '</text>'; }));
+    OPG.units().forEach(u => { svg += '<circle cx="' + (u.c + .5) * cs + '" cy="' + (u.r + .5) * cs + '" r="5" fill="none" style="stroke:var(--mt)" stroke-width="2"/><text x="' + ((u.c + .5) * cs + 7) + '" y="' + ((u.r + .5) * cs + 12) + '" font-size="9" style="fill:var(--mt)" font-family="Courier New,monospace">' + u.id + '</text>'; });
     svg += '</svg>';
     // a küldetések listája: cellák (az érintettek áthúzva), haladás, jutalom, határidő
     const list = L.length ? L.map(m => { const bs = this.best(m);
@@ -2924,9 +2930,9 @@ const MIS = {
     let tb = '<table style="border-collapse:collapse;width:100%;font-size:12px"><tr style="text-align:left;border-bottom:1px solid ' + ink + '"><th></th><th>Hajó</th><th>Állapot</th><th>Hely</th><th>⛽</th>' + L.map(m => '<th>' + m.id + '</th>').join('') + '</tr>';
     fl.forEach(f => { const p = this.pos(f), st = ready(f) ? 'kész / szabad' : f.loc === 'convoy' ? 'konvojban' : (CAMP.inPort(f) ? 'szerviz / javítás' : 'úton (TF)'), can = ready(f) || f.loc === 'convoy', fc = CAMP.fuelCells(f.fu || 0);
       tb += '<tr style="border-bottom:1px dotted ' + ink + '"><td>' + (can ? '<input type="checkbox" ' + (f.tsel ? 'checked ' : '') + 'onchange="MIS.tog(\'' + f.id + '\')">' : '') + '</td><td><b>' + f.id + '</b> <small>' + D[vcls(f)].n + '</small></td><td>' + st + '</td><td>' + p.where + '</td><td>' + fc + '</td>' +
-        L.map(m => { const bs = this.best(m), left = m.cells.filter(a => !bs.cells.includes(a)), ds = left.map(a => dist(p.rc, a)).filter(x => x != null), d = ds.length ? Math.min(...ds) : null; return '<td style="color:' + (d != null && d > fc ? '#a00' : 'inherit') + '">' + (d == null ? '–' : d) + '</td>'; }).join('') + '</tr>'; });
+        L.map(m => { const bs = this.best(m), left = m.cells.filter(a => !bs.cells.includes(a)), ds = left.map(a => dist(p.rc, a)).filter(x => x != null), d = ds.length ? Math.min(...ds) : null; return '<td style="color:' + (d != null && d > fc ? 'var(--mx)' : 'inherit') + '">' + (d == null ? '–' : d) + '</td>'; }).join('') + '</tr>'; });
     tb += '</table>';
-    document.getElementById('vMIS').innerHTML = '<div style="background:#f4ead0;color:' + ink + ';border:2px solid ' + ink + ';border-radius:4px;padding:12px;font-family:\'Courier New\',monospace;box-shadow:0 2px 10px rgba(0,0,0,.35)">' +
+    document.getElementById('vMIS').innerHTML = '<div class="misSheet" style="background:var(--mp);color:' + ink + ';border:2px solid ' + ink + ';border-radius:4px;padding:12px;font-family:\'Courier New\',monospace;box-shadow:0 2px 10px rgba(0,0,0,.35)">' +
       '<h2 style="margin:0 0 8px">Küldetések</h2><div style="display:flex;flex-wrap:wrap;gap:14px"><div style="flex:1 1 560px">' + svg + '</div><div style="flex:1 1 300px">' + list + '</div></div>' +
       '<div style="margin-top:12px"><b>Hajók</b> – a számok a legközelebbi még érintetlen célcella távolsága cellában (piros: több, mint a hatótáv); ⛽ = hatótáv cellában.<br>' +
       '<button onclick="MIS.launch()">Kötelék indítása a kijelölt (kikötői) hajókkal (' + sel + ')</button> <button onclick="MIS.detach()">Leválasztás a konvojról (a kijelölt konvoj-kísérők)</button><div style="max-height:380px;overflow:auto;margin-top:6px">' + tb + '</div></div>' +
