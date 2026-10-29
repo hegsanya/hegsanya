@@ -1,6 +1,6 @@
 <!doctype html><html lang="hu" data-theme="light"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>CEG – Konvoj kísérő kampány v1.14.273</title>
+<title>CEG – Konvoj kísérő kampány v1.14.274</title>
 <style>
 /* Színek: világos/sötét téma változókkal; a gombok és táblázatok stílusa */
 :root{--bg:#f4f1ea;--fg:#1d2733;--pn:#fff;--ln:#c9c2b3;--ac:#b3261e;--sea:#d6ecf4;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -759,7 +759,7 @@ function turnFor(s){s.tn=turn;s.bl=false;s.det=null;s.detZ=false;   // s.tn: a k
  // U-boat: mélység-lehetőségek (aktuális ±3, sérült Merülés/Emelkedés korlátoz), torpedócsövek véletlenül
  if(s.t=='E'&&D[s.c].mod.some(m=>m[0].startsWith('Torp'))){if(s.tp==null)s.tp=CFG.sfTp;const ti_=mi(s,'Torp');s.tub=[0,1,2,3,4].map((_,ix)=>ix<tubCap(s)&&s.tp>0&&!tpKO(s)&&R(-(s.st[ti_]||0),1,null,'betöltött cső, ha = 1',null,null,s.id+': torpedócső töltés')==1?1:0)}   // felszíni hajó torpedói: a csövek véletlenszerűen töltődnek be körönként (mint az U-boatnál)
  s.cum=0;if(CFG.diceMode){   // kanyar-kockás mód: a kockák száma = alap + Medal (max +2) + szenzor extra − mélység (U-boat); a kormánysérülés minden kanyart 0-ra kényszerít
-  const cnt=Math.max(1,CFG.diceN+Math.min(2,s.med||0)+s.xs-(U?(s.dep<=4?0:s.dep<=6?1:2):0));
+  const cnt=Math.max(1,CFG.diceN+Math.min(2,s.med||0)+s.xs-(U?(s.dep<=(+CFG.uDir3)?0:s.dep<=(+CFG.uDir2)?1:2):0));   /* v1.14.274: a kocka-levonás is az uDir3 / uDir2 küszöböt követi (0–6: 0, 7: −1, 8: −2) */
   s.dice=Array.from({length:cnt},()=>{const f=rollDie();return{k:f[0],v:rudder?0:f[1],stop:f[0]=='S',used:false,lab:f[2]}})}else s.dice=null;
  if(U){const dv=s.st[mi(s,'Merül')]>=1,rs=s.st[mi(s,'Emel')]>=1,lo=rs?s.dep:Math.max(0,s.dep-3),hi=dv?s.dep:Math.min(8,s.dep+3);
   s.dopts=Array.from({length:3+(s.med>0?1:0)},()=>R(lo,hi,null,'mozgás-kocka (az irány-lehetőségek)',null,null,s.id+': mozgás-kocka ('+lo+'..'+hi+')'));const ti=mi(s,'Torp');s.tub=[0,1,2,3,4].map((_,ix)=>ix<tubCap(s)&&s.tp>0&&!tpKO(s)&&R(-(s.st[ti]||0),1,null,'betöltött cső, ha = 1',null,null,s.id+': torpedócső töltés')==1?1:0)}}
@@ -2721,6 +2721,7 @@ applyLogPos();renderCfg();try{qbRender()}catch(e){}   // a pálya felállítás�
 //   v1.14.234 (2026-10-26) – OP TÉRKÉP: a szárazföldi cellákon nincs U / R / H esemény (evLand, alap 1). A szárazföld-maszk (LANDM: 20 × 42, „#” = szárazföld) az OP-térkép képéből készült (a cella több mint fele nem tenger); a kikötő-cellák (eseménymentes, „.”) változatlanok. Az 1 / 0 kapcsoló a Beállításokban
 //   v1.14.235 (2026-10-26) – ÚJ: a MEGÁLLT (vagy a találat után megálló) teherhajó ég / füstöl: fogStop (alap 20; 0 = ki) cellára látszik (az időjárás levonva); a periszkópmélységű U-boat is látja (fogStopPer, alap 1). Az észlelhetőség-táblázatban külön sor (köd-réteg)
 //   v1.14.236 (2026-10-26) – HEDGEHOG / SQUID ELLENŐRZÉS LÁTHATÓVÁ: (1) a sortűz / lövés után a napló kiírja az eredményt is („ellenőrizve: nincs U-boat a célcellákban” / „a találatot a lépése után ellenőrzöm”), nem csak a találatot; (2) JAVÍTÁS: az az U-boat, amelyik már lépett és kiértékelődött (bl), de még nem „kész”, eddig kimaradt az azonnali ellenőrzésből – most a hedgehog / Squid rá is azonnal hat; (3) az U-boat kiértékelésénél, ha volt hedgehog / Squid jel, de egyik cellában sem volt, ezt is kiírja
+//   v1.14.274 (2026-10-29) – kanyar-kockás mód (diceMode): az U-boat kockáiból levont érték is az uDir3 / uDir2 küszöböt követi (0–6: 0, 7: −1, 8: −2)
 //   v1.14.273 (2026-10-29) – U-BOAT IRÁNYOK: a mélység szerinti irányszám hangolható (uDir3 = 6, uDir2 = 7): 0–6 → 3 irány, 7 → 2, 8 → 1 (régi: 0–4 → 3, 5–6 → 2, 7–8 → 1); Medal +1 marad
 //   v1.14.272 (2026-10-29) – a böngészőben mentett régi sideLay=1 egyszer sideLay=2-re vált (a PC-n ezért maradt a régi, kék jelölős kép)
 //   v1.14.271 (2026-10-29) – a sideExact beállítás kivezetve (a böngészőben mentett régi érték a PC-n a régi kék képet hozta vissza)
@@ -2758,7 +2759,7 @@ applyLogPos();renderCfg();try{qbRender()}catch(e){}   // a pálya felállítás�
 //   v1.14.239 (2026-10-26) – ÚJ: (1) LUT torpedó (lutOn, alap 1; 1944. januártól): az U-boat kártyán „LUT” jelölőnégyzet (az AI lutAiP %); a FAT utóda: lutLen 18 cella, lutRun 6 egyenes, lutLeg 3 fél-szélesség, találat teherhajón d6 ≤ lutHit (3), hadihajón ≤ lutHitE (1); ha FAT is be van jelölve, a LUT számít. (2) LÉGPERISZKÓP / SCHNORCHEL (schOn, alap 1; 1944. júniustól; csak szabad mozgásnál): 1/8-as mélységen a kártya „Légperiszkóp” jelölőnégyzetével a dízel hajt: az akku nem fogy, hanem schRech (2) cellát tölt körönként, max schSpd (2) lépés, kimerült akkuval is halad; kiesett dízelnél nem működik; az AI az akku fele alatt automatikusan használja.
 //   v1.14.238 (2026-10-26) – SZABAD MOZGÁS: az U-boat a belső játékterületen (pl. 80-as táblán az 50×50-esen) bárhol léphet be, nem csak a szélén (uInner, alapból BE; KI = a régi szél-belépés uEdge szerint).
 //   v1.14.237 (2026-10-26) – HEDGEHOG / SQUID ELLENŐRZÉS: az U-boat lépés utáni kiértékelésében a hedgehog / Squid „nincs találat” eredmény akkor is kiíródik, ha a vízibombák is hatottak (eddig ilyenkor csak a vízibomba-sor látszott, a hedgehog-ellenőrzés nem)
-const VER = 'v1.14.273';
+const VER = 'v1.14.274';
 // ===== MEGFIGYELŐ / TESZT MÓD (obsMode, v1.14.195) =====
 // Megfigyelő módban mindkét oldalt az AI vezérli (a kísérők is: NPC-logikával), a pálya mindent mutat (nincs köd), és a körök maguktól léptetődnek;
 // a lezárt csatákból statisztika készül (konvoj-, U-boat-, kísérő-veszteség, kimenetel), hogy látszódjon: sokféle csata születik-e, vagy egyoldalú lett a hangolás.
