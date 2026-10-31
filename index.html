@@ -1,6 +1,6 @@
 <!doctype html><html lang="hu" data-theme="light"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>CEG – Konvoj kísérő kampány v1.14.307</title>
+<title>CEG – Konvoj kísérő kampány v1.14.308</title>
 <style>
 /* Színek: világos/sötét téma változókkal; a gombok és táblázatok stílusa */
 :root{--bg:#f4f1ea;--fg:#1d2733;--pn:#fff;--ln:#c9c2b3;--ac:#b3261e;--sea:#d6ecf4;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -2941,6 +2941,7 @@ applyLogPos();renderCfg();try{qbRender()}catch(e){}   // a pálya felállítás�
 //   v1.14.234 (2026-10-26) – OP TÉRKÉP: a szárazföldi cellákon nincs U / R / H esemény (evLand, alap 1). A szárazföld-maszk (LANDM: 20 × 42, „#” = szárazföld) az OP-térkép képéből készült (a cella több mint fele nem tenger); a kikötő-cellák (eseménymentes, „.”) változatlanok. Az 1 / 0 kapcsoló a Beállításokban
 //   v1.14.235 (2026-10-26) – ÚJ: a MEGÁLLT (vagy a találat után megálló) teherhajó ég / füstöl: fogStop (alap 20; 0 = ki) cellára látszik (az időjárás levonva); a periszkópmélységű U-boat is látja (fogStopPer, alap 1). Az észlelhetőség-táblázatban külön sor (köd-réteg)
 //   v1.14.236 (2026-10-26) – HEDGEHOG / SQUID ELLENŐRZÉS LÁTHATÓVÁ: (1) a sortűz / lövés után a napló kiírja az eredményt is („ellenőrizve: nincs U-boat a célcellákban” / „a találatot a lépése után ellenőrzöm”), nem csak a találatot; (2) JAVÍTÁS: az az U-boat, amelyik már lépett és kiértékelődött (bl), de még nem „kész”, eddig kimaradt az azonnali ellenőrzésből – most a hedgehog / Squid rá is azonnal hat; (3) az U-boat kiértékelésénél, ha volt hedgehog / Squid jel, de egyik cellában sem volt, ezt is kiírja
+//   v1.14.308 (2026-10-31) – az elveszett kísérő, ha egy küldetésen / kötelékben (TF) veszett el, nem kerül a konvoj sorába az Utak táblázatban; a lista „kötelék: TFx” jelzéssel mutatja (új veszteségnél a csata köteléke, régi mentésnél a napló „kötelék indult / leválasztva / mentő kötelék … csatlakozott / kikötött” sorai alapján)
 //   v1.14.307 (2026-10-31) – ÚJ: az Összegzés fül „Utak” táblázata mutatja az elveszett kísérőhajókat (azonosító, nap); az elveszett kísérők listája kiírja az utat, a napot, a dátumot és az okot; a régi mentések bejegyzéseit (út / nap nélkül) a kampánynaplóból egészíti ki a program
 //   v1.14.306 (2026-10-31) – JAVÍTÁS: a kampány-csatában a torpedó-készlet kétszer sorsolódott (mkU + a kampány betöltése), a kockanapló K0 sorai félrevezetők voltak (az első dobás eldobódott); most egyszer sorsolódik
 //   v1.14.305 (2026-10-31) – a hátsó torpedó-készlet KÜLÖN sorsolódik (1..uTpSternMax, mindig G7e, a teljes készletből), a hagyományos / FAT arány (d[előre szóló készlet], legalább 1 G7e) csak az előre szóló részre vonatkozik – így a hátsó cső nem viszi el az előre szóló G7e-t
@@ -3012,7 +3013,7 @@ applyLogPos();renderCfg();try{qbRender()}catch(e){}   // a pálya felállítás�
 //   v1.14.239 (2026-10-26) – ÚJ: (1) LUT torpedó (lutOn, alap 1; 1944. januártól): az U-boat kártyán „LUT” jelölőnégyzet (az AI lutAiP %); a FAT utóda: lutLen 18 cella, lutRun 6 egyenes, lutLeg 3 fél-szélesség, találat teherhajón d6 ≤ lutHit (3), hadihajón ≤ lutHitE (1); ha FAT is be van jelölve, a LUT számít. (2) LÉGPERISZKÓP / SCHNORCHEL (schOn, alap 1; 1944. júniustól; csak szabad mozgásnál): 1/8-as mélységen a kártya „Légperiszkóp” jelölőnégyzetével a dízel hajt: az akku nem fogy, hanem schRech (2) cellát tölt körönként, max schSpd (2) lépés, kimerült akkuval is halad; kiesett dízelnél nem működik; az AI az akku fele alatt automatikusan használja.
 //   v1.14.238 (2026-10-26) – SZABAD MOZGÁS: az U-boat a belső játékterületen (pl. 80-as táblán az 50×50-esen) bárhol léphet be, nem csak a szélén (uInner, alapból BE; KI = a régi szél-belépés uEdge szerint).
 //   v1.14.237 (2026-10-26) – HEDGEHOG / SQUID ELLENŐRZÉS: az U-boat lépés utáni kiértékelésében a hedgehog / Squid „nincs találat” eredmény akkor is kiíródik, ha a vízibombák is hatottak (eddig ilyenkor csak a vízibomba-sor látszott, a hedgehog-ellenőrzés nem)
-const VER = 'v1.14.307';
+const VER = 'v1.14.308';
 // ===== MEGFIGYELŐ / TESZT MÓD (obsMode, v1.14.195) =====
 // Megfigyelő módban mindkét oldalt az AI vezérli (a kísérők is: NPC-logikával), a pálya mindent mutat (nincs köd), és a körök maguktól léptetődnek;
 // a lezárt csatákból statisztika készül (konvoj-, U-boat-, kísérő-veszteség, kimenetel), hogy látszódjon: sokféle csata születik-e, vagy egyoldalú lett a hangolás.
@@ -3809,7 +3810,7 @@ const CAMP = {
       if (f.st !== 'lost' && d > 0) rep.push(f.id + ' sérült (a nem 6/6 modulok másnapra kijavulnak; 6/6: ' + six + ' db)');
       if (f.st !== 'lost') f.dmg = f.dmg.map((x, i) => x >= M[i][1] ? x : 0);   // a nem 6/6 sérülések másnapra kijavulnak, csak a 6/6 marad
     });
-    this.fleet.filter(f => f.st === 'lost').forEach(f => this.lostShips.push(this.lostRec(f, ((typeof rep !== 'undefined' ? rep : []).find(x => String(x).startsWith(f.id + ' ')) || '').slice(f.id.length + 1))));
+    this.fleet.filter(f => f.st === 'lost').forEach(f => this.lostShips.push(this.lostRec(f, ((typeof rep !== 'undefined' ? rep : []).find(x => String(x).startsWith(f.id + ' ')) || '').slice(f.id.length + 1), (this.ev && this.ev.unit) || '')));
     this.fleet = this.fleet.filter(f => f.st !== 'lost');
     Object.keys(dec).forEach(id => {   // a megmentett hajók külön kötelékbe (TF) kerülnek a konvoj cellájában
       const dd = dec[id], f = this.get(id); if (!dd || dd.act !== 'save' || !f) return;
@@ -4086,25 +4087,38 @@ const CAMP = {
   resetSetup() { if (!confirm('Visszaállítod az alapértékeket (gazdaság, osztályok, kikötők)?')) return; Object.assign(ECO, ECO0); FLEET_CLS.forEach(c => CLS_F.concat(['freeFrom']).forEach(f => D[c][f] = CLS0[c][f])); Object.keys(PORT0).forEach(p => Object.assign(PORTS_T[p], PORT0[p])); this.save(); this.setupView(); },
 
   /* lostRec (v1.14.307): egy elveszett kísérő bejegyzése: út kódja, a játék napja (d) és dátuma, az elvesztés oka */
-  lostRec(f, why) {
+  lostRec(f, why, tf) {
     let date = ''; try { date = new Date(OPG.dateMs()).toISOString().slice(0, 10); } catch (e) { }
-    return { id: f.id, cls: f.cls, day: this.t, d: OPG.day(), date, code: this.voy ? this.voy.code : '', why: why || '' };
+    return { id: f.id, cls: f.cls, day: this.t, d: OPG.day(), date, code: this.voy ? this.voy.code : '', tf: tf || '', why: why || '' };   /* tf: a kötelék (küldetés) azonosítója, ha nem a konvoj kísérése közben veszett el */
   },
-  /* lostInfo (v1.14.307): az elveszett kísérők listája; a régi mentések bejegyzéseit (út / nap nélkül) a kampánynaplóból egészíti ki: az első olyan naplósorból, amelyben a hajó azonosítója után „elveszett / elsüllyedt / súlyosan sérült” áll (a bejegyzések időrendben követik egymást), az út a sort követő első „… megérkezett” sorból derül ki. Az eredményt visszaírja (a mentés már tartalmazza) */
+  /* lostInfo (v1.14.307/308): az elveszett kísérők listája; a régi mentések bejegyzéseit (út / nap / kötelék nélkül) a kampánynaplóból egészíti ki: az első olyan naplósorból, amelyben a hajó azonosítója után „elveszett / elsüllyedt / súlyosan sérült” áll (a bejegyzések időrendben követik egymást); az út a sort követő első „… megérkezett” sorból derül ki; ha a hajó a veszteség pillanatában egy kötelékben (TF) volt – a napló „kötelék indult / leválasztva a konvojról / mentő kötelék” sorai alapján, a „csatlakozott a konvojhoz / kikötött” sorokig –, akkor nem a konvoj kísérése közben veszett el. Az eredményt visszaírja */
+  tfAt(log, upto) {
+    const m = {};   // hajó azonosító → kötelék azonosító a napló adott pontján
+    const drop = id => Object.keys(m).forEach(k => { if (m[k] === id) delete m[k]; });
+    for (let i = 0; i < upto && i < log.length; i++) {
+      const ln = String(log[i]); let r;
+      if ((r = ln.match(/^(\S+) kötelék indult .*? kikötőből: (.+)\.$/))) r[2].split(', ').forEach(id => { m[id] = r[1]; });
+      else if ((r = ln.match(/^(\S+) leválasztva a konvojról: (.+?) \(.*\)\.$/))) r[2].split(', ').forEach(id => { m[id] = r[1]; });
+      else if ((r = ln.match(/^\[\d+\. nap\] (\S+) mentő kötelék: (.+?) \(/))) r[2].split(' + ').forEach(id => { m[id] = r[1]; });
+      else if ((r = ln.match(/^(\S+) csatlakozott a konvojhoz\./))) drop(r[1]);
+      else if ((r = ln.match(/^\[\d+\. nap\] (\S+) kikötött: /))) drop(r[1]);
+    }
+    return m;
+  },
   lostInfo() {
     let from = 0; const log = this.log || [];
     this.lostShips.forEach(x => {
-      if (x.code !== undefined) return;                                   // már teljes bejegyzés
+      if (x.tf !== undefined) return;                                     // már teljes bejegyzés
       const re = new RegExp('(^|[^A-Za-z0-9])' + x.id + '( (elveszett|elsüllyedt|súlyosan sérült)|: a legénységet felvették)');
       let hit = -1, why = '';
       for (let i = from; i < log.length && hit < 0; i++) {
         const seg = String(log[i]).split(';').find(sg => re.test(sg));
         if (seg) { hit = i; why = seg.slice(seg.indexOf(x.id) + x.id.length).replace(/^[:\s]+/, '').replace(/\.$/, '').trim(); }
       }
-      if (hit < 0) { x.code = x.code || '?'; return; }
+      if (hit < 0) { x.code = x.code || '?'; x.tf = ''; return; }
       const dm = String(log[hit]).match(/^\[(\d+)\. nap\]/); x.d = dm ? +dm[1] : x.day; x.date = x.date || ''; x.why = why;
       let code = ''; for (let j = hit; j < log.length && !code; j++) { const m = String(log[j]).match(/^\[\d+\. nap\] (\S+) megérkezett/); if (m) code = m[1]; }
-      x.code = code || (this.voy ? this.voy.code : '?'); from = hit + 1;
+      x.code = code || (this.voy ? this.voy.code : '?'); x.tf = this.tfAt(log, hit)[x.id] || ''; from = hit + 1;
     });
     return this.lostShips;
   },
@@ -4117,11 +4131,11 @@ const CAMP = {
     h += TB(['Mutató', 'Érték'], [['Lezárt utak', V.length], ['Hajók (induló / megérkezett)', S('n') + ' / ' + S('arrived')], ['Elsüllyedt', S('sunk')], ['Megállt, lemaradt', S('stopped')],
       ['Konvojpont (megérkezett / lehetséges)', S('pts') + ' / ' + S('max')], ['Elhasznált vizibomba', S('bombs')], ['Csaták', S('battles')], ['Megsemmisült U-boat', Object.values(this.ub).filter(p => p.dead).length], ['EGp pénztár / összes szerzett', this.egp + ' / ' + this.earned], ['Elveszett kísérők', this.lostShips.length]]);
     h += '<h3>Utak</h3>' + TB(['Konvoj', 'Útvonal', 'Napok', 'Hajó', 'Megérk.', 'Süllyedt', 'Megállt', 'Elv. kísérő', 'Pont', 'Bomba', 'Csata', 'U-boat'],
-      V.map(x => [x.code, x.from + ' → ' + x.to, x.d0 + '–' + x.d1, x.n, x.arrived, x.sunk, x.stopped, LI.filter(l => l.code === x.code).map(l => l.id + ' (' + l.d + '. nap)').join(', ') || '–', x.pts + '/' + x.max, x.bombs, x.battles, x.ubSunk]));
+      V.map(x => [x.code, x.from + ' → ' + x.to, x.d0 + '–' + x.d1, x.n, x.arrived, x.sunk, x.stopped, LI.filter(l => l.code === x.code && !l.tf).map(l => l.id + ' (' + l.d + '. nap)').join(', ') || '–', x.pts + '/' + x.max, x.bombs, x.battles, x.ubSunk]));
     if (cur) h += '<p>Folyamatban: ' + cur.code + ' (' + cur.from + ' → ' + cur.to + '), hajók: ' + cur.m.filter(m => !m.gone).length + '/' + cur.m.length + ', csaták: ' + cur.battles + '.</p>';
     h += '<h3>Flotta</h3>' + TB(['Hajó', 'Osztály', 'Hely', 'Állapot', 'Medal', 'Bomba', 'Üzemanyag', 'Sérülés'],
       this.fleet.map(f => [f.id, cname(f), f.loc === 'convoy' ? 'konvojjal' : f.loc, f.st, f.med, f.b + '/' + D[vcls(f)].bomb, f.fu + '/' + D[vcls(f)].fuel, f.dmg.reduce((a, b) => a + b, 0)]));
-    if (this.lostShips.length) h += '<p>Elveszett kísérők: ' + LI.map(x => x.id + ' (' + (x.code && x.code !== '?' ? x.code + ', ' : '') + (x.d != null ? x.d : x.day) + '. nap' + (x.date ? ', ' + x.date : '') + (x.why ? ': ' + x.why : '') + ')').join('; ') + '.</p>';
+    if (this.lostShips.length) h += '<p>Elveszett kísérők: ' + LI.map(x => x.id + ' (' + (x.tf ? 'kötelék: ' + x.tf + ', ' : (x.code && x.code !== '?' ? x.code + ', ' : '')) + (x.d != null ? x.d : x.day) + '. nap' + (x.date ? ', ' + x.date : '') + (x.why ? ': ' + x.why : '') + ')').join('; ') + '.</p>';
     h += '<h3>U-boatok</h3>' + TB(['Hajó', 'Elsüllyesztett tonna', 'Medal', 'Állapot'],
       Object.keys(this.ub).map(id => { const p = this.ub[id]; return [id, p.ton, Math.floor(p.ton / CFG.medalT), p.dead ? 'megsemmisült / elveszett' : 'él']; }));
     h += '<h3>Ellenséges felszíni hajók</h3>' + TB(['Hajó', 'Osztály', 'Állapot'], Object.keys(this.raid).map(id => [id, D[this.raid[id].c].n, this.raid[id].dead ? 'elsüllyedt' : 'él']));
