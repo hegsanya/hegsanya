@@ -1,6 +1,6 @@
 <!doctype html><html lang="hu" data-theme="light"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>CEG – Konvoj kísérő kampány v1.14.321</title>
+<title>CEG – Konvoj kísérő kampány v1.14.322</title>
 <style>
 /* Színek: világos/sötét téma változókkal; a gombok és táblázatok stílusa */
 :root{--bg:#f4f1ea;--fg:#1d2733;--pn:#fff;--ln:#c9c2b3;--ac:#b3261e;--sea:#d6ecf4;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -3012,6 +3012,7 @@ applyLogPos();renderCfg();try{qbRender()}catch(e){}   // a pálya felállítás�
 //   v1.14.234 (2026-10-26) – OP TÉRKÉP: a szárazföldi cellákon nincs U / R / H esemény (evLand, alap 1). A szárazföld-maszk (LANDM: 20 × 42, „#” = szárazföld) az OP-térkép képéből készült (a cella több mint fele nem tenger); a kikötő-cellák (eseménymentes, „.”) változatlanok. Az 1 / 0 kapcsoló a Beállításokban
 //   v1.14.235 (2026-10-26) – ÚJ: a MEGÁLLT (vagy a találat után megálló) teherhajó ég / füstöl: fogStop (alap 20; 0 = ki) cellára látszik (az időjárás levonva); a periszkópmélységű U-boat is látja (fogStopPer, alap 1). Az észlelhetőség-táblázatban külön sor (köd-réteg)
 //   v1.14.236 (2026-10-26) – HEDGEHOG / SQUID ELLENŐRZÉS LÁTHATÓVÁ: (1) a sortűz / lövés után a napló kiírja az eredményt is („ellenőrizve: nincs U-boat a célcellákban” / „a találatot a lépése után ellenőrzöm”), nem csak a találatot; (2) JAVÍTÁS: az az U-boat, amelyik már lépett és kiértékelődött (bl), de még nem „kész”, eddig kimaradt az azonnali ellenőrzésből – most a hedgehog / Squid rá is azonnal hat; (3) az U-boat kiértékelésénél, ha volt hedgehog / Squid jel, de egyik cellában sem volt, ezt is kiírja
+//   v1.14.322 (2026-10-31) – ÚJ: az Összegzés „Utak” táblázata két új oszloppal: „Lelőtt gép” és „Német hadihajó” (a konvojnál és a TF-soroknál a csata végén számolva; a régi utaknál „-”).
 //   v1.14.321 (2026-10-31) – ÚJ: tacLand (alap 1): a taktikai pálya szárazföldje az OP térképről (a játékterület = egy OP cella, a keret a szomszédok, a pálya méretéhez arányosan). A szárazföld tiltott terület: hajó nem léphet rá (a repülő igen; az AI is kerüli), a konvoj nem mehet rá, nem lehet átlőni (a kártya Lő gombja is tiltja), a torpedó beleütközik, vízibomba nem tehető rá, az U-boat belépéskor a legközelebbi tengeri cellára kerül. A merülés nem függ tőle. Még nincs: köd-látás a szárazföldön át, vízmélység.
 //   v1.14.320 (2026-10-31) – opCoast: a partvonal sötét vonal + vékony fehér szegély (sötét viharcellán is látszik), a rétege z-index:3 (biztosan a vihar fölött), a Tervrajz témában a --mapimg képből számol.
 //   v1.14.319 (2026-10-31) – ÚJ: opCoast (alap 1): az OP térképen a partvonal a vihar fölött is látszik (a háttérképből számolt vékony sötét vonal külön rajzvásznon; követi a háttérkép eltolását / méretét, témaváltáskor újraszámol).
@@ -3097,7 +3098,7 @@ applyLogPos();renderCfg();try{qbRender()}catch(e){}   // a pálya felállítás�
 //   v1.14.239 (2026-10-26) – ÚJ: (1) LUT torpedó (lutOn, alap 1; 1944. januártól): az U-boat kártyán „LUT” jelölőnégyzet (az AI lutAiP %); a FAT utóda: lutLen 18 cella, lutRun 6 egyenes, lutLeg 3 fél-szélesség, találat teherhajón d6 ≤ lutHit (3), hadihajón ≤ lutHitE (1); ha FAT is be van jelölve, a LUT számít. (2) LÉGPERISZKÓP / SCHNORCHEL (schOn, alap 1; 1944. júniustól; csak szabad mozgásnál): 1/8-as mélységen a kártya „Légperiszkóp” jelölőnégyzetével a dízel hajt: az akku nem fogy, hanem schRech (2) cellát tölt körönként, max schSpd (2) lépés, kimerült akkuval is halad; kiesett dízelnél nem működik; az AI az akku fele alatt automatikusan használja.
 //   v1.14.238 (2026-10-26) – SZABAD MOZGÁS: az U-boat a belső játékterületen (pl. 80-as táblán az 50×50-esen) bárhol léphet be, nem csak a szélén (uInner, alapból BE; KI = a régi szél-belépés uEdge szerint).
 //   v1.14.237 (2026-10-26) – HEDGEHOG / SQUID ELLENŐRZÉS: az U-boat lépés utáni kiértékelésében a hedgehog / Squid „nincs találat” eredmény akkor is kiíródik, ha a vízibombák is hatottak (eddig ilyenkor csak a vízibomba-sor látszott, a hedgehog-ellenőrzés nem)
-const VER = 'v1.14.321';
+const VER = 'v1.14.322';
 // ===== MEGFIGYELŐ / TESZT MÓD (obsMode, v1.14.195) =====
 // Megfigyelő módban mindkét oldalt az AI vezérli (a kísérők is: NPC-logikával), a pálya mindent mutat (nincs köd), és a körök maguktól léptetődnek;
 // a lezárt csatákból statisztika készül (konvoj-, U-boat-, kísérő-veszteség, kimenetel), hogy látszódjon: sokféle csata születik-e, vagy egyoldalú lett a hangolás.
@@ -3450,7 +3451,7 @@ const CAMP = {
   newVoyage(conv, day, scale) {
     let n = R(CFG.shipsLo, CFG.shipsHi); const m = []; if (scale && scale < 100) n = Math.max(1, Math.round(n * scale / 100));
     for (let i = 0; i < n; i++) m.push({ id: 'M' + (i + 1), tons: R(25, 95) * 100, cp: R(CFG.cpLo, CFG.cpHi), aa: R(CFG.aaLo, CFG.aaHi), cd: 0, gone: false, why: '' });
-    this.voy = { code: conv.name, from: conv.from, to: conv.to, d0: day, m, battles: 0, bombs: 0, fuel: 0, ubSunk: 0, events: [], sailed: false, short: ECO.shortP > 0 && R(1, 100) <= ECO.shortP };
+    this.voy = { code: conv.name, from: conv.from, to: conv.to, d0: day, m, battles: 0, bombs: 0, fuel: 0, ubSunk: 0, air: 0, zSunk: 0, events: [], sailed: false, short: ECO.shortP > 0 && R(1, 100) <= ECO.shortP };
     if (!this.thr) this.thrInit(); this.thr.shadow = null; this.thr.ev = 0; this.thr.deep = 0; this.thr.hit = 0;   // új konvoj: a követés és a függő hatások nem öröklődnek
     for (const id in this.ub) { const p = this.ub[id]; if (!p.dead) { p.dmg = p.dmg.map(() => 0); p.tp = 14; } }   // az U-boatok sérülései és torpedói az új úton újak
     this.fleet.filter(f => f.loc === conv.from).forEach(f => { f.fu = D[vcls(f)].fuel; f.qs = null; });                          // a kikötőben az üzemanyag-feltöltés ingyenes és azonnali
@@ -3919,7 +3920,10 @@ const CAMP = {
     });
     UID.filter(id => this.ub[id] && this.ub[id].dead).forEach(id => this.replaceU(id, rep));
     if (!tf) this.thrBattleEnd();
-    Object.keys(RAID).forEach(id => { if (raidDead[id] && this.raid[id] && !this.raid[id].dead) { this.raid[id].dead = true; rep.push(id + ' (ellenséges) elsüllyedt'); } if (this.raid[id] && this.raid[id].dead) this.replaceRaid(id, rep); });
+    let zN = 0;   /* v1.14.322: a csatában elsüllyesztett német hadihajók (az Utak táblázatnak) */
+    Object.keys(RAID).forEach(id => { if (raidDead[id] && this.raid[id] && !this.raid[id].dead) { this.raid[id].dead = true; zN++; rep.push(id + ' (ellenséges) elsüllyedt'); } if (this.raid[id] && this.raid[id].dead) this.replaceRaid(id, rep); });
+    {const aN = KL.filter(k => k.t == 'A' && k.why == 'lelőtték').length;   /* a lelőtt repülők */
+     if (tf) this.tfAdd(tf, { air: aN, zSunk: zN }); else { v.air = (v.air || 0) + aN; v.zSunk = (v.zSunk || 0) + zN; } }
     // 4) a csata naplója (a taktikai napló új sorai) és a kampánynapló
     const lines = LOG.slice(0, Math.max(0, LOG.length - this.logStart)).reverse().slice(-60);
     if (!tf) v.events.push({ type: this.ev.type, cell: this.ev.cell, turns: turn, rep, lines });
@@ -3947,7 +3951,7 @@ const CAMP = {
     if (v.short && ok.length > 0 && ECO.shortEgp > 0) { this.egp += ECO.shortEgp; this.earned += ECO.shortEgp; shortTxt = ' Kikötői hiány jutalma: +' + ECO.shortEgp + ' EGp.'; }
     this.voys.push({ code: v.code, from: v.from, to: v.to, d0: v.d0, d1: OPG.day(), n: v.m.length, arrived: ok.length,
       sunk: v.m.filter(m => m.why == 'elsüllyedt').length, stopped: v.m.filter(m => m.why.startsWith('megállt')).length,
-      pts, max, bombs: v.bombs, egp: pts, battles: v.battles, ubSunk: v.ubSunk, fuel: v.fuel });
+      pts, max, bombs: v.bombs, egp: pts, battles: v.battles, ubSunk: v.ubSunk, air: v.air, zSunk: v.zSunk, fuel: v.fuel });
     this.group().forEach(f => { f.loc = port; });                                       // a kísérők a megérkezési kikötőben állnak
     const t = ' Elszámolás: ' + ok.length + '/' + v.m.length + ' hajó, ' + pts + ' konvojpont → +' + pts + ' EGp (a kísérők bombái ' + v.bombs + ' db fogytak: visszatöltés 1 EGp/db a Flotta fülön).' + shortTxt;
     this.log.push('[' + OPG.day() + '. nap] ' + v.code + ' megérkezett ' + port + '.' + t);
@@ -4172,18 +4176,18 @@ const CAMP = {
   resetSetup() { if (!confirm('Visszaállítod az alapértékeket (gazdaság, osztályok, kikötők)?')) return; Object.assign(ECO, ECO0); FLEET_CLS.forEach(c => CLS_F.concat(['freeFrom']).forEach(f => D[c][f] = CLS0[c][f])); Object.keys(PORT0).forEach(p => Object.assign(PORTS_T[p], PORT0[p])); this.save(); this.setupView(); },
 
   /* TF-utak (v1.14.309): minden kötelék (TF) egy sor az Összegzés „Utak” táblázatában: a megalakulástól a feloszlásig (kikötött / csatlakozott a konvojhoz / minden hajója elveszett / egyesült). A rekord a voys listába kerül (isTf: 1), a nyitott rekordok a tfs-ben vannak */
-  tfOpen(id, from, ids) { if (!this.tfs) this.tfs = {}; this.tfs[id] = { id, from: from || '?', d0: OPG.day(), ids: (ids || []).slice(), bombs: 0, battles: 0, ubSunk: 0, egp: 0, mis: [] }; },
-  tfAdd(id, o) { const r = this.tfs && this.tfs[id]; if (!r || !o) return; ['bombs', 'battles', 'ubSunk', 'egp'].forEach(k => { if (o[k]) r[k] = (r[k] === null ? 0 : r[k]) + o[k]; }); if (o.mis) r.mis.push(o.mis); },
+  tfOpen(id, from, ids) { if (!this.tfs) this.tfs = {}; this.tfs[id] = { id, from: from || '?', d0: OPG.day(), ids: (ids || []).slice(), bombs: 0, battles: 0, ubSunk: 0, air: 0, zSunk: 0, egp: 0, mis: [] }; },
+  tfAdd(id, o) { const r = this.tfs && this.tfs[id]; if (!r || !o) return; ['bombs', 'battles', 'ubSunk', 'air', 'zSunk', 'egp'].forEach(k => { if (o[k]) r[k] = (r[k] === null ? 0 : r[k]) + o[k]; }); if (o.mis) r.mis.push(o.mis); },
   tfClose(id, to) {
     const r = this.tfs && this.tfs[id]; if (!r) return; delete this.tfs[id];
-    this.voys.push({ code: id, isTf: 1, from: r.from, to: to || '?', d0: r.d0, d1: OPG.day(), n: 0, arrived: 0, sunk: 0, stopped: 0, pts: 0, max: 0, bombs: r.bombs, egp: r.egp, battles: r.battles, ubSunk: r.ubSunk, fuel: 0, mis: r.mis.slice() });
+    this.voys.push({ code: id, isTf: 1, from: r.from, to: to || '?', d0: r.d0, d1: OPG.day(), n: 0, arrived: 0, sunk: 0, stopped: 0, pts: 0, max: 0, bombs: r.bombs, egp: r.egp, battles: r.battles, ubSunk: r.ubSunk, air: r.air, zSunk: r.zSunk, fuel: 0, mis: r.mis.slice() });
   },
   /* tfFromLog (v1.14.309): a régi mentés TF-útjainak felépítése a kampánynaplóból (egyszer): „kötelék indult / leválasztva a konvojról / mentő kötelék” = megalakul; „kikötött / csatlakozott a konvojhoz” = feloszlik; „[Küldetés teljesítve] … +N EGp” = jutalom. A naplóban nincs bomba / csata / U-boat adat (null → „-”); a nap a legutóbbi „[N. nap]” előtagból becsült; a sor helye az addig látott „… megérkezett” sorok száma szerint */
   tfFromLog() {
     this.tfRetro = 1; if (!this.log || !this.log.length) return;
     const open = {}; let day = null, arrived = 0, ins = 0;
     const close = (id, to) => { const r = open[id]; if (!r) return; delete open[id];
-      this.voys.splice(Math.min(this.voys.length, arrived + ins), 0, { code: id, isTf: 1, from: r.from, to, d0: r.d0, d1: day, n: 0, arrived: 0, sunk: 0, stopped: 0, pts: 0, max: 0, bombs: null, egp: r.egp, battles: null, ubSunk: null, fuel: 0, mis: r.mis }); ins++; };
+      this.voys.splice(Math.min(this.voys.length, arrived + ins), 0, { code: id, isTf: 1, from: r.from, to, d0: r.d0, d1: day, n: 0, arrived: 0, sunk: 0, stopped: 0, pts: 0, max: 0, bombs: null, egp: r.egp, battles: null, ubSunk: null, air: null, zSunk: null, fuel: 0, mis: r.mis }); ins++; };
     this.log.forEach(l => { const ln = String(l); let r;
       if ((r = ln.match(/^\[(\d+)\. nap\]/))) day = +r[1];
       if (/^\[\d+\. nap\] \S+ megérkezett/.test(ln)) arrived++;
@@ -4193,7 +4197,7 @@ const CAMP = {
       else if ((r = ln.match(/^\[Küldetés teljesítve\] (\S+) \((\S+), .*\): \+(\d+) EGp/))) { if (open[r[2]]) { open[r[2]].egp += +r[3]; open[r[2]].mis.push(r[1]); } }
       else if ((r = ln.match(/^\[\d+\. nap\] (\S+) kikötött: (\S+?)\.?$/))) close(r[1], r[2]);
       else if ((r = ln.match(/^(\S+) csatlakozott a konvojhoz\./))) close(r[1], 'konvoj'); });
-    Object.keys(open).forEach(id => { const r = open[id]; this.tfs[id] = { id, from: r.from, d0: r.d0, ids: [], bombs: null, battles: null, ubSunk: null, egp: r.egp, mis: r.mis }; });   /* még élő kötelékek */
+    Object.keys(open).forEach(id => { const r = open[id]; this.tfs[id] = { id, from: r.from, d0: r.d0, ids: [], bombs: null, battles: null, ubSunk: null, air: null, zSunk: null, egp: r.egp, mis: r.mis }; });   /* még élő kötelékek */
   },
   /* lostRec (v1.14.307): egy elveszett kísérő bejegyzése: út kódja, a játék napja (d) és dátuma, az elvesztés oka */
   lostRec(f, why, tf) {
@@ -4240,10 +4244,10 @@ const CAMP = {
     let h = '<h2>Kampány-összegzés <small>(' + VER + ')</small></h2>';
     h += TB(['Mutató', 'Érték'], [['Lezárt utak (konvoj)', VC.length], ['Lezárt kötelék-utak (TF)', TFV.length], ['Küldetésből szerzett EGp', TFV.reduce((a, x) => a + (x.egp || 0), 0)], ['Hajók (induló / megérkezett)', S('n') + ' / ' + S('arrived')], ['Elsüllyedt', S('sunk')], ['Megállt, lemaradt', S('stopped')],
       ['Konvojpont (megérkezett / lehetséges)', S('pts') + ' / ' + S('max')], ['Elhasznált vizibomba', S('bombs')], ['Csaták', S('battles')], ['Megsemmisült U-boat', Object.values(this.ub).filter(p => p.dead).length], ['EGp pénztár / összes szerzett', this.egp + ' / ' + this.earned], ['Elveszett kísérők', this.lostShips.length]]);
-    h += '<h3>Utak</h3>' + TB(['Konvoj', 'Útvonal', 'Napok', 'Hajó', 'Megérk.', 'Süllyedt', 'Megállt', 'Elv. kísérő', 'Pont', 'Bomba', 'Csata', 'U-boat'],
+    h += '<h3>Utak</h3>' + TB(['Konvoj', 'Útvonal', 'Napok', 'Hajó', 'Megérk.', 'Süllyedt', 'Megállt', 'Elv. kísérő', 'Pont', 'Bomba', 'Csata', 'U-boat', 'Lelőtt gép', 'Német hadihajó'],
       V.map(x => x.isTf
-        ? [x.code + ' – ' + ((x.mis && x.mis.length) ? x.mis.join(', ') : 'jelöletlen'), x.from + ' → ' + x.to, (x.d0 != null ? x.d0 : '?') + '–' + (x.d1 != null ? x.d1 : '?'), '-', '-', '-', '-', LI.filter(l => l.tf === x.code).map(l => l.id + ' (' + l.d + '. nap)').join(', ') || '–', x.egp || 0, x.bombs == null ? '-' : x.bombs, x.battles == null ? '-' : x.battles, x.ubSunk == null ? '-' : x.ubSunk]
-        : [x.code, x.from + ' → ' + x.to, x.d0 + '–' + x.d1, x.n, x.arrived, x.sunk, x.stopped, LI.filter(l => l.code === x.code && !l.tf).map(l => l.id + ' (' + l.d + '. nap)').join(', ') || '–', x.pts + '/' + x.max, x.bombs, x.battles, x.ubSunk]));
+        ? [x.code + ' – ' + ((x.mis && x.mis.length) ? x.mis.join(', ') : 'jelöletlen'), x.from + ' → ' + x.to, (x.d0 != null ? x.d0 : '?') + '–' + (x.d1 != null ? x.d1 : '?'), '-', '-', '-', '-', LI.filter(l => l.tf === x.code).map(l => l.id + ' (' + l.d + '. nap)').join(', ') || '–', x.egp || 0, x.bombs == null ? '-' : x.bombs, x.battles == null ? '-' : x.battles, x.ubSunk == null ? '-' : x.ubSunk, x.air == null ? '-' : x.air, x.zSunk == null ? '-' : x.zSunk]
+        : [x.code, x.from + ' → ' + x.to, x.d0 + '–' + x.d1, x.n, x.arrived, x.sunk, x.stopped, LI.filter(l => l.code === x.code && !l.tf).map(l => l.id + ' (' + l.d + '. nap)').join(', ') || '–', x.pts + '/' + x.max, x.bombs, x.battles, x.ubSunk, x.air == null ? '-' : x.air, x.zSunk == null ? '-' : x.zSunk]));
     if (cur) h += '<p>Folyamatban: ' + cur.code + ' (' + cur.from + ' → ' + cur.to + '), hajók: ' + cur.m.filter(m => !m.gone).length + '/' + cur.m.length + ', csaták: ' + cur.battles + '.</p>';
     h += '<h3>Flotta</h3>' + TB(['Hajó', 'Osztály', 'Hely', 'Állapot', 'Medal', 'Bomba', 'Üzemanyag', 'Sérülés'],
       this.fleet.map(f => [f.id, cname(f), f.loc === 'convoy' ? 'konvojjal' : f.loc, f.st, f.med, f.b + '/' + D[vcls(f)].bomb, f.fu + '/' + D[vcls(f)].fuel, f.dmg.reduce((a, b) => a + b, 0)]));
