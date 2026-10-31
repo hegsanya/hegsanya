@@ -1,6 +1,6 @@
 <!doctype html><html lang="hu" data-theme="light"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>CEG – Konvoj kísérő kampány v1.14.301</title>
+<title>CEG – Konvoj kísérő kampány v1.14.302</title>
 <style>
 /* Színek: világos/sötét téma változókkal; a gombok és táblázatok stílusa */
 :root{--bg:#f4f1ea;--fg:#1d2733;--pn:#fff;--ln:#c9c2b3;--ac:#b3261e;--sea:#d6ecf4;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -1456,7 +1456,7 @@ function aiTurnU(u){if(u.done)return;sel=u;if(decOk(u)&&ships.some(q=>q.t=='E'&&
  const gi_=alive?aiGun(u):[];if(gi_.length){say(gi_.join(' | '));info.push('ágyú: '+gi_.length+' lövés')}
  for(let n=0;alive&&n<5;n++){const t=aiTorp(u,u,u.dep);if(t.v<(CFG.uHard?.001:(10-CFG.aiAggr)*.15+.15)||!torpOk(u,t.b))break;   /* HARD AI: minden célpontra lő, ha van esély */
   fire(t.b);info.push('torpedó '+(t.b?'hátra':'előre'))}
- if(CFG.aiB2Push&&CFG.aiBound2&&!trOn(u)&&/támad/.test(best.w||'')){if(info.some(x=>/^(torpedó|ágyú)/.test(x)))u.noShot=0;else u.noShot=(u.noShot||0)+1}   /* aiB2Push: lövés nélküli körök száma 1/8-on */
+ if(CFG.aiB2Push&&CFG.aiBound2&&!trOn(u)){if(info.some(x=>/^(torpedó|ágyú)/.test(x)))u.noShot=0;else if(/támad/.test(best.w||''))u.noShot=(u.noShot||0)+1}   /* v1.14.302: lövés után mindig nullázódik */   /* aiB2Push: lövés nélküli körök száma 1/8-on */
  say(u.id+' (AI): '+(info.length?info.join(', ')+'; ':'')+(best.w?'szabály: '+best.w+'; ':'')+'pontszám '+best.sc.toFixed(1)+', végállás '+addr(best.f.x,best.f.y));
  {const lw=u.practice?'':aiLeaveWhy(u);if(lw&&leaveOk(u)){leaveMap(u,'AI: '+lw);return}}
  fin()}
@@ -1752,7 +1752,7 @@ let ALOG=[];
 /* alogAdd: egy sor a naplóba (K<kör> előtaggal); alogMax felett a legrégebbit törli */
 function alogAdd(t){if(!CFG.alogOn)return;ALOG.push('K'+(typeof turn!=='undefined'?turn:0)+' '+t);const mx=Math.max(100,+CFG.alogMax||6000);if(ALOG.length>mx)ALOG.splice(0,ALOG.length-mx)}
 /* alogSay: a say() üzenetei közül a zajt (egységek lépés-sorai, 'kész. Mindenki lépett') kihagyja; az AI-döntés, találat, bomba, süllyedés, kilépés stb. bekerül */
-function alogSay(t){if(!CFG.alogOn||typeof t!=='string')return;if(/^[A-Z]+\d+: \d\. lépés/.test(t)||/kész\. (Mindenki lépett|Még lépnie kell)/.test(t))return;alogAdd(t)}
+function alogSay(t){if(!CFG.alogOn||typeof t!=='string')return;if(/^[A-Z]+\d+: \d\. lépés/.test(t)||/kész\. (Mindenki lépett|Még lépnie kell)/.test(t)||/zónája eltolva/.test(t))return;alogAdd(t)}
 /* alogDice: a döntő dobások (belépő / kilépő / STOP / bomba / javítás / találat / FAT …); a töltés, irány, sebesség, mozgás, modul-állapot és szenzor-joker dobások, valamint a nem 0 süllyedési dobások kimaradnak */
 function alogDice(a,b,v,lab,res){if(!CFG.alogOn||!lab)return;lab=String(lab);if(/torpedócső töltés|joker-kocka|irány-kocka|sebesség-kocka|mozgás-kocka|modul állapot-kocka/.test(lab))return;if(/süllyedési kocka/.test(lab)&&+v!==0)return;const d=a==b?String(a):(a==1?'d'+b:a+'–'+b);alogAdd('🎲 '+lab+' ['+d+'] = '+v+(res?' → '+res:''))}
 /* alogTurn: köri fejléc + a pályán lévő U-boatok állapota (pozíció, irány, mélység, torpedó, sérült modulok) */
@@ -1788,9 +1788,9 @@ function dxR(a,b,lab,hint,by,ev,ll){const j=DX.job;
  if(man){j.pend={a,b,lab,hint,ev};throw DX_NEED}
  const v=R0(a,b);j.q.push({a,b,v,lab:lab||null,ll:ll||null,hint,man:false,res:lab&&ev?ev(v):''});DX.i++;return v}
 // dxSnap / dxRestore: a játékállapot pillanatképe (egy structuredClone: a hajók egymásra mutató hivatkozásai megmaradnak) és visszaállítása
-function dxSnap(){return structuredClone({RLG,RLC,RLP,RLD,RLK,RLU,NZLOG,BS,KL,SUMSHOWN,ships,store,raid,raidDead,dead,torps,supSlots,rent,pool,paths,bombMarks,airDone,airN,stopped,turn,capT,maxT,aiBusy,selId:sel?sel.id:null,log:LOG.slice(),mis:(typeof CAMP!=='undefined'&&CAMP.mission)?CAMP.mission:null})}
+function dxSnap(){return structuredClone({RLG,RLC,RLP,RLD,RLK,RLU,NZLOG,BS,KL,SUMSHOWN,ships,store,raid,raidDead,dead,torps,supSlots,rent,pool,paths,bombMarks,airDone,airN,stopped,turn,capT,maxT,aiBusy,selId:sel?sel.id:null,log:LOG.slice(),alog:ALOG.slice(),mis:(typeof CAMP!=='undefined'&&CAMP.mission)?CAMP.mission:null})}
 function dxRestore(sn){const c=structuredClone(sn);RLG=c.RLG||[];RLC=c.RLC||{};RLP=c.RLP||{};RLD=c.RLD||{};RLK=c.RLK|0;RLU=c.RLU||{c:{},p:{},d:{},kl:0};NZLOG=c.NZLOG||[];BS=c.BS||{};KL=c.KL||[];SUMSHOWN=!!c.SUMSHOWN;ships=c.ships;store=c.store;raid=c.raid;raidDead=c.raidDead;dead=c.dead;torps=c.torps;supSlots=c.supSlots;rent=c.rent;pool=c.pool;paths=c.paths||{};bombMarks=c.bombMarks||[];airDone=c.airDone;airN=c.airN;stopped=c.stopped;turn=c.turn;capT=c.capT;maxT=c.maxT;aiBusy=c.aiBusy;
- sel=c.selId?(ships.find(q=>q.id===c.selId)||null):null;LOG.length=0;c.log.forEach(x=>LOG.push(x));$('log').innerHTML=LOG.map(x=>'<div style="margin-bottom:3px'+(isW(x)?';color:#d32f2f':'')+'">'+x+'</div>').join('');
+ sel=c.selId?(ships.find(q=>q.id===c.selId)||null):null;LOG.length=0;c.log.forEach(x=>LOG.push(x));if(c.alog)ALOG=c.alog.slice()   /* v1.14.302: az elemzési napló is visszaáll (különben dupla sorok) */;$('log').innerHTML=LOG.map(x=>'<div style="margin-bottom:3px'+(isW(x)?';color:#d32f2f':'')+'">'+x+'</div>').join('');
  if(c.mis&&typeof CAMP!=='undefined'&&CAMP.mission)Object.assign(CAMP.mission,c.mis)}
 // dxExec: az akció (újra)futtatása; kézi dobásnál megáll és az állapot visszaáll (az ablak kéri a dobást), különben kész
 // dxVis / dxVisSet: a hajók vizuális (animált) helyzetének (_v) mentése és visszaállítása a pillanatkép-visszaállítás körül, hogy a csúszás ne ugorjon vissza
@@ -2917,6 +2917,7 @@ applyLogPos();renderCfg();try{qbRender()}catch(e){}   // a pálya felállítás�
 //   v1.14.234 (2026-10-26) – OP TÉRKÉP: a szárazföldi cellákon nincs U / R / H esemény (evLand, alap 1). A szárazföld-maszk (LANDM: 20 × 42, „#” = szárazföld) az OP-térkép képéből készült (a cella több mint fele nem tenger); a kikötő-cellák (eseménymentes, „.”) változatlanok. Az 1 / 0 kapcsoló a Beállításokban
 //   v1.14.235 (2026-10-26) – ÚJ: a MEGÁLLT (vagy a találat után megálló) teherhajó ég / füstöl: fogStop (alap 20; 0 = ki) cellára látszik (az időjárás levonva); a periszkópmélységű U-boat is látja (fogStopPer, alap 1). Az észlelhetőség-táblázatban külön sor (köd-réteg)
 //   v1.14.236 (2026-10-26) – HEDGEHOG / SQUID ELLENŐRZÉS LÁTHATÓVÁ: (1) a sortűz / lövés után a napló kiírja az eredményt is („ellenőrizve: nincs U-boat a célcellákban” / „a találatot a lépése után ellenőrzöm”), nem csak a találatot; (2) JAVÍTÁS: az az U-boat, amelyik már lépett és kiértékelődött (bl), de még nem „kész”, eddig kimaradt az azonnali ellenőrzésből – most a hedgehog / Squid rá is azonnal hat; (3) az U-boat kiértékelésénél, ha volt hedgehog / Squid jel, de egyik cellában sem volt, ezt is kiírja
+//   v1.14.302 (2026-10-31) – JAVÍTÁS: (1) az elemzési napló dupla sorai (a kockadobás-animáció újrajátszásakor az ALOG is visszaáll, mint a Napló); (2) a „zónája eltolva” zaj-sorok kimaradnak; (3) aiB2Push: a lövés nélküli körök számlálója lövés után minden sávban nullázódik (eddig a „nem sikerült, mélyre” sávban ragadt, és az U-boat sikeres támadás után is „nem sikerült” feliratot kapott)
 //   v1.14.301 (2026-10-31) – ÚJ: ELEMZÉSI NAPLÓ (alogOn, alogMax 6000): a teljes csata szabály-ellenőrzéshez szükséges sorai a csata végéig (köri fejléc, U-boat állapot, AI-döntés szabály-felirattal, találat, bomba, süllyedés, belépő / kilépő / STOP / javítás dobás; a töltés / irány / sebesség / szenzor dobások nélkül); Taktikai lap 📋 gomb: másolás, mentés fájlba, törlés
 //   v1.14.300 (2026-10-31) – ÚJ: a Flotta lapon a Hajóvásárlás előtt „Szabad legénység: N” táblázat: a megmentett legénységek (Medal, pályafutás); az első kapja a következő vásárolt hajót (crewOn kapcsolja)
 //   v1.14.299 (2026-10-30) – JAVÍTÁS: aiB2Imm (alap 1): a mozdulatlan (Akkumulátor kiesett) és bombázott U-boat a konvojban is vészhelyzeti mélységet (7–8) választ, nem 1/8-ra törekszik: azonos cellában a bomba csak a nála mélyebben (≥) robbanva talál, 8-on a legkisebb az esély
@@ -2982,7 +2983,7 @@ applyLogPos();renderCfg();try{qbRender()}catch(e){}   // a pálya felállítás�
 //   v1.14.239 (2026-10-26) – ÚJ: (1) LUT torpedó (lutOn, alap 1; 1944. januártól): az U-boat kártyán „LUT” jelölőnégyzet (az AI lutAiP %); a FAT utóda: lutLen 18 cella, lutRun 6 egyenes, lutLeg 3 fél-szélesség, találat teherhajón d6 ≤ lutHit (3), hadihajón ≤ lutHitE (1); ha FAT is be van jelölve, a LUT számít. (2) LÉGPERISZKÓP / SCHNORCHEL (schOn, alap 1; 1944. júniustól; csak szabad mozgásnál): 1/8-as mélységen a kártya „Légperiszkóp” jelölőnégyzetével a dízel hajt: az akku nem fogy, hanem schRech (2) cellát tölt körönként, max schSpd (2) lépés, kimerült akkuval is halad; kiesett dízelnél nem működik; az AI az akku fele alatt automatikusan használja.
 //   v1.14.238 (2026-10-26) – SZABAD MOZGÁS: az U-boat a belső játékterületen (pl. 80-as táblán az 50×50-esen) bárhol léphet be, nem csak a szélén (uInner, alapból BE; KI = a régi szél-belépés uEdge szerint).
 //   v1.14.237 (2026-10-26) – HEDGEHOG / SQUID ELLENŐRZÉS: az U-boat lépés utáni kiértékelésében a hedgehog / Squid „nincs találat” eredmény akkor is kiíródik, ha a vízibombák is hatottak (eddig ilyenkor csak a vízibomba-sor látszott, a hedgehog-ellenőrzés nem)
-const VER = 'v1.14.301';
+const VER = 'v1.14.302';
 // ===== MEGFIGYELŐ / TESZT MÓD (obsMode, v1.14.195) =====
 // Megfigyelő módban mindkét oldalt az AI vezérli (a kísérők is: NPC-logikával), a pálya mindent mutat (nincs köd), és a körök maguktól léptetődnek;
 // a lezárt csatákból statisztika készül (konvoj-, U-boat-, kísérő-veszteség, kimenetel), hogy látszódjon: sokféle csata születik-e, vagy egyoldalú lett a hangolás.
