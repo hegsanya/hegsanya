@@ -1,6 +1,6 @@
 <!doctype html><html lang="hu" data-theme="light"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>CEG – Konvoj kísérő kampány v1.14.319</title>
+<title>CEG – Konvoj kísérő kampány v1.14.320</title>
 <style>
 /* Színek: világos/sötét téma változókkal; a gombok és táblázatok stílusa */
 :root{--bg:#f4f1ea;--fg:#1d2733;--pn:#fff;--ln:#c9c2b3;--ac:#b3261e;--sea:#d6ecf4;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -96,7 +96,7 @@ table.m{border-collapse:collapse;font-size:12px;width:100%;margin-top:6px}table.
 #o_g .v3{font-weight:700;background:rgba(40,50,80,.30)}#o_g .v4{font-weight:700;color:#fff;background:rgba(30,40,40,.30)}
 #o_g .d{box-shadow:inset 0 0 0 2px var(--ac)}
 #o_g .s{font-weight:900;font-style:italic;outline:2px solid #000;outline-offset:-2px}
-#o_tr{position:absolute;inset:0;pointer-events:none}
+#o_tr{position:absolute;inset:0;pointer-events:none;z-index:4}
 #vOP table{border-collapse:collapse;background:var(--pn);font-size:13px}
 #vOP td,#vOP th{border:1px solid var(--ln);padding:3px 8px;text-align:center}
 #vOP .ev{color:var(--ac);font-weight:700}
@@ -2992,6 +2992,7 @@ applyLogPos();renderCfg();try{qbRender()}catch(e){}   // a pálya felállítás�
 //   v1.14.234 (2026-10-26) – OP TÉRKÉP: a szárazföldi cellákon nincs U / R / H esemény (evLand, alap 1). A szárazföld-maszk (LANDM: 20 × 42, „#” = szárazföld) az OP-térkép képéből készült (a cella több mint fele nem tenger); a kikötő-cellák (eseménymentes, „.”) változatlanok. Az 1 / 0 kapcsoló a Beállításokban
 //   v1.14.235 (2026-10-26) – ÚJ: a MEGÁLLT (vagy a találat után megálló) teherhajó ég / füstöl: fogStop (alap 20; 0 = ki) cellára látszik (az időjárás levonva); a periszkópmélységű U-boat is látja (fogStopPer, alap 1). Az észlelhetőség-táblázatban külön sor (köd-réteg)
 //   v1.14.236 (2026-10-26) – HEDGEHOG / SQUID ELLENŐRZÉS LÁTHATÓVÁ: (1) a sortűz / lövés után a napló kiírja az eredményt is („ellenőrizve: nincs U-boat a célcellákban” / „a találatot a lépése után ellenőrzöm”), nem csak a találatot; (2) JAVÍTÁS: az az U-boat, amelyik már lépett és kiértékelődött (bl), de még nem „kész”, eddig kimaradt az azonnali ellenőrzésből – most a hedgehog / Squid rá is azonnal hat; (3) az U-boat kiértékelésénél, ha volt hedgehog / Squid jel, de egyik cellában sem volt, ezt is kiírja
+//   v1.14.320 (2026-10-31) – opCoast: a partvonal sötét vonal + vékony fehér szegély (sötét viharcellán is látszik), a rétege z-index:3 (biztosan a vihar fölött), a Tervrajz témában a --mapimg képből számol.
 //   v1.14.319 (2026-10-31) – ÚJ: opCoast (alap 1): az OP térképen a partvonal a vihar fölött is látszik (a háttérképből számolt vékony sötét vonal külön rajzvásznon; követi a háttérkép eltolását / méretét, témaváltáskor újraszámol).
 //   v1.14.318 (2026-10-31) – ÚJ: opEvIcon = 1 (alap): az OP eseményréteg a hajókártyákon használt képeket mutatja kicsinyítve (U = VIIC, R = romboló, H = repülő), opEvFill (alap 1): egyszínű, az esemény színére kitöltött sziluettként fehér körvonallal; 2 = a v1.14.317 saját rajzolású SVG-i; K = „?”.
 //   v1.14.317 (2026-10-31) – ÚJ: opEvIcon (alap 1; opEvIconSz = méret %): az OP lap eseményrétegében a betűk helyett kis grafika: U = U-boat sziluett, R = felszíni hajó, H = repülő, K (vegyes) = „?”. A saját rajzolású SVG-k a szín- és körvonal-beállításokat (opHalo) követik; 0 = a régi betűk.
@@ -3075,7 +3076,7 @@ applyLogPos();renderCfg();try{qbRender()}catch(e){}   // a pálya felállítás�
 //   v1.14.239 (2026-10-26) – ÚJ: (1) LUT torpedó (lutOn, alap 1; 1944. januártól): az U-boat kártyán „LUT” jelölőnégyzet (az AI lutAiP %); a FAT utóda: lutLen 18 cella, lutRun 6 egyenes, lutLeg 3 fél-szélesség, találat teherhajón d6 ≤ lutHit (3), hadihajón ≤ lutHitE (1); ha FAT is be van jelölve, a LUT számít. (2) LÉGPERISZKÓP / SCHNORCHEL (schOn, alap 1; 1944. júniustól; csak szabad mozgásnál): 1/8-as mélységen a kártya „Légperiszkóp” jelölőnégyzetével a dízel hajt: az akku nem fogy, hanem schRech (2) cellát tölt körönként, max schSpd (2) lépés, kimerült akkuval is halad; kiesett dízelnél nem működik; az AI az akku fele alatt automatikusan használja.
 //   v1.14.238 (2026-10-26) – SZABAD MOZGÁS: az U-boat a belső játékterületen (pl. 80-as táblán az 50×50-esen) bárhol léphet be, nem csak a szélén (uInner, alapból BE; KI = a régi szél-belépés uEdge szerint).
 //   v1.14.237 (2026-10-26) – HEDGEHOG / SQUID ELLENŐRZÉS: az U-boat lépés utáni kiértékelésében a hedgehog / Squid „nincs találat” eredmény akkor is kiíródik, ha a vízibombák is hatottak (eddig ilyenkor csak a vízibomba-sor látszott, a hedgehog-ellenőrzés nem)
-const VER = 'v1.14.319';
+const VER = 'v1.14.320';
 // ===== MEGFIGYELŐ / TESZT MÓD (obsMode, v1.14.195) =====
 // Megfigyelő módban mindkét oldalt az AI vezérli (a kísérők is: NPC-logikával), a pálya mindent mutat (nincs köd), és a körök maguktól léptetődnek;
 // a lezárt csatákból statisztika készül (konvoj-, U-boat-, kísérő-veszteség, kimenetel), hogy látszódjon: sokféle csata születik-e, vagy egyoldalú lett a hangolás.
@@ -4571,8 +4572,8 @@ const COAST={url:''};
 function coastRender(){
  const m=$('o_map');if(!m)return;let box=$('o_coast');
  if(!CFG.opCoast){if(box)box.style.display='none';return}
- const mm=/url\("?([^")]+)"?\)/.exec(getComputedStyle(m).backgroundImage||'');if(!mm)return;
- if(!box){box=document.createElement('div');box.id='o_coast';box.style.cssText='position:absolute;left:0;top:0;width:100%;height:100%;overflow:hidden;pointer-events:none';
+ let mm=/url\("?([^")]+)"?\)/.exec(getComputedStyle(m).backgroundImage||'');if(!mm)mm=/url\("?([^")]+)"?\)/.exec(getComputedStyle(document.documentElement).getPropertyValue('--mapimg')||'');if(!mm)return;   /* Tervrajz (blue) téma: a kép a --mapimg változóból jön */
+ if(!box){box=document.createElement('div');box.id='o_coast';box.style.cssText='position:absolute;left:0;top:0;width:100%;height:100%;overflow:hidden;pointer-events:none;z-index:3';
   const cv=document.createElement('canvas');cv.style.position='absolute';box.appendChild(cv);m.insertBefore(box,$('o_tr'))}
  box.style.display='';const cv=box.firstChild,k=(+CFG.imgS||100)/100;
  cv.style.left=(CFG.imgDX*32)+'px';cv.style.top=(CFG.imgDY*rh())+'px';cv.style.width=(1440*k)+'px';cv.style.height=(869*k)+'px';
@@ -4581,8 +4582,10 @@ function coastRender(){
   const d=g0.getImageData(0,0,W,H).data,sx=Math.round(W*.35),sy=Math.round(H*.5),si=(sy*W+sx)*4,sr=d[si],sg=d[si+1],sb=d[si+2];   // tengerszín: a kép bal-közép (Atlanti-óceán) pontja
   const sea=i=>Math.abs(d[i]-sr)+Math.abs(d[i+1]-sg)+Math.abs(d[i+2]-sb)<30&&d[i+3]>200;
   cv.width=W;cv.height=H;const g=cv.getContext('2d'),o=g.createImageData(W,H),od=o.data;
+  /* a part: sötét vonal + vékony fehér szegély, hogy a sötét viharfelhő-cellákon is látsszon */
   for(let y=1;y<H-1;y++)for(let x=1;x<W-1;x++){const i=(y*W+x)*4;if(sea(i))continue;
-   if(sea(i-4)||sea(i+4)||sea(i-W*4)||sea(i+W*4)){od[i]=10;od[i+1]=60;od[i+2]=90;od[i+3]=235}}
+   if(sea(i-4)||sea(i+4)||sea(i-W*4)||sea(i+W*4)){od[i]=10;od[i+1]=50;od[i+2]=80;od[i+3]=255;
+    for(const j of [i-4,i+4,i-W*4,i+W*4,i-W*4-4,i-W*4+4,i+W*4-4,i+W*4+4])if(od[j+3]!=255){od[j]=od[j+1]=od[j+2]=255;od[j+3]=190}}}
   g.putImageData(o,0,0)};im.src=mm[1]}
 function applyMap(){const m=$('o_map'),tr=$('o_tr');m.style.height=CFG.mapH+'px';$('o_g').style.gridAutoRows=rh()+'px';if(tr.setAttribute)tr.setAttribute('height',CFG.mapH);
  m.style.backgroundPosition=(CFG.imgDX*32)+'px '+(CFG.imgDY*rh())+'px';m.style.backgroundSize=CFG.imgS==100?'auto':(1440*CFG.imgS/100)+'px '+(869*CFG.imgS/100)+'px';try{coastRender()}catch(e){}}
