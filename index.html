@@ -1,6 +1,6 @@
 <!doctype html><html lang="hu" data-theme="light"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>CEG – Konvoj kísérő kampány v1.14.323</title>
+<title>CEG – Konvoj kísérő kampány v1.14.324</title>
 <style>
 /* Színek: világos/sötét téma változókkal; a gombok és táblázatok stílusa */
 :root{--bg:#f4f1ea;--fg:#1d2733;--pn:#fff;--ln:#c9c2b3;--ac:#b3261e;--sea:#d6ecf4;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -536,11 +536,15 @@ let MPEDIT=false,MPUSER=null;
 function mpUser(){if(MPUSER)return MPUSER;try{MPUSER=JSON.parse(localStorage.getItem('ceg_modpos')||'{}')||{}}catch(e){MPUSER={}}return MPUSER}
 function mpSave(){try{localStorage.setItem('ceg_modpos',JSON.stringify(MPUSER||{}))}catch(e){}}
 /* mpPos: egy modul helye(i) – a felhasználó mentése > az alapérték > a hajótest mentén sorban elosztva */
-function mpPos(cls,k,name,i){const u=mpUser()[cls];if(u&&u[name])return u[name];const d=MPDEF[cls];if(d&&d[name])return d[name];const n=k.mod.length;return [[30+(i+.5)*(460/n),80]]}
+/* mpH: a jelölő-réteg magassága a 519 egység széles koordináta-rendszerben = a kép valódi aspektusa (PNG fejlécből); ismeretlen → 154 (a romboló képe) */
+function mpH(imgHtml){const m=/src="data:image\/png;base64,([A-Za-z0-9+\/=]{32})/.exec(imgHtml||'');if(!m)return 154;try{const b=atob(m[1]),g=i=>((b.charCodeAt(i)<<24)|(b.charCodeAt(i+1)<<16)|(b.charCodeAt(i+2)<<8)|b.charCodeAt(i+3))>>>0,w=g(16),h=g(20);return(w>0&&h>0)?Math.round(519*h/w):154}catch(e){return 154}}
+let MPH=154;
+function mpPos(cls,k,name,i){const u=mpUser()[cls];if(u&&u[name]&&!u[name].some(p=>p[0]>=519&&p[1]>=MPH-1))return u[name];   /* a sarokba „ragadt” (hibás) mentést eldobja */
+ const d=MPDEF[cls];if(d&&d[name])return d[name];const n=k.mod.length;return [[30+(i+.5)*(460/n),Math.round(MPH*.58)]]}
 /* modOver: a kép köré egy relatív burkoló + SVG-réteg a jelölőkkel (csak ha van kép és sérülés / szerkesztő mód) */
 function modOver(s,imgHtml){
  if(!CFG.modMark||!imgHtml||imgHtml.indexOf('class="shipimg"')<0||!s.dmg||!D[s.c])return imgHtml;
- const k=D[s.c],cls=k.base||s.c;let g='';
+ const k=D[s.c],cls=k.base||s.c;let g='';MPH=mpH(imgHtml);
  k.mod.forEach((m,i)=>{
   const dm=s.dmg[i]||0,life=m[1],st=(s.st&&s.st[i])||0;if(!MPEDIT&&dm<=0&&!st)return;
   const sev=dm>=life?3:dm/life>=.67?2:dm>0?1:0,col=['#9e9e9e','#fbc02d','#f57c00','#d32f2f'][sev];
@@ -548,13 +552,14 @@ function modOver(s,imgHtml){
    g+='<g'+(MPEDIT?' style="cursor:move" onpointerdown="mpDown(event,\''+cls+'\','+i+','+j+')"':'')+'><title>'+m[0]+': '+dm+'/'+life+(st?' · Stand '+st:'')+'</title>'+
     '<circle cx="'+p[0]+'" cy="'+p[1]+'" r="'+(MPEDIT?6:(sev>=3?7:6))+'" fill="'+col+'" fill-opacity="'+(MPEDIT&&sev==0?.55:.85)+'" stroke="'+(st?'#1565c0':'#fff')+'" stroke-width="'+(sev>=3?2.4:1.6)+'"'+(st?' stroke-dasharray="3 2"':'')+'/>'+
     (sev>=3?'<path d="M'+(p[0]-3.5)+','+(p[1]-3.5)+'L'+(p[0]+3.5)+','+(p[1]+3.5)+'M'+(p[0]+3.5)+','+(p[1]-3.5)+'L'+(p[0]-3.5)+','+(p[1]+3.5)+'" stroke="#fff" stroke-width="2" stroke-linecap="round"/>':'')+
-    (MPEDIT?'<text x="'+p[0]+'" y="'+(p[1]-8)+'" text-anchor="middle" font-size="8" font-weight="700" fill="#000" stroke="#fff" stroke-width="2" paint-order="stroke">'+m[0]+'</text>':'')+'</g>'})});
+    (MPEDIT?'<text x="'+p[0]+'" y="'+(i%2?p[1]+15:p[1]-8)+'" text-anchor="middle" font-size="8" font-weight="700" fill="#000" stroke="#fff" stroke-width="2" paint-order="stroke">'+m[0]+'</text>':'')+'</g>'})});
  if(!g&&!MPEDIT)return imgHtml;
- return '<div class="mpWrap" style="position:relative;margin:4px 0;max-width:'+imgW(420)+'px">'+imgHtml.replace('margin:4px 0;','margin:0;')+'<svg id="mpSvg" viewBox="0 0 519 154" preserveAspectRatio="none" style="position:absolute;left:4px;top:4px;width:calc(100% - 8px);height:calc(100% - 8px);overflow:visible;'+(MPEDIT?'':'pointer-events:none')+'">'+g+'</svg></div>'}
+ return '<div class="mpWrap" style="position:relative;margin:4px 0;max-width:'+imgW(420)+'px">'+imgHtml.replace('margin:4px 0;','margin:0;')+'<svg id="mpSvg" viewBox="0 0 519 '+MPH+'" preserveAspectRatio="none" style="position:absolute;left:4px;top:4px;width:calc(100% - 8px);height:calc(100% - 8px);overflow:visible;'+(MPEDIT?'':'pointer-events:none')+'">'+g+'</svg></div>'}
 /* szerkesztő: húzás (pointer események), mentés elengedéskor */
-function mpDown(ev,cls,i,j){if(!MPEDIT)return;ev.preventDefault();const svg=document.getElementById('mpSvg'),k=D[sel.c],name=k.mod[i][0],U=mpUser();
+function mpDown(ev,cls,i,j){if(!MPEDIT)return;ev.preventDefault();const k=D[sel.c],name=k.mod[i][0],U=mpUser();
  U[cls]=U[cls]||{};if(!U[cls][name])U[cls][name]=mpPos(cls,k,name,i).map(p=>p.slice());
- const mv=e=>{const r=svg.getBoundingClientRect();U[cls][name][j]=[Math.max(0,Math.min(519,Math.round((e.clientX-r.left)/r.width*519))),Math.max(0,Math.min(154,Math.round((e.clientY-r.top)/r.height*154)))];card()},
+ const mv=e=>{const svg=document.getElementById('mpSvg');if(!svg)return;const r=svg.getBoundingClientRect();if(!(r.width>0&&r.height>0))return;   /* a kártya újrarajzolása új svg-t hoz létre: minden mozdulatnál újra lekérjük */
+   U[cls][name][j]=[Math.max(0,Math.min(519,Math.round((e.clientX-r.left)/r.width*519))),Math.max(0,Math.min(MPH,Math.round((e.clientY-r.top)/r.height*MPH)))];card()},
   up=()=>{window.removeEventListener('pointermove',mv);window.removeEventListener('pointerup',up);mpSave()};
  window.addEventListener('pointermove',mv);window.addEventListener('pointerup',up)}
 function mpEditTog(){MPEDIT=!MPEDIT;card()}
@@ -3051,6 +3056,7 @@ applyLogPos();renderCfg();try{qbRender()}catch(e){}   // a pálya felállítás�
 //   v1.14.234 (2026-10-26) – OP TÉRKÉP: a szárazföldi cellákon nincs U / R / H esemény (evLand, alap 1). A szárazföld-maszk (LANDM: 20 × 42, „#” = szárazföld) az OP-térkép képéből készült (a cella több mint fele nem tenger); a kikötő-cellák (eseménymentes, „.”) változatlanok. Az 1 / 0 kapcsoló a Beállításokban
 //   v1.14.235 (2026-10-26) – ÚJ: a MEGÁLLT (vagy a találat után megálló) teherhajó ég / füstöl: fogStop (alap 20; 0 = ki) cellára látszik (az időjárás levonva); a periszkópmélységű U-boat is látja (fogStopPer, alap 1). Az észlelhetőség-táblázatban külön sor (köd-réteg)
 //   v1.14.236 (2026-10-26) – HEDGEHOG / SQUID ELLENŐRZÉS LÁTHATÓVÁ: (1) a sortűz / lövés után a napló kiírja az eredményt is („ellenőrizve: nincs U-boat a célcellákban” / „a találatot a lépése után ellenőrzöm”), nem csak a találatot; (2) JAVÍTÁS: az az U-boat, amelyik már lépett és kiértékelődött (bl), de még nem „kész”, eddig kimaradt az azonnali ellenőrzésből – most a hedgehog / Squid rá is azonnal hat; (3) az U-boat kiértékelésénél, ha volt hedgehog / Squid jel, de egyik cellában sem volt, ezt is kiírja
+//   v1.14.324 (2026-10-31) – JAVÍTÁS (modMark): a modul-jelölők rétege a kép valódi arányához igazodik (a Hipper stb. képén eddig eltorzultak), a szerkesztőben húzás közben a jelek nem ugranak a jobb alsó sarokba (a kártya újrarajzolása miatt elavult svg-t kérdezett), a sarokba ragadt régi mentés eldobódik; a feliratok váltakozva fent / lent.
 //   v1.14.323 (2026-10-31) – ÚJ: modMark (alap 1): a hajókártya képén a sérült modulok helyén jel (sárga / narancs / piros, 6/6 = piros X, Stand > 0 = szaggatott kék gyűrű; rávíve a név és az állapot). A modulok helye: a romboló (T, H) becsült alapértékei, a többi típusnál sorban; a „✎ Modul-helyek” szerkesztővel húzással átrakható (böngészőnként mentődik), „Másol” a mentett helyeket vágólapra teszi.
 //   v1.14.322 (2026-10-31) – ÚJ: az Összegzés „Utak” táblázata két új oszloppal: „Lelőtt gép” és „Német hadihajó” (a konvojnál és a TF-soroknál a csata végén számolva; a régi utaknál „-”).
 //   v1.14.321 (2026-10-31) – ÚJ: tacLand (alap 1): a taktikai pálya szárazföldje az OP térképről (a játékterület = egy OP cella, a keret a szomszédok, a pálya méretéhez arányosan). A szárazföld tiltott terület: hajó nem léphet rá (a repülő igen; az AI is kerüli), a konvoj nem mehet rá, nem lehet átlőni (a kártya Lő gombja is tiltja), a torpedó beleütközik, vízibomba nem tehető rá, az U-boat belépéskor a legközelebbi tengeri cellára kerül. A merülés nem függ tőle. Még nincs: köd-látás a szárazföldön át, vízmélység.
@@ -3138,7 +3144,7 @@ applyLogPos();renderCfg();try{qbRender()}catch(e){}   // a pálya felállítás�
 //   v1.14.239 (2026-10-26) – ÚJ: (1) LUT torpedó (lutOn, alap 1; 1944. januártól): az U-boat kártyán „LUT” jelölőnégyzet (az AI lutAiP %); a FAT utóda: lutLen 18 cella, lutRun 6 egyenes, lutLeg 3 fél-szélesség, találat teherhajón d6 ≤ lutHit (3), hadihajón ≤ lutHitE (1); ha FAT is be van jelölve, a LUT számít. (2) LÉGPERISZKÓP / SCHNORCHEL (schOn, alap 1; 1944. júniustól; csak szabad mozgásnál): 1/8-as mélységen a kártya „Légperiszkóp” jelölőnégyzetével a dízel hajt: az akku nem fogy, hanem schRech (2) cellát tölt körönként, max schSpd (2) lépés, kimerült akkuval is halad; kiesett dízelnél nem működik; az AI az akku fele alatt automatikusan használja.
 //   v1.14.238 (2026-10-26) – SZABAD MOZGÁS: az U-boat a belső játékterületen (pl. 80-as táblán az 50×50-esen) bárhol léphet be, nem csak a szélén (uInner, alapból BE; KI = a régi szél-belépés uEdge szerint).
 //   v1.14.237 (2026-10-26) – HEDGEHOG / SQUID ELLENŐRZÉS: az U-boat lépés utáni kiértékelésében a hedgehog / Squid „nincs találat” eredmény akkor is kiíródik, ha a vízibombák is hatottak (eddig ilyenkor csak a vízibomba-sor látszott, a hedgehog-ellenőrzés nem)
-const VER = 'v1.14.323';
+const VER = 'v1.14.324';
 // ===== MEGFIGYELŐ / TESZT MÓD (obsMode, v1.14.195) =====
 // Megfigyelő módban mindkét oldalt az AI vezérli (a kísérők is: NPC-logikával), a pálya mindent mutat (nincs köd), és a körök maguktól léptetődnek;
 // a lezárt csatákból statisztika készül (konvoj-, U-boat-, kísérő-veszteség, kimenetel), hogy látszódjon: sokféle csata születik-e, vagy egyoldalú lett a hangolás.
