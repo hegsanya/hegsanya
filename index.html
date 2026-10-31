@@ -1,6 +1,6 @@
 <!doctype html><html lang="hu" data-theme="light"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>CEG – Konvoj kísérő kampány v1.14.325</title>
+<title>CEG – Konvoj kísérő kampány v1.14.326</title>
 <style>
 /* Színek: világos/sötét téma változókkal; a gombok és táblázatok stílusa */
 :root{--bg:#f4f1ea;--fg:#1d2733;--pn:#fff;--ln:#c9c2b3;--ac:#b3261e;--sea:#d6ecf4;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -3058,6 +3058,7 @@ applyLogPos();renderCfg();try{qbRender()}catch(e){}   // a pálya felállítás�
 //   v1.14.234 (2026-10-26) – OP TÉRKÉP: a szárazföldi cellákon nincs U / R / H esemény (evLand, alap 1). A szárazföld-maszk (LANDM: 20 × 42, „#” = szárazföld) az OP-térkép képéből készült (a cella több mint fele nem tenger); a kikötő-cellák (eseménymentes, „.”) változatlanok. Az 1 / 0 kapcsoló a Beállításokban
 //   v1.14.235 (2026-10-26) – ÚJ: a MEGÁLLT (vagy a találat után megálló) teherhajó ég / füstöl: fogStop (alap 20; 0 = ki) cellára látszik (az időjárás levonva); a periszkópmélységű U-boat is látja (fogStopPer, alap 1). Az észlelhetőség-táblázatban külön sor (köd-réteg)
 //   v1.14.236 (2026-10-26) – HEDGEHOG / SQUID ELLENŐRZÉS LÁTHATÓVÁ: (1) a sortűz / lövés után a napló kiírja az eredményt is („ellenőrizve: nincs U-boat a célcellákban” / „a találatot a lépése után ellenőrzöm”), nem csak a találatot; (2) JAVÍTÁS: az az U-boat, amelyik már lépett és kiértékelődött (bl), de még nem „kész”, eddig kimaradt az azonnali ellenőrzésből – most a hedgehog / Squid rá is azonnal hat; (3) az U-boat kiértékelésénél, ha volt hedgehog / Squid jel, de egyik cellában sem volt, ezt is kiírja
+//   v1.14.326 (2026-10-31) – OP eseményréteg: a repülő (H) jele felülnézetű sziluett (a hajók továbbra is a kártya oldalnézeti képei).
 //   v1.14.325 (2026-10-31) – modMark: az U-boat (VIIC) képén az orr balra néz: a torpedócsövek elöl (bal) + egy hátul (jobb), a fedélzeti löveg a torony előtt, a kormány a tatnál – az alap modul-helyek ennek megfelelőek.
 //   v1.14.324 (2026-10-31) – JAVÍTÁS (modMark): a modul-jelölők rétege a kép valódi arányához igazodik (a Hipper stb. képén eddig eltorzultak), a szerkesztőben húzás közben a jelek nem ugranak a jobb alsó sarokba (a kártya újrarajzolása miatt elavult svg-t kérdezett), a sarokba ragadt régi mentés eldobódik; a feliratok váltakozva fent / lent.
 //   v1.14.323 (2026-10-31) – ÚJ: modMark (alap 1): a hajókártya képén a sérült modulok helyén jel (sárga / narancs / piros, 6/6 = piros X, Stand > 0 = szaggatott kék gyűrű; rávíve a név és az állapot). A modulok helye: a romboló (T, H) becsült alapértékei, a többi típusnál sorban; a „✎ Modul-helyek” szerkesztővel húzással átrakható (böngészőnként mentődik), „Másol” a mentett helyeket vágólapra teszi.
@@ -3147,7 +3148,7 @@ applyLogPos();renderCfg();try{qbRender()}catch(e){}   // a pálya felállítás�
 //   v1.14.239 (2026-10-26) – ÚJ: (1) LUT torpedó (lutOn, alap 1; 1944. januártól): az U-boat kártyán „LUT” jelölőnégyzet (az AI lutAiP %); a FAT utóda: lutLen 18 cella, lutRun 6 egyenes, lutLeg 3 fél-szélesség, találat teherhajón d6 ≤ lutHit (3), hadihajón ≤ lutHitE (1); ha FAT is be van jelölve, a LUT számít. (2) LÉGPERISZKÓP / SCHNORCHEL (schOn, alap 1; 1944. júniustól; csak szabad mozgásnál): 1/8-as mélységen a kártya „Légperiszkóp” jelölőnégyzetével a dízel hajt: az akku nem fogy, hanem schRech (2) cellát tölt körönként, max schSpd (2) lépés, kimerült akkuval is halad; kiesett dízelnél nem működik; az AI az akku fele alatt automatikusan használja.
 //   v1.14.238 (2026-10-26) – SZABAD MOZGÁS: az U-boat a belső játékterületen (pl. 80-as táblán az 50×50-esen) bárhol léphet be, nem csak a szélén (uInner, alapból BE; KI = a régi szél-belépés uEdge szerint).
 //   v1.14.237 (2026-10-26) – HEDGEHOG / SQUID ELLENŐRZÉS: az U-boat lépés utáni kiértékelésében a hedgehog / Squid „nincs találat” eredmény akkor is kiíródik, ha a vízibombák is hatottak (eddig ilyenkor csak a vízibomba-sor látszott, a hedgehog-ellenőrzés nem)
-const VER = 'v1.14.325';
+const VER = 'v1.14.326';
 // ===== MEGFIGYELŐ / TESZT MÓD (obsMode, v1.14.195) =====
 // Megfigyelő módban mindkét oldalt az AI vezérli (a kísérők is: NPC-logikával), a pálya mindent mutat (nincs köd), és a körök maguktól léptetődnek;
 // a lezárt csatákból statisztika készül (konvoj-, U-boat-, kísérő-veszteség, kimenetel), hogy látszódjon: sokféle csata születik-e, vagy egyoldalú lett a hangolás.
@@ -4865,13 +4866,14 @@ function evIcon(t,cx,cy){
  const col={U:'#c62828',R:'#e65100',H:'#6a1b9a',K:'#000'}[t],sc=(+CFG.opEvIconSz>0?+CFG.opEvIconSz:100)/100,
   halo=CFG.opHalo?' stroke="#fff" stroke-width="1.6" paint-order="stroke" stroke-linejoin="round"':'';
  /* opEvIcon = 1: a hajókártyákon használt oldalnézeti képek kicsinyítve (U = VIIC, R = Z romboló, H = repülő); opEvFill = 1: egyszínű (az esemény színére kitöltött) sziluett, fehér körvonallal */
- if(t!='K'&&+CFG.opEvIcon==1&&typeof ART!='undefined'){const a=ART[{U:'VIIC',R:'Z',H:'A'}[t]];if(a&&a[0]){const w=(t=='H'?28:32)*sc,h=({U:9,R:13,H:14}[t])*sc;   /* a vékony oldalnézeti képeket függőlegesen kissé megnyújtom, hogy 32 px széles cellában is látsszanak */return '<image href="'+a[0]+'" x="'+(cx-w/2)+'" y="'+(cy-h/2)+'" width="'+w+'" height="'+h+'" preserveAspectRatio="none"'+(CFG.opEvFill?' filter="url(#evf-'+t+')"':'')+'/>'}}
+ if(t!='K'&&t!='H'&&+CFG.opEvIcon==1&&typeof ART!='undefined'){   /* v1.14.326: a repülő (H) mindig felülnézeti sziluett (saját SVG), a hajók oldalnézeti képek */const a=ART[{U:'VIIC',R:'Z',H:'A'}[t]];if(a&&a[0]){const w=(t=='H'?28:32)*sc,h=({U:9,R:13,H:14}[t])*sc;   /* a vékony oldalnézeti képeket függőlegesen kissé megnyújtom, hogy 32 px széles cellában is látsszanak */return '<image href="'+a[0]+'" x="'+(cx-w/2)+'" y="'+(cy-h/2)+'" width="'+w+'" height="'+h+'" preserveAspectRatio="none"'+(CFG.opEvFill?' filter="url(#evf-'+t+')"':'')+'/>'}}
  if(t=='K')return '<text x="'+cx+'" y="'+(cy+7*sc)+'" text-anchor="middle" font-size="'+(20*sc)+'" font-weight="900" fill="'+col+'"'+(CFG.opHalo?' stroke="#fff" stroke-width="3" paint-order="stroke"':'')+'>?</text>';
  const P={
   U:'<path d="M-11,2 Q-11,-1 -7,-1 L7,-1 Q11,-1 11,2 Q11,5 7,5 L-7,5 Q-11,5 -11,2Z"/><path d="M-3,-1 L-2,-5 L3,-5 L4,-1Z"/><rect x="0.4" y="-8.5" width="1.6" height="4"/><rect x="0.4" y="-8.5" width="3.6" height="1.5"/>',
   R:'<path d="M-12,1 L12,1 L9,6 L-10,6Z"/><path d="M-5,1 L-5,-3 L4,-3 L4,1Z"/><rect x="-1.5" y="-7" width="3.2" height="4"/><rect x="6" y="-1.6" width="5" height="1.8"/>',
   H:'<path d="M0,-9 L1.6,-3 L1.6,6 L0,9 L-1.6,6 L-1.6,-3Z"/><path d="M-11,1 L-1.6,-2 L1.6,-2 L11,1 L11,3 L1.6,2 L-1.6,2 L-11,3Z"/><path d="M-5,7 L-1.6,5 L1.6,5 L5,7 L5,8.5 L1.6,7.5 L-1.6,7.5 L-5,8.5Z"/>'}[t];
- return P?'<g transform="translate('+cx+','+cy+') scale('+sc+')" fill="'+col+'"'+halo+'>'+P+'</g>':''}
+ const kz=(t=='H'&&+CFG.opEvIcon==1)?1.15:1;   /* felülnézeti repülő a képes üzemmódban kicsit nagyobb */
+ return P?'<g transform="translate('+cx+','+cy+') scale('+(sc*kz)+')" fill="'+col+'"'+halo+'>'+P+'</g>':''}
 // layers: SVG-réteg a forró zónák szegélyével (narancs: csak U-boat; piros: vegyes; kék: vegyes típusú normál zóna) és az esemény-réteg betűivel
 function layers(){let hz='',evs=(+CFG.opEvIcon==1&&CFG.opEvFill)?evFilters():'';const sh=$('o_hz'),se=$('o_ev');
  for(let r=0;r<20;r++)for(let c=0;c<42;c++){const t=EVZ[r][c];
