@@ -1,6 +1,6 @@
 <!doctype html><html lang="hu" data-theme="light"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>CEG – Konvoj kísérő kampány v1.14.299</title>
+<title>CEG – Konvoj kísérő kampány v1.14.300</title>
 <style>
 /* Színek: világos/sötét téma változókkal; a gombok és táblázatok stílusa */
 :root{--bg:#f4f1ea;--fg:#1d2733;--pn:#fff;--ln:#c9c2b3;--ac:#b3261e;--sea:#d6ecf4;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -2892,6 +2892,7 @@ applyLogPos();renderCfg();try{qbRender()}catch(e){}   // a pálya felállítás�
 //   v1.14.234 (2026-10-26) – OP TÉRKÉP: a szárazföldi cellákon nincs U / R / H esemény (evLand, alap 1). A szárazföld-maszk (LANDM: 20 × 42, „#” = szárazföld) az OP-térkép képéből készült (a cella több mint fele nem tenger); a kikötő-cellák (eseménymentes, „.”) változatlanok. Az 1 / 0 kapcsoló a Beállításokban
 //   v1.14.235 (2026-10-26) – ÚJ: a MEGÁLLT (vagy a találat után megálló) teherhajó ég / füstöl: fogStop (alap 20; 0 = ki) cellára látszik (az időjárás levonva); a periszkópmélységű U-boat is látja (fogStopPer, alap 1). Az észlelhetőség-táblázatban külön sor (köd-réteg)
 //   v1.14.236 (2026-10-26) – HEDGEHOG / SQUID ELLENŐRZÉS LÁTHATÓVÁ: (1) a sortűz / lövés után a napló kiírja az eredményt is („ellenőrizve: nincs U-boat a célcellákban” / „a találatot a lépése után ellenőrzöm”), nem csak a találatot; (2) JAVÍTÁS: az az U-boat, amelyik már lépett és kiértékelődött (bl), de még nem „kész”, eddig kimaradt az azonnali ellenőrzésből – most a hedgehog / Squid rá is azonnal hat; (3) az U-boat kiértékelésénél, ha volt hedgehog / Squid jel, de egyik cellában sem volt, ezt is kiírja
+//   v1.14.300 (2026-10-31) – ÚJ: a Flotta lapon a Hajóvásárlás előtt „Szabad legénység: N” táblázat: a megmentett legénységek (Medal, pályafutás); az első kapja a következő vásárolt hajót (crewOn kapcsolja)
 //   v1.14.299 (2026-10-30) – JAVÍTÁS: aiB2Imm (alap 1): a mozdulatlan (Akkumulátor kiesett) és bombázott U-boat a konvojban is vészhelyzeti mélységet (7–8) választ, nem 1/8-ra törekszik: azonos cellában a bomba csak a nála mélyebben (≥) robbanva talál, 8-on a legkisebb az esély
 //   v1.14.298 (2026-10-30) – ÚJ: aiB2Push (alap 1) – HARCIASABB AI U-boat kötött mozgásnál: lőtávon / a konvojban a Commodore várható helyzete felé tart; a távolodó végállás büntetett (kivéve vészhelyzet, sérülés / feladás, vagy bomba a saját cellában); döntés: a mély U-boat csak a feljövetel idejére + aiB2Rise cellára kezd emelkedni, 1/8-on aiB2Fail lövés nélküli kör után mélyre (5–6) merül és beoson
 //   v1.14.297 (2026-10-30) – ÚJ: stopTabOn (alap 1): a STOP-esemény kockája táblázatból, időjárásonként (stopW0..W4 = 1000 / 500 / 250 / 60 / 50): W0–2-ben a csata szinte mindig végigmegy, rossz időben nagy az esély a korai végre; 0 = a régi képlet (stopBase − stopMul × időjárás); küldetésben nem hat
@@ -2955,7 +2956,7 @@ applyLogPos();renderCfg();try{qbRender()}catch(e){}   // a pálya felállítás�
 //   v1.14.239 (2026-10-26) – ÚJ: (1) LUT torpedó (lutOn, alap 1; 1944. januártól): az U-boat kártyán „LUT” jelölőnégyzet (az AI lutAiP %); a FAT utóda: lutLen 18 cella, lutRun 6 egyenes, lutLeg 3 fél-szélesség, találat teherhajón d6 ≤ lutHit (3), hadihajón ≤ lutHitE (1); ha FAT is be van jelölve, a LUT számít. (2) LÉGPERISZKÓP / SCHNORCHEL (schOn, alap 1; 1944. júniustól; csak szabad mozgásnál): 1/8-as mélységen a kártya „Légperiszkóp” jelölőnégyzetével a dízel hajt: az akku nem fogy, hanem schRech (2) cellát tölt körönként, max schSpd (2) lépés, kimerült akkuval is halad; kiesett dízelnél nem működik; az AI az akku fele alatt automatikusan használja.
 //   v1.14.238 (2026-10-26) – SZABAD MOZGÁS: az U-boat a belső játékterületen (pl. 80-as táblán az 50×50-esen) bárhol léphet be, nem csak a szélén (uInner, alapból BE; KI = a régi szél-belépés uEdge szerint).
 //   v1.14.237 (2026-10-26) – HEDGEHOG / SQUID ELLENŐRZÉS: az U-boat lépés utáni kiértékelésében a hedgehog / Squid „nincs találat” eredmény akkor is kiíródik, ha a vízibombák is hatottak (eddig ilyenkor csak a vízibomba-sor látszott, a hedgehog-ellenőrzés nem)
-const VER = 'v1.14.299';
+const VER = 'v1.14.300';
 // ===== MEGFIGYELŐ / TESZT MÓD (obsMode, v1.14.195) =====
 // Megfigyelő módban mindkét oldalt az AI vezérli (a kísérők is: NPC-logikával), a pálya mindent mutat (nincs köd), és a körök maguktól léptetődnek;
 // a lezárt csatákból statisztika készül (konvoj-, U-boat-, kísérő-veszteség, kimenetel), hogy látszódjon: sokféle csata születik-e, vagy egyoldalú lett a hangolás.
@@ -3291,6 +3292,15 @@ const CAMP = {
     });
   },
   // shopLeft: az osztályból még vásárolható darab (true = korlátlan, régi mentés)
+  /* crewHTML (v1.14.300): a szabad, megmentett legénységek listája (crewQ). Ezek közül a sor elején álló kapja a következő VÁSÁROLT hajót (addShip 'buy'): Medal és pályafutás. Csak crewOn mellett jelenik meg */
+  crewHTML() {
+    if (!ECO.crewOn) return '';
+    const q = this.crewQ || [];
+    const rows = q.map((c, i) => [i + 1, c.med || 0, c.cr ? '🏆' + c.cr.us + ' · U✱' + c.cr.uh + ' · 💣' + c.cr.bh + ' · ✈' + c.cr.air : '–', i === 0 ? 'a következő vásárolt hajó ezt kapja' : '']);
+    return '<h3>Szabad legénység: ' + q.length + '</h3>' + (q.length
+      ? TB(['#', 'Medal', 'Pályafutás (elsüllyesztett U · megsérült U · sérülést okozó vízibomba · lelőtt repülő)', 'Megjegyzés'], rows)
+      : '<p><small>Nincs szabad legénység. Elsüllyedt kísérő legénységét a konvoj egy hajója vagy egy közeli kísérő kimentheti; a legénység a következő vásárolt hajót kapja (Medal és pályafutás), és EGp jutalmat hoz.</small></p>');
+  },
   shopLeft(c) { const a = this.shop && this.shop.av[c]; return a === true ? Infinity : (+a || 0); },
   // rollOffers: a fejlesztési lehetőségek sorsolása a kikötőben álló hajókra (radar / szonár minőség −1, ha a kikötő fejleszthet)
   rollOffers(port) { this.fleet.forEach(f => { const P = PORTS_T[f.loc]; f.off = { rad: false, son: false, hf: false, hhi: false }; if (P && P.upg) f.off = { hhi: D[vcls(f)].hhIdx != null && !f.hh && this.rfYear() >= ECO.hhFrom, hfi: D[vcls(f)].hfIdx != null && !f.hf && hfDate('from'), hf: D[vcls(f)].hfIdx != null && !!f.hf && f.hq > ECO.hfBest && R(1, 100) <= ECO.upgP, rad: f.rq > this.sensFloor() && R(1, 100) <= ECO.upgP, son: f.sq > this.sensFloor() && R(1, 100) <= ECO.upgP }; }); },
@@ -3954,6 +3964,7 @@ const CAMP = {
     const us = OPG.units();
     h += '<h3>Kötelékek (Task Force)</h3>' + (us.length ? TB(['Kötelék', 'Cella', 'Irány', 'Hajók', 'Üzemanyag (leggyengébb hajó)', 'Ma', ''], us.map(u => [u.id, OPG.cellOf(u), u.h, u.ships.join(', '), this.tfFuelHTML(u), u.moved ? 'kész' : u.left + ' lépés', '<button ' + (v && v.sailed && OPG.convoyCell() === OPG.cellOf(u) ? '' : 'disabled ') + 'onclick="CAMP.joinTF(\'' + u.id + '\')">Csatlakozás a konvojhoz</button>'])) : '<p>Nincs külön haladó kötelék.</p>');
     h += this.rescueHTML();
+    h += this.crewHTML();   /* v1.14.300: a szabad (megmentett) legénységek a vásárlás előtt látszanak */
     h += '<h3>Hajóvásárlás' + (pre ? ' (' + port + ')' : ' – csak indulás előtt a kikötőben') + '</h3><p><small>Ebben az évben a legjobb radar / szonár minőség: ' + this.sensFloor() + ' (kisebb = jobb). Új hajónál szerencsével ennyi, különben legfeljebb ' + Math.max(this.sensFloor(), ECO.newMax | 0) + '; fejlesztéssel javítható az éves legjobbig. ' + (hfDate('from') ? 'HF/DF (T, H, BS, BB, RV, FL, FM): induló minőség ' + ECO.hfStart + ', fejlesztéssel ' + ECO.hfBest + '-ig javítható; ' : '') + 'a szenzorok (radar, szonár' + (hfDate('from') ? ', HF/DF' : '') + ') sikeres dobása egy egyszer használható Joker-irányt ad.</small></p>' + TB(['Osztály', 'Ár (EGp)', 'Most elérhető', 'Sebesség', 'Hatótáv', 'Bomba', ''], FLEET_CLS.map(c => {
       const av = this.shop.av[c], k = D[c], ok = pre && P.shop && av && this.egp >= this.price(c);
       return [artImg(c, c, 90) + '<a href="#" onclick="CAMP.card(\'' + c + '\');return false">' + k.n + '</a>' + (this.isFree(c) ? ' (ingyenes)' : k.freeFrom ? ' <small>(ingyenes ' + k.freeFrom.slice(0, 4) + '-től)</small>' : ' <small>(mindig fizetős)</small>'), this.price(c), av ? (typeof av === 'number' ? av + ' db' : 'igen') : 'nem', k.sp, k.fuel, k.bomb, '<button ' + (ok ? '' : 'disabled ') + 'onclick="CAMP.buy(\'' + c + '\')">Vétel</button>'];
