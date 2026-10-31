@@ -1,6 +1,6 @@
 <!doctype html><html lang="hu" data-theme="light"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>CEG – Konvoj kísérő kampány v1.14.305</title>
+<title>CEG – Konvoj kísérő kampány v1.14.306</title>
 <style>
 /* Színek: világos/sötét téma változókkal; a gombok és táblázatok stílusa */
 :root{--bg:#f4f1ea;--fg:#1d2733;--pn:#fff;--ln:#c9c2b3;--ac:#b3261e;--sea:#d6ecf4;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -2941,6 +2941,7 @@ applyLogPos();renderCfg();try{qbRender()}catch(e){}   // a pálya felállítás�
 //   v1.14.234 (2026-10-26) – OP TÉRKÉP: a szárazföldi cellákon nincs U / R / H esemény (evLand, alap 1). A szárazföld-maszk (LANDM: 20 × 42, „#” = szárazföld) az OP-térkép képéből készült (a cella több mint fele nem tenger); a kikötő-cellák (eseménymentes, „.”) változatlanok. Az 1 / 0 kapcsoló a Beállításokban
 //   v1.14.235 (2026-10-26) – ÚJ: a MEGÁLLT (vagy a találat után megálló) teherhajó ég / füstöl: fogStop (alap 20; 0 = ki) cellára látszik (az időjárás levonva); a periszkópmélységű U-boat is látja (fogStopPer, alap 1). Az észlelhetőség-táblázatban külön sor (köd-réteg)
 //   v1.14.236 (2026-10-26) – HEDGEHOG / SQUID ELLENŐRZÉS LÁTHATÓVÁ: (1) a sortűz / lövés után a napló kiírja az eredményt is („ellenőrizve: nincs U-boat a célcellákban” / „a találatot a lépése után ellenőrzöm”), nem csak a találatot; (2) JAVÍTÁS: az az U-boat, amelyik már lépett és kiértékelődött (bl), de még nem „kész”, eddig kimaradt az azonnali ellenőrzésből – most a hedgehog / Squid rá is azonnal hat; (3) az U-boat kiértékelésénél, ha volt hedgehog / Squid jel, de egyik cellában sem volt, ezt is kiírja
+//   v1.14.306 (2026-10-31) – JAVÍTÁS: a kampány-csatában a torpedó-készlet kétszer sorsolódott (mkU + a kampány betöltése), a kockanapló K0 sorai félrevezetők voltak (az első dobás eldobódott); most egyszer sorsolódik
 //   v1.14.305 (2026-10-31) – a hátsó torpedó-készlet KÜLÖN sorsolódik (1..uTpSternMax, mindig G7e, a teljes készletből), a hagyományos / FAT arány (d[előre szóló készlet], legalább 1 G7e) csak az előre szóló részre vonatkozik – így a hátsó cső nem viszi el az előre szóló G7e-t
 //   v1.14.304 (2026-10-31) – ÚJ: TORPEDÓ-KÉSZLET FAJTÁI (uTpMix, alap 1; uTpSternMax alap 2): a csata eleji készlet (uTpLo–uTpHi, 8–14) d[készlet] darabja hagyományos (G7e, legalább 1), a többi FAT (a FAT-dátum előtt mind G7e); hátul csak G7e van, legfeljebb 2; a lövés fajtáját a kártya / az AI (fatAiP) választja, de csak meglévő készletből, ha elfogyott, a másik fajta indul; kézi és AI azonos szabály; a kártya és az elemzési napló mutatja a készletet
 //   v1.14.303 (2026-10-31) – (1) az elemzési napló első sora a fejléc: játék-verzió, mentés ideje, fő AI-kapcsolók (eddig a K0 sorok előtt nem volt fejléc); (2) HARCKÉPTELEN (torpedó nélküli / torpedó modul 6/6) U-boat kötött mozgásnál: nem húz a Commodore felé (az „közelít (kísérő közel)” hiba), a felirat „harcképtelen: kilép a szélen”, és a szél felé tartás súlya nagyobb (aiB2EdgeW, alap .3 = változatlan, mert a mérés nem mutatott gyorsulást)
@@ -3010,7 +3011,7 @@ applyLogPos();renderCfg();try{qbRender()}catch(e){}   // a pálya felállítás�
 //   v1.14.239 (2026-10-26) – ÚJ: (1) LUT torpedó (lutOn, alap 1; 1944. januártól): az U-boat kártyán „LUT” jelölőnégyzet (az AI lutAiP %); a FAT utóda: lutLen 18 cella, lutRun 6 egyenes, lutLeg 3 fél-szélesség, találat teherhajón d6 ≤ lutHit (3), hadihajón ≤ lutHitE (1); ha FAT is be van jelölve, a LUT számít. (2) LÉGPERISZKÓP / SCHNORCHEL (schOn, alap 1; 1944. júniustól; csak szabad mozgásnál): 1/8-as mélységen a kártya „Légperiszkóp” jelölőnégyzetével a dízel hajt: az akku nem fogy, hanem schRech (2) cellát tölt körönként, max schSpd (2) lépés, kimerült akkuval is halad; kiesett dízelnél nem működik; az AI az akku fele alatt automatikusan használja.
 //   v1.14.238 (2026-10-26) – SZABAD MOZGÁS: az U-boat a belső játékterületen (pl. 80-as táblán az 50×50-esen) bárhol léphet be, nem csak a szélén (uInner, alapból BE; KI = a régi szél-belépés uEdge szerint).
 //   v1.14.237 (2026-10-26) – HEDGEHOG / SQUID ELLENŐRZÉS: az U-boat lépés utáni kiértékelésében a hedgehog / Squid „nincs találat” eredmény akkor is kiíródik, ha a vízibombák is hatottak (eddig ilyenkor csak a vízibomba-sor látszott, a hedgehog-ellenőrzés nem)
-const VER = 'v1.14.305';
+const VER = 'v1.14.306';
 // ===== MEGFIGYELŐ / TESZT MÓD (obsMode, v1.14.195) =====
 // Megfigyelő módban mindkét oldalt az AI vezérli (a kísérők is: NPC-logikával), a pálya mindent mutat (nincs köd), és a körök maguktól léptetődnek;
 // a lezárt csatákból statisztika készül (konvoj-, U-boat-, kísérő-veszteség, kimenetel), hogy látszódjon: sokféle csata születik-e, vagy egyoldalú lett a hangolás.
@@ -3707,7 +3708,7 @@ const CAMP = {
     UID.length = 0; Object.keys(this.ub).filter(id => !this.ub[id].dead).slice(0, 3).forEach(id => UID.push(id));   // az aktív (élő) U-boatok, legfeljebb három
     Object.keys(RAID).forEach(k => delete RAID[k]); Object.keys(this.raid).filter(id => !this.raid[id].dead).forEach(id => { RAID[id] = this.raid[id].c; });   // az élő ellenséges felszíni hajók
     UID.forEach(id => {                                            // az U-boatok a pályán kívül (store) várnak, a d25-ös dobás léptet be
-      const p = this.ub[id], u = mkU(id); u.ton = p.ton; u.dmg = p.dmg.slice(); if(CFG.uTpNew)uTpInit(u);else{u.tp=p.tp;u.tpS=u.tpG=u.tpF=null}   /* v1.14.304: a fajták új csatában sorsolódnak; átvitt maradéknál fajta nélküli */
+      const p = this.ub[id], u = mkU(id); u.ton = p.ton; u.dmg = p.dmg.slice(); if(!CFG.uTpNew){u.tp=p.tp;u.tpS=u.tpG=u.tpF=null}   /* v1.14.306: uTpNew esetén a mkU már sorsolta a készletet (eddig kétszer sorsolt, a kockanaplóban a bevezető sor félrevezető volt) */   /* v1.14.304: a fajták új csatában sorsolódnak; átvitt maradéknál fajta nélküli */
       store[id] = u;   /* v1.14.276 (uTpNew): minden csatában új torpedó-készlet (a készlet a taktikai csatára szól); 0 = a kampány vitte át az előző csata maradékát */
     });
     this.logStart = LOG.length;
