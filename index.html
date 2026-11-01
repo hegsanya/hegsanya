@@ -1,6 +1,6 @@
 <!doctype html><html lang="hu" data-theme="light"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>CEG – Konvoj kísérő kampány v1.14.335</title>
+<title>CEG – Konvoj kísérő kampány v1.14.336</title>
 <style>
 /* Színek: világos/sötét téma változókkal; a gombok és táblázatok stílusa */
 :root{--bg:#f4f1ea;--fg:#1d2733;--pn:#fff;--ln:#c9c2b3;--ac:#b3261e;--sea:#d6ecf4;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -3077,8 +3077,9 @@ applyLogPos();renderCfg();try{qbRender()}catch(e){}   // a pálya felállítás�
 //   v1.14.234 (2026-10-26) – OP TÉRKÉP: a szárazföldi cellákon nincs U / R / H esemény (evLand, alap 1). A szárazföld-maszk (LANDM: 20 × 42, „#” = szárazföld) az OP-térkép képéből készült (a cella több mint fele nem tenger); a kikötő-cellák (eseménymentes, „.”) változatlanok. Az 1 / 0 kapcsoló a Beállításokban
 //   v1.14.235 (2026-10-26) – ÚJ: a MEGÁLLT (vagy a találat után megálló) teherhajó ég / füstöl: fogStop (alap 20; 0 = ki) cellára látszik (az időjárás levonva); a periszkópmélységű U-boat is látja (fogStopPer, alap 1). Az észlelhetőség-táblázatban külön sor (köd-réteg)
 //   v1.14.236 (2026-10-26) – HEDGEHOG / SQUID ELLENŐRZÉS LÁTHATÓVÁ: (1) a sortűz / lövés után a napló kiírja az eredményt is („ellenőrizve: nincs U-boat a célcellákban” / „a találatot a lépése után ellenőrzöm”), nem csak a találatot; (2) JAVÍTÁS: az az U-boat, amelyik már lépett és kiértékelődött (bl), de még nem „kész”, eddig kimaradt az azonnali ellenőrzésből – most a hedgehog / Squid rá is azonnal hat; (3) az U-boat kiértékelésénél, ha volt hedgehog / Squid jel, de egyik cellában sem volt, ezt is kiírja
+//   v1.14.336 (2026-11-01) – A Southend konvoj kötelező cellái: W13 helyett V13 (a W13 szárazföld): V13, V14, W14, X14
 //   v1.14.335 (2026-11-01) – ÚJ: HOSSZÚ konvoj-elrendezés (a Taktikai lap Elrendezés választójában „Hosszú (keskeny)”): fix, kis sorszélesség (cvLongW, alap 5 hajó / sor), így a 20–30 hajós konvoj keskeny és hosszú. cvEastLong (alap 1): a Methil / Southend konvoj csatájában az alap elrendezés helyett automatikusan ez érvényes (a választó kézi értéke előbbre való). A kísérők zónái nem változnak (a Commodore-hoz képest), tologathatók
-//   v1.14.334 (2026-11-01) – ÚJ: cvVia (alap 1): a Methil / Southend konvoj kötelező cellái (küldetés-szerűen): Methil V11, V10, W10, X10, X11; Southend W13, V14, W14, X14. A konvoj csak akkor érkezhet célba, ha az útja során mindegyiket érintette (a visszaúton ugyanezek, fordított számozással). A cellák számozott jelölőként látszanak az OP térképen (sárga = hiányzik, zöld = megvan), a fejlécben felsorolva
+//   v1.14.334 (2026-11-01) – ÚJ: cvVia (alap 1): a Methil / Southend konvoj kötelező cellái (küldetés-szerűen): Methil V11, V10, W10, X10, X11; Southend V13, V14, W14, X14. A konvoj csak akkor érkezhet célba, ha az útja során mindegyiket érintette (a visszaúton ugyanezek, fordított számozással). A cellák számozott jelölőként látszanak az OP térképen (sárga = hiányzik, zöld = megvan), a fejlécben felsorolva
 //   v1.14.333 (2026-11-01) – ÚJ: Methil és Southend konvojok (LM/ML, LS/SL; 20–30 teherhajó: cvEastLo / cvEastHi). A Liverpoolból induló konvoj családját súlyozva sorsolja (cvMix = 1): 1941-09-01 előtt Methil 15 / Southend 15 / Gibraltár 30 / Halifax 40 % (cvA1…cvA5), utána Methil 10 / Southend 10 / Gibraltár 30 / Halifax 30 / Rejkjavik 20 % (cvB1…cvB5); cvMix = 0: a régi, kelet-parti utak nélküli sorsolás
 //   v1.14.332 (2026-11-01) – A konvoj lépésénél a tengerről szárazföldre lépő teherhajó nem léphet, de a konvoj nem áll meg: az a hajó lemarad (csak ebben a csatában; a naplóba kerül), a többi halad, a következő körben újra próbál. Eddig a teljes konvoj megállt („válassz másik irányt”).
 //   v1.14.331 (2026-11-01) – ÚJ: tacClr (alap 10): a csata elején a konvoj körül (a hajók befoglaló téglalapja + 10 cella minden irányban) a szárazföld vízre cserélődik (a doboz a csatával együtt mentődik, és a naplóba kerül); ez váltja a v1.14.330 térkép-eltolását (tacFit megszűnt).
@@ -3176,7 +3177,7 @@ applyLogPos();renderCfg();try{qbRender()}catch(e){}   // a pálya felállítás�
 //   v1.14.239 (2026-10-26) – ÚJ: (1) LUT torpedó (lutOn, alap 1; 1944. januártól): az U-boat kártyán „LUT” jelölőnégyzet (az AI lutAiP %); a FAT utóda: lutLen 18 cella, lutRun 6 egyenes, lutLeg 3 fél-szélesség, találat teherhajón d6 ≤ lutHit (3), hadihajón ≤ lutHitE (1); ha FAT is be van jelölve, a LUT számít. (2) LÉGPERISZKÓP / SCHNORCHEL (schOn, alap 1; 1944. júniustól; csak szabad mozgásnál): 1/8-as mélységen a kártya „Légperiszkóp” jelölőnégyzetével a dízel hajt: az akku nem fogy, hanem schRech (2) cellát tölt körönként, max schSpd (2) lépés, kimerült akkuval is halad; kiesett dízelnél nem működik; az AI az akku fele alatt automatikusan használja.
 //   v1.14.238 (2026-10-26) – SZABAD MOZGÁS: az U-boat a belső játékterületen (pl. 80-as táblán az 50×50-esen) bárhol léphet be, nem csak a szélén (uInner, alapból BE; KI = a régi szél-belépés uEdge szerint).
 //   v1.14.237 (2026-10-26) – HEDGEHOG / SQUID ELLENŐRZÉS: az U-boat lépés utáni kiértékelésében a hedgehog / Squid „nincs találat” eredmény akkor is kiíródik, ha a vízibombák is hatottak (eddig ilyenkor csak a vízibomba-sor látszott, a hedgehog-ellenőrzés nem)
-const VER = 'v1.14.335';
+const VER = 'v1.14.336';
 // ===== MEGFIGYELŐ / TESZT MÓD (obsMode, v1.14.195) =====
 // Megfigyelő módban mindkét oldalt az AI vezérli (a kísérők is: NPC-logikával), a pálya mindent mutat (nincs köd), és a körök maguktól léptetődnek;
 // a lezárt csatákból statisztika készül (konvoj-, U-boat-, kísérő-veszteség, kimenetel), hogy látszódjon: sokféle csata születik-e, vagy egyoldalú lett a hangolás.
@@ -4579,7 +4580,7 @@ function bestHeading(a,b){const[r0,c0]=parse(a),[r1,c1]=parse(b);let best=1,bd=-
 // a nem engedélyezett útvonal (routeOK) súlya 0. cvMix = 0: a kelet-parti utak (LM, LS) kimaradnak, a többi egyenlő eséllyel. Más kikötőből: egyenlő eséllyel (a régi viselkedés)
 // VIA: a kelet-parti konvojok kötelező cellái, a Liverpool felőli irányban (a visszaúton fordított sorrend). A két végpont (kikötő) cellája kimarad belőle.
 // Szerkesztés: itt, a kódban (Methil: Skócia északi csücskén át; Southend: a Csatornán át)
-const VIA={Methil:['W12','V11','V10','W10','X10','X11','W11'],Southend:['W13','V14','W14','X14','Y13']};
+const VIA={Methil:['W12','V11','V10','W10','X10','X11','W11'],Southend:['V13','V14','W14','X14','Y13']};
 // viaLeft: a konvoj még nem érintett kötelező cellái (az útvonalból, amely az új konvoj indulásakor újraindul)
 const viaLeft=()=>((conv&&conv.via)||[]).filter(a=>!route.some(x=>x[0]===a));
 // viaTxt: a kötelező cellák felsorolása a fejlécben (✓ = megvan)
