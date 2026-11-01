@@ -1,6 +1,6 @@
 <!doctype html><html lang="hu" data-theme="light"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>CEG – Konvoj kísérő kampány v1.14.328</title>
+<title>CEG – Konvoj kísérő kampány v1.14.329</title>
 <style>
 /* Színek: világos/sötét téma változókkal; a gombok és táblázatok stílusa */
 :root{--bg:#f4f1ea;--fg:#1d2733;--pn:#fff;--ln:#c9c2b3;--ac:#b3261e;--sea:#d6ecf4;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -631,7 +631,7 @@ function seaNear(x,y){if(!isLand(x,y))return[x,y];for(let r=1;r<=12;r++)for(let 
 const wideOn=()=>{try{return !!CFG.diagWide&&(+CFG.boardN||50)>=(+CFG.opDirMin||80)&&(+dr.value)%2==0}catch(e){return false}},
 mxT=()=>wideOn()?(+CFG.maxTWide||70):CFG.maxT,
 eL=()=>CFG.marginEnemy||wideOn()?1:LO,eH=()=>CFG.marginEnemy||wideOn()?N:HI,isEn=s=>!!s&&(s.t=='U'||s.t=='A'||s.t=='Z'||(s.t=='E'&&s.en)),
-inb=(s,x,y)=>{let a=isEn(s)?eL():1,b=isEn(s)?eH():N;if(CFG.entryRing&&M>0&&s.rg&&isEn(s)){const inF=s.x>=a&&s.x<=b&&s.y>=a&&s.y<=b;if(s.t=='A'?!s.bombed:!inF){a=1;b=N}else if(s.t!='A')s.rg=0}return x>=a&&x<=b&&y>=a&&y<=b&&!(s.t!='A'&&isLand(x,y))},   /* v1.14.321: szárazföldre nem lehet lépni */   // entryRing: a keretben belépő ellenség (rg) a keretben szabadon mozoghat: a hadihajó, amíg be nem ér a játékterületre; a repülő a bombázásig (így a mozgás-kockák nem viszik le a keretből)
+inb=(s,x,y)=>{let a=isEn(s)?eL():1,b=isEn(s)?eH():N;if(CFG.entryRing&&M>0&&s.rg&&isEn(s)){const inF=s.x>=a&&s.x<=b&&s.y>=a&&s.y<=b;if(s.t=='A'?!s.bombed:!inF){a=1;b=N}else if(s.t!='A')s.rg=0}return x>=a&&x<=b&&y>=a&&y<=b&&!(s.t!='A'&&isLand(x,y)&&!isLand(s.x,s.y))},   /* v1.14.321: szárazföldre nem lehet lépni; v1.14.329: aki már szárazföldön áll (a kezdő elrendezés partra esett), az tovább léphet – csak a tengerről szárazföldre lépés tiltott */   // entryRing: a keretben belépő ellenség (rg) a keretben szabadon mozoghat: a hadihajó, amíg be nem ér a játékterületre; a repülő a bombázásig (így a mozgás-kockák nem viszik le a keretből)
 
 edgeDist=(s,x,y)=>{const a=isEn(s)?eL():1,b=isEn(s)?eH():N;return Math.min(x-a,b-x,y-a,b-y)};
 // zoneOf: a 10×10-es zóna címe (A1 = bal felső); applyBoard: a beállítások (boardN, playN) érvényesítése – csak új csata elején hívjuk
@@ -2077,7 +2077,7 @@ function step(){
  // a konvoj lépése: minden (nem megállt) teherhajó egy mezőt a választott irányba
  const v=DV[+dr.value],ms=ships.filter(s=>s.t=='M'&&!s.stop);
  if(ms.some(s=>s.x+v[0]<1||s.x+v[0]>N||s.y+v[1]<1||s.y+v[1]>N)){say('A konvoj nem érhet a pálya szélére.');return}
- if(ms.some(s=>isLand(s.x+v[0],s.y+v[1]))){say('A konvoj szárazföldre érne – válassz másik irányt.');return}   /* v1.14.321: tacLand */
+ if(ms.some(s=>isLand(s.x+v[0],s.y+v[1])&&!isLand(s.x,s.y))){say('A konvoj szárazföldre érne – válassz másik irányt.');return}   /* v1.14.329: a már szárazföldön álló hajó továbbléphet, így a partra eső kezdő elrendezés is elindul */   /* v1.14.321: tacLand */
  ms.forEach(s=>{snake(s);s.x+=v[0];s.y+=v[1]});
  tm+=sinkRollTick();   // sinkRoll: a sérült teherhajók lépésenként süllyednek
  const cm=cmd();
@@ -3059,6 +3059,7 @@ applyLogPos();renderCfg();try{qbRender()}catch(e){}   // a pálya felállítás�
 //   v1.14.234 (2026-10-26) – OP TÉRKÉP: a szárazföldi cellákon nincs U / R / H esemény (evLand, alap 1). A szárazföld-maszk (LANDM: 20 × 42, „#” = szárazföld) az OP-térkép képéből készült (a cella több mint fele nem tenger); a kikötő-cellák (eseménymentes, „.”) változatlanok. Az 1 / 0 kapcsoló a Beállításokban
 //   v1.14.235 (2026-10-26) – ÚJ: a MEGÁLLT (vagy a találat után megálló) teherhajó ég / füstöl: fogStop (alap 20; 0 = ki) cellára látszik (az időjárás levonva); a periszkópmélységű U-boat is látja (fogStopPer, alap 1). Az észlelhetőség-táblázatban külön sor (köd-réteg)
 //   v1.14.236 (2026-10-26) – HEDGEHOG / SQUID ELLENŐRZÉS LÁTHATÓVÁ: (1) a sortűz / lövés után a napló kiírja az eredményt is („ellenőrizve: nincs U-boat a célcellákban” / „a találatot a lépése után ellenőrzöm”), nem csak a találatot; (2) JAVÍTÁS: az az U-boat, amelyik már lépett és kiértékelődött (bl), de még nem „kész”, eddig kimaradt az azonnali ellenőrzésből – most a hedgehog / Squid rá is azonnal hat; (3) az U-boat kiértékelésénél, ha volt hedgehog / Squid jel, de egyik cellában sem volt, ezt is kiírja
+//   v1.14.329 (2026-11-01) – JAVÍTÁS (tacLand): ha a konvoj kezdő elrendezése részben szárazföldre esik (pl. szigetre), a csata elindulhat: a már szárazföldön álló hajó (teherhajó, kísérő, U-boat) továbbléphet; tiltott továbbra is a tengerről szárazföldre lépés.
 //   v1.14.328 (2026-11-01) – Az elpusztult U-boat a csata hátralévő részében már nem dob belépő kockát (eddig a napló tele volt vele, hatása nem volt).
 //   v1.14.327 (2026-11-01) – OP eseményréteg: a repülő (H) jele a beküldött He 111 felülnézeti képe (átlátszó háttérrel, lekicsinyítve; opEvFill=1 esetén az esemény színére kitöltve); a saját rajzolású (sugárhajtású jellegű) sziluett csak az opEvIcon = 2 módban marad.
 //   v1.14.326 (2026-10-31) – OP eseményréteg: a repülő (H) jele felülnézetű sziluett (a hajók továbbra is a kártya oldalnézeti képei).
@@ -3151,7 +3152,7 @@ applyLogPos();renderCfg();try{qbRender()}catch(e){}   // a pálya felállítás�
 //   v1.14.239 (2026-10-26) – ÚJ: (1) LUT torpedó (lutOn, alap 1; 1944. januártól): az U-boat kártyán „LUT” jelölőnégyzet (az AI lutAiP %); a FAT utóda: lutLen 18 cella, lutRun 6 egyenes, lutLeg 3 fél-szélesség, találat teherhajón d6 ≤ lutHit (3), hadihajón ≤ lutHitE (1); ha FAT is be van jelölve, a LUT számít. (2) LÉGPERISZKÓP / SCHNORCHEL (schOn, alap 1; 1944. júniustól; csak szabad mozgásnál): 1/8-as mélységen a kártya „Légperiszkóp” jelölőnégyzetével a dízel hajt: az akku nem fogy, hanem schRech (2) cellát tölt körönként, max schSpd (2) lépés, kimerült akkuval is halad; kiesett dízelnél nem működik; az AI az akku fele alatt automatikusan használja.
 //   v1.14.238 (2026-10-26) – SZABAD MOZGÁS: az U-boat a belső játékterületen (pl. 80-as táblán az 50×50-esen) bárhol léphet be, nem csak a szélén (uInner, alapból BE; KI = a régi szél-belépés uEdge szerint).
 //   v1.14.237 (2026-10-26) – HEDGEHOG / SQUID ELLENŐRZÉS: az U-boat lépés utáni kiértékelésében a hedgehog / Squid „nincs találat” eredmény akkor is kiíródik, ha a vízibombák is hatottak (eddig ilyenkor csak a vízibomba-sor látszott, a hedgehog-ellenőrzés nem)
-const VER = 'v1.14.328';
+const VER = 'v1.14.329';
 // ===== MEGFIGYELŐ / TESZT MÓD (obsMode, v1.14.195) =====
 // Megfigyelő módban mindkét oldalt az AI vezérli (a kísérők is: NPC-logikával), a pálya mindent mutat (nincs köd), és a körök maguktól léptetődnek;
 // a lezárt csatákból statisztika készül (konvoj-, U-boat-, kísérő-veszteség, kimenetel), hogy látszódjon: sokféle csata születik-e, vagy egyoldalú lett a hangolás.
