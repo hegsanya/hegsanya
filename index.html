@@ -1,6 +1,6 @@
 <!doctype html><html lang="hu" data-theme="light"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>CEG – Konvoj kísérő kampány v1.14.359</title>
+<title>CEG – Konvoj kísérő kampány v1.14.360</title>
 <style>
 /* Színek: világos/sötét téma változókkal; a gombok és táblázatok stílusa */
 :root{--bg:#f4f1ea;--fg:#1d2733;--pn:#fff;--ln:#c9c2b3;--ac:#b3261e;--sea:#d6ecf4;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -1688,16 +1688,21 @@ function torpUI(s){if(!D[s.c]||!D[s.c].mod.some(m=>m[0].startsWith('Torp')))retu
 // A hadihajó kártyáján két egyforma 3×3-as négyzet áll egymás mellett: bal a vízibomba, jobb a torpedó.
 // A négyzet közepén a hajó iránya; a nyilak a világ-irányok (1–8, mint a mozgásnál). Ahol nincs ilyen modul, a panel szürke és minden gombja tiltott,
 // így minden hadihajó kártyája azonos felépítésű.
-// dcCenter (v1.14.359, cardShipIcon): az iránytű-négyzet középső cellája. Egy kis felülnézeti hajókép (mindegyik hajónál ugyanaz: ART['top:FL'], az orra jobbra / keletre néz),
-// a hajó irányába forgatva: a szög = a DV irányvektor szöge (kelet = 0°, a CSS-forgatás az óramutató járásával megegyező, az y lefelé nő, ezért ugyanaz a képlet).
-// Ha nincs kép (vagy a kapcsoló 0), a régi nyíl + „hajó” felirat marad.
+// dcCenter (v1.14.359 / v1.14.360, cardShipIcon): az iránytű-négyzet középső cellája. A saját rajzolású hajó-sziluett (ugyanaz az alak, mint a térkép kapszula-hajója, drawCapsule:
+// hegyes orr, kerek tat, felépítmény + ágyú-kör), inline SVG-ként, mindegyik hajónál egyforma. A cellánál nagyobb: kilóg belőle, hogy az irány jól látsszon.
+// A szög = a DV irányvektor szöge (kelet = 0°, az SVG-forgatás az óramutató járásával megegyező, az y lefelé nő, ezért ugyanaz a képlet); az orr jobbra (keletre) rajzolt.
+// Ha a kapcsoló 0, a régi nyíl + „hajó” felirat marad.
 function dcCenter(s){
- const u=ART['top:FL'],v=DV[s.dir||5]||[1,0];
- if(!+CFG.cardShipIcon||!u||!u[0])return '<td style="background:var(--ln)"><b>'+AR[s.dir]+'</b><br><small>hajó</small></td>';
- const diag=Math.abs(v[0])&&Math.abs(v[1]);   /* átlós irányban a kép kicsit hosszabb (√2) */
+ const v=DV[s.dir||5]||[1,0];
+ if(!+CFG.cardShipIcon)return '<td style="background:var(--ln)"><b>'+AR[s.dir]+'</b><br><small>hajó</small></td>';
  const ang=Math.round(Math.atan2(v[1],v[0])*180/Math.PI);   /* fok: 0 = kelet, 90 = dél, −90 = észak */
+ const f=22,W=17;   /* fél-hossz és szélesség (px): a hajó 44 px hosszú, a cella ~30 px: kilóg */
+ const body='M'+(-f+W*.35)+','+(-W/2)+' L'+(f*.25)+','+(-W/2)+' Q'+(f*.85)+','+(-W*.42)+' '+f+',0 Q'+(f*.85)+','+(W*.42)+' '+(f*.25)+','+(W/2)+' L'+(-f+W*.35)+','+(W/2)+' Q'+(-f)+','+(W/2)+' '+(-f)+',0 Q'+(-f)+','+(-W/2)+' '+(-f+W*.35)+','+(-W/2)+' Z';
  return '<td style="background:var(--ln);text-align:center;vertical-align:middle;overflow:visible" title="a hajó iránya: '+AR[s.dir]+' '+s.dir+'">'
-  +'<div style="position:relative;width:26px;height:26px;margin:auto"><img src="'+u[0]+'" alt="hajó" style="position:absolute;left:50%;top:50%;width:'+(diag?'38':'34')+'px;height:auto;transform:translate(-50%,-50%) rotate('+ang+'deg)"></div></td>'}
+  +'<div style="position:relative;width:26px;height:26px;margin:auto"><svg width="'+(2*f+4)+'" height="'+(2*f+4)+'" viewBox="'+(-f-2)+' '+(-f-2)+' '+(2*f+4)+' '+(2*f+4)+'" style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);overflow:visible;pointer-events:none">'
+  +'<g transform="rotate('+ang+')"><path d="'+body+'" fill="#7f9db8" stroke="#102030" stroke-width="1.6" stroke-linejoin="round"/>'
+  +'<rect x="'+(-f*.1)+'" y="'+(-W*.22)+'" width="'+(f*.3)+'" height="'+(W*.44)+'" fill="rgba(255,255,255,.6)" stroke="#102030" stroke-width=".8"/>'
+  +'<circle cx="'+(f*.5)+'" cy="0" r="'+(W*.14)+'" fill="rgba(255,255,255,.6)" stroke="#102030" stroke-width=".8"/></g></svg></div></td>'}
 // dirGrid: egy 3×3-as irány-négyzet; okFn(d) = a d irány most választható-e, fn = a gomb kattintás-függvénye (bomb / volley)
 function dirGrid(s,okFn,fn){
  const g=[[8,1,2],[7,0,3],[6,5,4]];   /* a sorok: felső, középső, alsó; 0 = a hajó */
@@ -3251,6 +3256,7 @@ applyLogPos();renderCfg();try{qbRender()}catch(e){}   // a pálya felállítás�
 //   v1.14.234 (2026-10-26) – OP TÉRKÉP: a szárazföldi cellákon nincs U / R / H esemény (evLand, alap 1). A szárazföld-maszk (LANDM: 20 × 42, „#” = szárazföld) az OP-térkép képéből készült (a cella több mint fele nem tenger); a kikötő-cellák (eseménymentes, „.”) változatlanok. Az 1 / 0 kapcsoló a Beállításokban
 //   v1.14.235 (2026-10-26) – ÚJ: a MEGÁLLT (vagy a találat után megálló) teherhajó ég / füstöl: fogStop (alap 20; 0 = ki) cellára látszik (az időjárás levonva); a periszkópmélységű U-boat is látja (fogStopPer, alap 1). Az észlelhetőség-táblázatban külön sor (köd-réteg)
 //   v1.14.236 (2026-10-26) – HEDGEHOG / SQUID ELLENŐRZÉS LÁTHATÓVÁ: (1) a sortűz / lövés után a napló kiírja az eredményt is („ellenőrizve: nincs U-boat a célcellákban” / „a találatot a lépése után ellenőrzöm”), nem csak a találatot; (2) JAVÍTÁS: az az U-boat, amelyik már lépett és kiértékelődött (bl), de még nem „kész”, eddig kimaradt az azonnali ellenőrzésből – most a hedgehog / Squid rá is azonnal hat; (3) az U-boat kiértékelésénél, ha volt hedgehog / Squid jel, de egyik cellában sem volt, ezt is kiírja
+//   v1.14.360 (2026-11-03) – az iránytű-négyzetek közepén a Flower-kép helyett a SAJÁT RAJZOLÚ hajó-sziluett (a térkép kapszula-hajójának alakja: hegyes orr, kerek tat, felépítmény; inline SVG), nagyobb (44 px), kilóg a cellából, hogy az irány jól látsszon
 //   v1.14.359 (2026-11-03) – ÚJ: a vízibomba / Hedgehog-Squid / torpedó iránytű-négyzetek KÖZEPÉN a hajó felülnézeti képe áll (minden hadihajónál ugyanaz a kép: a beküldött Flower felülnézet), a haladási irányba forgatva (az orra mindig előre néz; a 8 irány 45°-os lépésekben). Kapcsoló: cardShipIcon (alap 1); 0 = a régi nyíl + „hajó” felirat. Ha nincs kép, a nyíl marad
 //   v1.14.358 (2026-11-03) – HAJÓKÁRTYA iránytű-négyzetek: (1) a választható irányok jól látszanak (zöld, vastag keretű, félkövér gomb; a tiltott halvány), (2) kisebb gombok, (3) ÚJ KÖZÉPSŐ PANEL a vízibomba és a torpedó között: Hedgehog / Squid vető (a hajó előtti 3 cella a Hedgehog sortüzének célja, a Squid bármely szomszédos cellára lő; szürke, ha nincs ilyen vető). A régi külön Hedgehog / Squid sorok cardDcGrid = 1 esetén megszűnnek
 //   v1.14.357 (2026-11-03) – ÚJ: HAJÓKÁRTYA – VÍZIBOMBA-IRÁNYTŰ (cardDcGrid, alap 1): a hadihajók kártyáján a vízibomba helyén két egyforma 3×3-as irány-négyzet áll egymás mellett: BAL oldalt a vízibomba (a hajó mögötti 3 irány aktív, ahová a bomba ledobható), JOBB oldalt a torpedó (a megengedett kilövési irányok); ahol nincs vízibomba vagy torpedóvető, ott is látszik, szürke / inaktív. Így minden hadihajó kártyája egységes. A régi „Lerakott bomba” sor + „Bomba hátra” gombok és a külön torpedó-szakasz ilyenkor nem jelenik meg; cardDcGrid = 0 a régi elrendezés. Az U-boat kártyája változatlan
@@ -3374,7 +3380,7 @@ applyLogPos();renderCfg();try{qbRender()}catch(e){}   // a pálya felállítás�
 //   v1.14.239 (2026-10-26) – ÚJ: (1) LUT torpedó (lutOn, alap 1; 1944. januártól): az U-boat kártyán „LUT” jelölőnégyzet (az AI lutAiP %); a FAT utóda: lutLen 18 cella, lutRun 6 egyenes, lutLeg 3 fél-szélesség, találat teherhajón d6 ≤ lutHit (3), hadihajón ≤ lutHitE (1); ha FAT is be van jelölve, a LUT számít. (2) LÉGPERISZKÓP / SCHNORCHEL (schOn, alap 1; 1944. júniustól; csak szabad mozgásnál): 1/8-as mélységen a kártya „Légperiszkóp” jelölőnégyzetével a dízel hajt: az akku nem fogy, hanem schRech (2) cellát tölt körönként, max schSpd (2) lépés, kimerült akkuval is halad; kiesett dízelnél nem működik; az AI az akku fele alatt automatikusan használja.
 //   v1.14.238 (2026-10-26) – SZABAD MOZGÁS: az U-boat a belső játékterületen (pl. 80-as táblán az 50×50-esen) bárhol léphet be, nem csak a szélén (uInner, alapból BE; KI = a régi szél-belépés uEdge szerint).
 //   v1.14.237 (2026-10-26) – HEDGEHOG / SQUID ELLENŐRZÉS: az U-boat lépés utáni kiértékelésében a hedgehog / Squid „nincs találat” eredmény akkor is kiíródik, ha a vízibombák is hatottak (eddig ilyenkor csak a vízibomba-sor látszott, a hedgehog-ellenőrzés nem)
-const VER = 'v1.14.359';
+const VER = 'v1.14.360';
 // ===== MEGFIGYELŐ / TESZT MÓD (obsMode, v1.14.195) =====
 // Megfigyelő módban mindkét oldalt az AI vezérli (a kísérők is: NPC-logikával), a pálya mindent mutat (nincs köd), és a körök maguktól léptetődnek;
 // a lezárt csatákból statisztika készül (konvoj-, U-boat-, kísérő-veszteség, kimenetel), hogy látszódjon: sokféle csata születik-e, vagy egyoldalú lett a hangolás.
