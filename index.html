@@ -1,6 +1,6 @@
 <!doctype html><html lang="hu" data-theme="light"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>CEG – Konvoj kísérő kampány v1.14.364</title>
+<title>CEG – Konvoj kísérő kampány v1.14.365</title>
 <style>
 /* Színek: világos/sötét téma változókkal; a gombok és táblázatok stílusa */
 :root{--bg:#f4f1ea;--fg:#1d2733;--pn:#fff;--ln:#c9c2b3;--ac:#b3261e;--sea:#d6ecf4;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -1040,7 +1040,7 @@ function hurt(s,i,v,by){if(v>0){s.hotT=turn;const b=typeof by==='string'?find(by
  if(v>0)fxAdd('hit',s.x,s.y);if(by){s.by=by;if(v>0&&find(by)&&find(by)!==s){const k=s.t=='U'?'dmgU':'dmgE';bst(by)[k]+=s.dmg[i]-was;if(s.t=='U'&&s.dmg[i]>was)bst(by).uh[s.id]=1}}
  let t=m[0]+' +'+v+' ('+s.dmg[i]+'/'+m[1]+')';
  if(CFG.armorTxt&&CFG.armorRed&&v0>0&&v<v0)t=v==0?m[0]+': a páncél elnyelte a találatot ('+s.dmg[i]+'/'+m[1]+')':t+' [páncél −'+(v0-v)+']';   // armorTxt: a naplóban látszik a páncél hatása
- if(s.t=='U'&&(m[0]=='Kormány'||m[0]=='Diesel')&&s.dmg[i]>=m[1]&&was<m[1]){s.lostN=(s.lostN||0)+1;s.lost=true;t+=' – '+m[0]+' 6/6: '+(m[0]=='Kormány'?'nem kormányozható, ':'')+'hazaúton 50% eséllyel elvész.'+(by?award(by):'')}
+ if(s.t=='U'&&(m[0]=='Kormány'||m[0]=='Diesel')&&s.dmg[i]>=m[1]&&was<m[1]){s.lostN=(s.lostN||0)+1;s.lost=true;t+=' – '+m[0]+' 6/6: '+(m[0]=='Kormány'?'nem kormányozható, ':'')+'hazaúton 50% eséllyel elvész.'+(by?award(by,s.id+' '+m[0]+' 6/6'):'')}
  return t}
 // fatal: az U-boat végzetes sérülése: Legénység 6/6, vagy víz alatt (mélység > 0) az Emelkedés 6/6.
 function fatal(u){const c=mi(u,'Legén'),r=mi(u,'Emel');return u.dmg[c]>=6||(u.dep>0&&u.dmg[r]>=6)}
@@ -3330,6 +3330,7 @@ applyLogPos();renderCfg();try{qbRender()}catch(e){}   // a pálya felállítás�
 //   v1.14.234 (2026-10-26) – OP TÉRKÉP: a szárazföldi cellákon nincs U / R / H esemény (evLand, alap 1). A szárazföld-maszk (LANDM: 20 × 42, „#” = szárazföld) az OP-térkép képéből készült (a cella több mint fele nem tenger); a kikötő-cellák (eseménymentes, „.”) változatlanok. Az 1 / 0 kapcsoló a Beállításokban
 //   v1.14.235 (2026-10-26) – ÚJ: a MEGÁLLT (vagy a találat után megálló) teherhajó ég / füstöl: fogStop (alap 20; 0 = ki) cellára látszik (az időjárás levonva); a periszkópmélységű U-boat is látja (fogStopPer, alap 1). Az észlelhetőség-táblázatban külön sor (köd-réteg)
 //   v1.14.236 (2026-10-26) – HEDGEHOG / SQUID ELLENŐRZÉS LÁTHATÓVÁ: (1) a sortűz / lövés után a napló kiírja az eredményt is („ellenőrizve: nincs U-boat a célcellákban” / „a találatot a lépése után ellenőrzöm”), nem csak a találatot; (2) JAVÍTÁS: az az U-boat, amelyik már lépett és kiértékelődött (bl), de még nem „kész”, eddig kimaradt az azonnali ellenőrzésből – most a hedgehog / Squid rá is azonnal hat; (3) az U-boat kiértékelésénél, ha volt hedgehog / Squid jel, de egyik cellában sem volt, ezt is kiírja
+//   v1.14.365 (2026-11-03) – A MEDÁL-NAPLÓ OKOT ÍR a kormány- / dieselsérülésért kapott medálnál is: „Medál: D1 +1 (U1 Kormány 6/6), D2 +1 (U1 Diesel 6/6), D1 +1 (U1)”. (A szabály nem változott: az U-boat kormánya vagy dieselje 6/6-ra sérül → a sebző kísérő medált kap; az elsüllyesztésért is jár medál, akár más hajónak, így egy U-boatért két kísérő is kaphat – a végzetes sérülést és a végső találatot okozók.)
 //   v1.14.364 (2026-11-03) – ÚJ SZABÁLY-MÓD: CÉLZÓ LÖVÉS (gunMark, alap 0; a társasjáték szabálya): az ágyú a találat-kockadobás helyett EGY CELLÁRA lő, ahol a lövő szerint a cél a következő kör elején lesz; a találat a következő kör elején (newTurn) dől el: ha a célpont (kétcellás hajónál bármelyik cellája) a jelölt cellán áll és a felszínen van, TALÁLAT, különben a lövedék a vízbe esik. Csak a pontos cella számít. A lőtáv (a jelölt cella a lövőtől ≤ lőtáv) és a sebzés (modul-kocka, mérték) változatlan. Játékosnál: Célzás gomb → kattintás a térképen a cellára; az AI (NPC, automata, AI U-boat, AI ellenség) a célpont irányából és sebességéből becsült helyre tippel (a már lépett vagy álló célpont a helyén marad). A repülőre lövés marad kockás. A függő lövések a térképen piros célkeresztként látszanak. Egy csata egyféle szabállyal megy: a kapcsoló a csata elején számít
 //   v1.14.363 (2026-11-03) – (1) A „sekély cellák mutatása” jelölőnégyzet alapból KI van kapcsolva (az OP lapon; a sekély cellák szerkesztése közben továbbra is bekapcsolható). (2) A taktikai lap „Csata vége → OP” gombja megerősítést kér („Valóban lezárod a csatát?”); kapcsoló: endConfirm (alap 1), 0 = azonnali lezárás
 //   v1.14.362 (2026-11-03) – ÚJ: MÉLYSÉG-OSZLOP az U-boat kártyáján (cardDepthBar, alap 1): a hajókép mellett függőleges oszlop, 0–8 téglalap egymás alatt (0 = felszín fent); az U-boat mostani mélysége erős színnel, vastag kerettel kiemelve (a mélységgel sötétedő kék), a többi halvány; a sekély tengeren elérhetetlen mélységek (dMax fölött) szürkék. Ha az U-boat mélysége nem ismert (köd), az oszlop szürke, „?” jellel
@@ -3458,7 +3459,7 @@ applyLogPos();renderCfg();try{qbRender()}catch(e){}   // a pálya felállítás�
 //   v1.14.239 (2026-10-26) – ÚJ: (1) LUT torpedó (lutOn, alap 1; 1944. januártól): az U-boat kártyán „LUT” jelölőnégyzet (az AI lutAiP %); a FAT utóda: lutLen 18 cella, lutRun 6 egyenes, lutLeg 3 fél-szélesség, találat teherhajón d6 ≤ lutHit (3), hadihajón ≤ lutHitE (1); ha FAT is be van jelölve, a LUT számít. (2) LÉGPERISZKÓP / SCHNORCHEL (schOn, alap 1; 1944. júniustól; csak szabad mozgásnál): 1/8-as mélységen a kártya „Légperiszkóp” jelölőnégyzetével a dízel hajt: az akku nem fogy, hanem schRech (2) cellát tölt körönként, max schSpd (2) lépés, kimerült akkuval is halad; kiesett dízelnél nem működik; az AI az akku fele alatt automatikusan használja.
 //   v1.14.238 (2026-10-26) – SZABAD MOZGÁS: az U-boat a belső játékterületen (pl. 80-as táblán az 50×50-esen) bárhol léphet be, nem csak a szélén (uInner, alapból BE; KI = a régi szél-belépés uEdge szerint).
 //   v1.14.237 (2026-10-26) – HEDGEHOG / SQUID ELLENŐRZÉS: az U-boat lépés utáni kiértékelésében a hedgehog / Squid „nincs találat” eredmény akkor is kiíródik, ha a vízibombák is hatottak (eddig ilyenkor csak a vízibomba-sor látszott, a hedgehog-ellenőrzés nem)
-const VER = 'v1.14.364';
+const VER = 'v1.14.365';
 // ===== MEGFIGYELŐ / TESZT MÓD (obsMode, v1.14.195) =====
 // Megfigyelő módban mindkét oldalt az AI vezérli (a kísérők is: NPC-logikával), a pálya mindent mutat (nincs köd), és a körök maguktól léptetődnek;
 // a lezárt csatákból statisztika készül (konvoj-, U-boat-, kísérő-veszteség, kimenetel), hogy látszódjon: sokféle csata születik-e, vagy egyoldalú lett a hangolás.
