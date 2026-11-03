@@ -1,6 +1,6 @@
 <!doctype html><html lang="hu" data-theme="light"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>CEG – Konvoj kísérő kampány v1.14.357</title>
+<title>CEG – Konvoj kísérő kampány v1.14.358</title>
 <style>
 /* Színek: világos/sötét téma változókkal; a gombok és táblázatok stílusa */
 :root{--bg:#f4f1ea;--fg:#1d2733;--pn:#fff;--ln:#c9c2b3;--ac:#b3261e;--sea:#d6ecf4;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -270,6 +270,8 @@ html[data-theme="white"] #o_g .v3{background:rgba(0,0,0,.12)}
 html[data-theme="white"] #o_g .v4{background:rgba(0,0,0,.22);color:#000}
 html[data-theme="white"] #o_g .c{color:#303030}
 body.noHlp .hlp{display:none}
+/* iránytű-négyzetek (cardDcGrid): kisebb gombok; az aktív (választható) irány zöld, vastag keretű, félkövér; a tiltott halvány */
+#card table.dg button{min-width:26px;padding:1px 3px;font-size:12px;line-height:1.1}#card table.dg button small{font-size:9px}#card table.dg button:not(:disabled){background:#cdebc8;border:2px solid #2e7d32;color:#14501c;font-weight:bold}#card table.dg button:disabled{opacity:.38}#card table.dg td.hht{background:rgba(211,120,0,.22);outline:1px dashed #b86a00}
 body.ctight #card table.m td,body.ctight #card table.m th{padding:0 3px}body.ctight #card fieldset.sec{margin:3px 0;padding:0 5px 3px}body.ctight #card details.mods{margin:3px 0}fieldset.sec{border:1px solid rgba(128,128,128,.55);border-radius:6px;margin:6px 0;padding:2px 6px 6px;min-width:0}fieldset.sec>legend{font-weight:bold;font-size:12px;padding:0 4px}details.mods{margin:6px 0}details.mods>summary{cursor:pointer;color:#555}
 details.ex{display:inline-block;vertical-align:top;margin:0 2px;font-size:12px}
 details.ex>summary{cursor:pointer;color:#555;list-style:none;display:inline-block;padding:0 4px;border-radius:8px;background:#eee}
@@ -1691,11 +1693,11 @@ function dirGrid(s,okFn,fn){
  const g=[[8,1,2],[7,0,3],[6,5,4]];   /* a sorok: felső, középső, alsó; 0 = a hajó */
  const cell=d=>d==0
   ?'<td style="background:var(--ln)"><b>'+AR[s.dir]+'</b><br><small>hajó</small></td>'
-  :'<td><button '+(okFn(d)?'':'disabled ')+'onclick="'+fn+'('+d+')" style="min-width:34px">'+AR[d]+'<br><small>'+d+'</small></button></td>';
- return '<table class="m" style="width:auto;margin:4px 0">'+g.map(r=>'<tr>'+r.map(cell).join('')+'</tr>').join('')+'</table>'}
+  :'<td><button '+(okFn(d)?'':'disabled ')+'onclick="'+fn+'('+d+')">'+AR[d]+'<br><small>'+d+'</small></button></td>';
+ return '<table class="m dg" style="width:auto;margin:4px 0">'+g.map(r=>'<tr>'+r.map(cell).join('')+'</tr>').join('')+'</table>'}
 // dcPanelBox: egy panel kerete; inactive = szürke (a modul hiányzik)
 function dcPanelBox(title,active,body){
- return '<div style="flex:1 1 140px;border:1px solid var(--ln);border-radius:6px;padding:3px 6px;'+(active?'':'opacity:.5;filter:grayscale(1);')+'"><b>'+title+'</b><br>'+body+'</div>'}
+ return '<div style="flex:1 1 112px;border:1px solid var(--ln);border-radius:6px;padding:3px 6px;'+(active?'':'opacity:.5;filter:grayscale(1);')+'"><b>'+title+'</b><br>'+body+'</div>'}
 // dcPanel: a vízibomba-négyzet; aktív irány = a hajó mögötti 3 irány közül, ahová a bomba éppen lerakható (bok)
 function dcPanel(s){
  const k=D[s.c],has=!!(k&&k.bomb),bk=has?back(s):[];
@@ -1712,8 +1714,28 @@ function torpPanel(s){
  let sel_='';if(mx>1)sel_=' db: <select onchange="TPN=+this.value;card()"><option value="0">mind ('+mx+')</option>'+Array.from({length:mx-1},(_,i)=>'<option value="'+(i+1)+'"'+(TPN==i+1?' selected':'')+'>'+(i+1)+'</option>').join('')+'</select>';
  const arc=(CFG.sfTpArc|0)==0?'csak előre':(CFG.sfTpArc|0)==1?'oldalra; előre és hátra nem':'bármely irány';
  return dcPanelBox('Torpedó',true,'Készlet <b>'+tp+'</b>, betöltve <b>'+loaded+'</b>/5'+sel_+dirGrid(s,d=>ok&&ds.includes(d),'volley')+ex('Forgatható cső: a nyilak a megengedett irányokat mutatják ('+arc+'). Az első 3 mező most, a következő 3 a következő körben; az útjába lépő hajó elsüllyedhet.'))}
-// twinUI: a két panel egymás mellett (keskeny kijelzőn egymás alá törik)
-function twinUI(s){return '<div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:4px">'+dcPanel(s)+torpPanel(s)+'</div>'}
+// hsPanel (v1.14.358): a Hedgehog / Squid vető panelje a vízibomba és a torpedó között. A 3×3-as négyzet a hajó körüli 8 cella:
+//  - Squid: bármely szomszédos cellára lő (a gomb a cella címét mutatja, qfire dx,dy);
+//  - Hedgehog: a hajó előtti 3 cella (irány−1, irány, irány+1) a sortűz célja (narancs szaggatott keret); a sortűz egy gombbal megy (hfire).
+// Ahol nincs Hedgehog / Squid, a panel szürke.
+function hsPanel(s){
+ const hh=!!(s.hsF&&ECO.hhFx),sq=!!(ECO.sqFx&&sqWork(s)>0);
+ if(!hh&&!sq)return dcPanelBox('Hedgehog / Squid',false,'<small>nincs vető</small>'+dirGrid(s,()=>false,'void'));
+ const fwd=hh?[nd(s.dir-1),s.dir,nd(s.dir+1)]:[],okq=sq&&qok(s);
+ let head='';
+ if(hh)head+='<div>Hedgehog: <b>'+s.hs+'</b> <button '+(hok(s)?'':'disabled ')+'onclick="hfire()" style="padding:1px 5px;font-size:12px">🎯 Sortűz</button></div>';
+ if(sq)head+='<div>Squid: <b>'+s.qs+'</b>/'+sqCap(s.c)+' · e körben '+(s.qn|0)+'/'+Math.min(sqWork(s),+ECO.sqMax||2)+'</div>';
+ const g=[[8,1,2],[7,0,3],[6,5,4]];
+ const cell=d=>{
+  if(d==0)return '<td style="background:var(--ln)"><b>'+AR[s.dir]+'</b><br><small>hajó</small></td>';
+  const x=s.x+DV[d][0],y=s.y+DV[d][1],isH=fwd.includes(d);
+  const on=okq&&qin(x,y)&&!qUsed(s,x,y);   /* Squid: erre a cellára lőhető */
+  const lab=sq?addr(x,y):AR[d];
+  return '<td'+(isH?' class="hht" title="Hedgehog célcella"':'')+'>'+(sq?'<button '+(on?'':'disabled ')+'onclick="qfire('+DV[d][0]+','+DV[d][1]+')">'+lab+'</button>':'<span style="display:inline-block;min-width:26px;text-align:center"><small>'+(isH?'✱':'')+'</small></span>')+'</td>'};
+ const note=ex((hh?'Hedgehog: a hajó előtti 3 cella (narancs keret) a sortűz célja; találat, ha az U-boat a lépése után ott van. ':'')+(sq?'Squid: bármely szomszédos cellára (körönként minden cellára egyszer); találat, ha az U-boat a lépése után ott van.':''));
+ return dcPanelBox('Hedgehog / Squid',true,head+'<table class="m dg" style="width:auto;margin:4px 0">'+g.map(r=>'<tr>'+r.map(cell).join('')+'</tr>').join('')+'</table>'+note)}
+// twinUI: a három panel egymás mellett: vízibomba · Hedgehog / Squid · torpedó (keskeny kijelzőn egymás alá törik)
+function twinUI(s){return '<div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:4px">'+dcPanel(s)+hsPanel(s)+torpPanel(s)+'</div>'}
 // aiTorpZ: az AI-val vezérelt ellenséges hadihajó torpedózik, ha legalább 3 cső be van töltve, és a hajó irányában (6 mezőn belül) érdemi célpont van (a várható haszon a TDC szerinti esély × a rakomány / a hajó értéke)
 function aiTorpZ(z){const zh=!!(CFG.zHard&&z.en);if(z.tp==null||z.tp<1||(z.tub||[]).filter(Boolean).length<(zh?Math.max(1,+CFG.zTpTub||1):3))return;let best=null;   // zHard: már 1 betöltött csőnél is lő
  for(const d of tpDirs(z)){let v=0,pen=1;const vv=DV[d];   // minden megengedett irányt kiértékel (forgatható cső), a legnagyobb várható haszonnal rendelkezőt lövi
@@ -2291,10 +2313,10 @@ if(s.t=='A')info.push(['Mai sebesség / lépés',s.spd+' / '+Math.min(s.idx,s.sp
   h+=jokerRow(s);h+=trUI(s);
   if(E){if(s.sens&&s.sens.length)h+=sensWrap(s,(CFG.jokerOn?TB(['Szenzor','Minőség','Stand','Dobás',CFG.fog?'Eredmény':'Joker-irány'],s.sens)+''+ex('Sikeres dobás (1) = egy Joker-irány: radar → véletlen 1–8; szonár / HF-DF → a legközelebbi U-boat felé (ha nincs a pályán, véletlen). Minden szenzor külön dob; a Joker-irány egyszer használható, bármelyik lépés hagyományos iránya helyett.','Joker-irány','div')+'':TB(['Szenzor','Minőség','Stand','Extra irány (*)'],s.sens)));
    const twin=!!+CFG.cardDcGrid;   /* v1.14.357: vízibomba- és torpedó-iránytű egymás mellett */
-   h+=twin?'<!--s:Vízibomba · Torpedó · Hedgehog · Squid-->'+twinUI(s):'<!--s:Mélységi bomba · Hedgehog · Squid-->';
+   h+=twin?'<!--s:Vízibomba · Hedgehog / Squid · Torpedó-->'+twinUI(s):'<!--s:Mélységi bomba · Hedgehog · Squid-->';
    if(twin){}else if(+CFG.cardTBomb)h+='<div style="margin-top:4px">Lerakott bomba (e körben, max '+CFG.bombMax+'): <b>'+(s.bm.length?s.bm.map((b,i)=>'B'+(i+1)+' '+addr(b[0],b[1])).join(' · '):'–')+'</b></div>';   /* cardTBomb: egy sor, csak a lerakottak */
    else h+=TB(['Bomba','Mező'],Array.from({length:CFG.bombMax},(_,i)=>i+1).map(n=>['B'+n,s.bm[n-1]?addr(s.bm[n-1][0],s.bm[n-1][1]):'–']));
-   h+=(twin?'':'<div style="margin-top:6px">Bomba hátra: '+back(s).map(d=>'<button '+(bok(s,d)?'':'disabled ')+'onclick="bomb('+d+')">'+AR[d]+d+'</button>').join(' ')+(CFG.dcMove&&trOn(s)&&!(s.idx|0)?' '+ex('lépés előtt feltételes: ha nem lépsz, visszavonódik.','feltételes')+'':'')+'</div>')+(s.hsF&&ECO.hhFx?'<div style="margin-top:6px">Hedgehog: <button '+(hok(s)?'':'disabled ')+'onclick="hfire()">🎯 Sortűz ('+s.hs+')</button> <small>célcellák: '+hcells(s).map(c=>addr(c[0],c[1])).join(', ')+'</small>'+ex('találat, ha az U-boat a lépése után ott van.','szabály')+'</div>':'')+sqUI(s);h+='<!--/s-->'}
+   h+=(twin?'':'<div style="margin-top:6px">Bomba hátra: '+back(s).map(d=>'<button '+(bok(s,d)?'':'disabled ')+'onclick="bomb('+d+')">'+AR[d]+d+'</button>').join(' ')+(CFG.dcMove&&trOn(s)&&!(s.idx|0)?' '+ex('lépés előtt feltételes: ha nem lépsz, visszavonódik.','feltételes')+'':'')+'</div>')+(!twin&&s.hsF&&ECO.hhFx?'<div style="margin-top:6px">Hedgehog: <button '+(hok(s)?'':'disabled ')+'onclick="hfire()">🎯 Sortűz ('+s.hs+')</button> <small>célcellák: '+hcells(s).map(c=>addr(c[0],c[1])).join(', ')+'</small>'+ex('találat, ha az U-boat a lépése után ott van.','szabály')+'</div>':'')+(twin?'':sqUI(s));h+='<!--/s-->'}
   else if(s.t=='U'){h+=aiUI(s);if(CFG.decoyOn&&decAvail())h+='<div style="margin-top:6px">Csali: <button '+(decOk(s)?'':'disabled ')+'onclick="decoy()">Csali lerakása ('+decLeft(s)+')</button></div>';h+='<div style="margin-top:6px">Mélység (most): '+s.dopts.map(d=>'<button '+(s.dep===d&&s.dch?'class="go" ':'')+(s.done||s.dch?'disabled ':'')+'onclick="dep('+d+')">'+d+'</button>').join(' ')+'</div>';
    h+='<!--tp--><!--s:Torpedók-->';
    h+=TB(['Torpedó','Db','Előre (e körben)','Hátra'],[['',s.tp+(s.tpS!=null?' <small>('+uTpTxt(s)+')</small>':''),s.tub.slice(0,4).filter(x=>x).length+' cső','<button '+(torpOk(s,0)?'':'disabled ')+'onclick="fire(0)">előre</button> '+(s.tub[4]?1:0)+' cső <button '+(torpOk(s,1)?'':'disabled ')+'onclick="fire(1)">hátra</button>']])+(CFG.fatOn&&fatAvail()?'<div style="margin:4px 0"><label><input type="checkbox" '+(s.fatM?'checked ':'')+'onchange="sel.fatM=this.checked?1:0;card()"> FAT torpedó</label> '+ex('cikkcakk, '+CFG.fatLen+' cella; körönként 3 cella')+'</div>':'')+(CFG.lutOn&&lutAvail()?'<div style="margin:4px 0"><label><input type="checkbox" '+(s.lutM?'checked ':'')+'onchange="sel.lutM=this.checked?1:0;card()"> LUT torpedó</label> '+ex('cikkcakk, '+CFG.lutLen+' cella, nagyobb találati esély; a FAT-nál erősebb')+'</div>':'')+(CFG.schOn&&schAvail()&&trOn(s)&&s.dep==1?'<div style="margin:4px 0"><label><input type="checkbox" '+(s.schM?'checked ':'')+'onchange="sel.schM=this.checked?1:0;card()"> Légperiszkóp</label> '+ex('a dízel hajt, az akku +'+CFG.schRech+'/kör, max '+CFG.schSpd+' lépés')+'</div>':'');h+='<!--/s--><!--/tp-->'}
@@ -3219,6 +3241,7 @@ applyLogPos();renderCfg();try{qbRender()}catch(e){}   // a pálya felállítás�
 //   v1.14.234 (2026-10-26) – OP TÉRKÉP: a szárazföldi cellákon nincs U / R / H esemény (evLand, alap 1). A szárazföld-maszk (LANDM: 20 × 42, „#” = szárazföld) az OP-térkép képéből készült (a cella több mint fele nem tenger); a kikötő-cellák (eseménymentes, „.”) változatlanok. Az 1 / 0 kapcsoló a Beállításokban
 //   v1.14.235 (2026-10-26) – ÚJ: a MEGÁLLT (vagy a találat után megálló) teherhajó ég / füstöl: fogStop (alap 20; 0 = ki) cellára látszik (az időjárás levonva); a periszkópmélységű U-boat is látja (fogStopPer, alap 1). Az észlelhetőség-táblázatban külön sor (köd-réteg)
 //   v1.14.236 (2026-10-26) – HEDGEHOG / SQUID ELLENŐRZÉS LÁTHATÓVÁ: (1) a sortűz / lövés után a napló kiírja az eredményt is („ellenőrizve: nincs U-boat a célcellákban” / „a találatot a lépése után ellenőrzöm”), nem csak a találatot; (2) JAVÍTÁS: az az U-boat, amelyik már lépett és kiértékelődött (bl), de még nem „kész”, eddig kimaradt az azonnali ellenőrzésből – most a hedgehog / Squid rá is azonnal hat; (3) az U-boat kiértékelésénél, ha volt hedgehog / Squid jel, de egyik cellában sem volt, ezt is kiírja
+//   v1.14.358 (2026-11-03) – HAJÓKÁRTYA iránytű-négyzetek: (1) a választható irányok jól látszanak (zöld, vastag keretű, félkövér gomb; a tiltott halvány), (2) kisebb gombok, (3) ÚJ KÖZÉPSŐ PANEL a vízibomba és a torpedó között: Hedgehog / Squid vető (a hajó előtti 3 cella a Hedgehog sortüzének célja, a Squid bármely szomszédos cellára lő; szürke, ha nincs ilyen vető). A régi külön Hedgehog / Squid sorok cardDcGrid = 1 esetén megszűnnek
 //   v1.14.357 (2026-11-03) – ÚJ: HAJÓKÁRTYA – VÍZIBOMBA-IRÁNYTŰ (cardDcGrid, alap 1): a hadihajók kártyáján a vízibomba helyén két egyforma 3×3-as irány-négyzet áll egymás mellett: BAL oldalt a vízibomba (a hajó mögötti 3 irány aktív, ahová a bomba ledobható), JOBB oldalt a torpedó (a megengedett kilövési irányok); ahol nincs vízibomba vagy torpedóvető, ott is látszik, szürke / inaktív. Így minden hadihajó kártyája egységes. A régi „Lerakott bomba” sor + „Bomba hátra” gombok és a külön torpedó-szakasz ilyenkor nem jelenik meg; cardDcGrid = 0 a régi elrendezés. Az U-boat kártyája változatlan
 //   v1.14.356 (2026-11-02) – ÚJ: MEDÁL-NAPLÓ (medLog, alap 1): a csatában kapott minden medál (U-boat vagy ellenséges hadihajó elsüllyesztéséért) bekerül a kampány-naplóba a csata sorába, okkal együtt („Medál: D2 +1 (U2)”), így ellenőrizhető, hogy a hajó medáljai egyeznek-e az elsüllyesztésekkel (D2 2 medált kapott 1 U-boatért: a napló a következő esetet megmutatja). A Pályafutás-sor az elsüllyesztett ellenséges hadihajókat külön számolja (a Medal = U-boat + hadihajó medálok)
 //   v1.14.355 (2026-11-02) – ÚJ KÉP: a Flower corvette (FL; a Flower mod. is ezt használja) kártyaképe a felhasználó új, tisztított rajza (1003 × 262 px, átlátszó háttérrel; a kék háttér-kulcsszín átlátszóvá téve)
@@ -3340,7 +3363,7 @@ applyLogPos();renderCfg();try{qbRender()}catch(e){}   // a pálya felállítás�
 //   v1.14.239 (2026-10-26) – ÚJ: (1) LUT torpedó (lutOn, alap 1; 1944. januártól): az U-boat kártyán „LUT” jelölőnégyzet (az AI lutAiP %); a FAT utóda: lutLen 18 cella, lutRun 6 egyenes, lutLeg 3 fél-szélesség, találat teherhajón d6 ≤ lutHit (3), hadihajón ≤ lutHitE (1); ha FAT is be van jelölve, a LUT számít. (2) LÉGPERISZKÓP / SCHNORCHEL (schOn, alap 1; 1944. júniustól; csak szabad mozgásnál): 1/8-as mélységen a kártya „Légperiszkóp” jelölőnégyzetével a dízel hajt: az akku nem fogy, hanem schRech (2) cellát tölt körönként, max schSpd (2) lépés, kimerült akkuval is halad; kiesett dízelnél nem működik; az AI az akku fele alatt automatikusan használja.
 //   v1.14.238 (2026-10-26) – SZABAD MOZGÁS: az U-boat a belső játékterületen (pl. 80-as táblán az 50×50-esen) bárhol léphet be, nem csak a szélén (uInner, alapból BE; KI = a régi szél-belépés uEdge szerint).
 //   v1.14.237 (2026-10-26) – HEDGEHOG / SQUID ELLENŐRZÉS: az U-boat lépés utáni kiértékelésében a hedgehog / Squid „nincs találat” eredmény akkor is kiíródik, ha a vízibombák is hatottak (eddig ilyenkor csak a vízibomba-sor látszott, a hedgehog-ellenőrzés nem)
-const VER = 'v1.14.357';
+const VER = 'v1.14.358';
 // ===== MEGFIGYELŐ / TESZT MÓD (obsMode, v1.14.195) =====
 // Megfigyelő módban mindkét oldalt az AI vezérli (a kísérők is: NPC-logikával), a pálya mindent mutat (nincs köd), és a körök maguktól léptetődnek;
 // a lezárt csatákból statisztika készül (konvoj-, U-boat-, kísérő-veszteség, kimenetel), hogy látszódjon: sokféle csata születik-e, vagy egyoldalú lett a hangolás.
