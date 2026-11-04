@@ -1,6 +1,6 @@
 <!doctype html><html lang="hu" data-theme="light"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>CEG – Konvoj kísérő kampány v1.14.368</title>
+<title>CEG – Konvoj kísérő kampány v1.14.369</title>
 <style>
 /* Színek: világos/sötét téma változókkal; a gombok és táblázatok stílusa */
 :root{--bg:#f4f1ea;--fg:#1d2733;--pn:#fff;--ln:#c9c2b3;--ac:#b3261e;--sea:#d6ecf4;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -3341,6 +3341,7 @@ applyLogPos();renderCfg();try{qbRender()}catch(e){}   // a pálya felállítás�
 //   v1.14.234 (2026-10-26) – OP TÉRKÉP: a szárazföldi cellákon nincs U / R / H esemény (evLand, alap 1). A szárazföld-maszk (LANDM: 20 × 42, „#” = szárazföld) az OP-térkép képéből készült (a cella több mint fele nem tenger); a kikötő-cellák (eseménymentes, „.”) változatlanok. Az 1 / 0 kapcsoló a Beállításokban
 //   v1.14.235 (2026-10-26) – ÚJ: a MEGÁLLT (vagy a találat után megálló) teherhajó ég / füstöl: fogStop (alap 20; 0 = ki) cellára látszik (az időjárás levonva); a periszkópmélységű U-boat is látja (fogStopPer, alap 1). Az észlelhetőség-táblázatban külön sor (köd-réteg)
 //   v1.14.236 (2026-10-26) – HEDGEHOG / SQUID ELLENŐRZÉS LÁTHATÓVÁ: (1) a sortűz / lövés után a napló kiírja az eredményt is („ellenőrizve: nincs U-boat a célcellákban” / „a találatot a lépése után ellenőrzöm”), nem csak a találatot; (2) JAVÍTÁS: az az U-boat, amelyik már lépett és kiértékelődött (bl), de még nem „kész”, eddig kimaradt az azonnali ellenőrzésből – most a hedgehog / Squid rá is azonnal hat; (3) az U-boat kiértékelésénél, ha volt hedgehog / Squid jel, de egyik cellában sem volt, ezt is kiírja
+//   v1.14.369 (2026-11-04) – A konvoj-elutasító kártya parancs-papír formátumú: ha a készülő konvojhoz nincs indulásra kész, kijelölt kísérő, a döntés eddig a böngésző saját ablakában (confirm) jött; most a többi parancshoz hasonló papír (KONVOJ KÍSÉRET NÉLKÜL) kérdez: „Elutasítom (−EGp)” / „Vissza – előbb rendezem a Flottát”. A msgOld = 0 (egyszerű üzenetek) beállításnál a régi ablak marad
 //   v1.14.368 (2026-11-04) – TAKTIKAI LAP: kompakt fejléc: az „ⓘ” gomb a műveleti sáv feliratait (Irány, automata kíséret, Ellenség, Kézi dobás, Időjárás, Útvonalak, időjárás-színek, Effektek) ki / bekapcsolja; kikapcsolva minden felirat helyén egy rövid jel áll (↗ 🤖 ⚔ 🎲 🌦 🧭 🎨 ✨), a kezelőelemek és a súgó-tooltipek megmaradnak; az állapot megjegyződik (tacNoLbl, alap 0 = feliratok látszanak)
 //   v1.14.367 (2026-11-04) – OP LAP: ha egy kötelék (TF) a konvojjal azonos cellába ér, a „Most ez lép / Most a konvoj lép” sor mellett megjelenik a „Csatlakozás a konvojhoz: TFx” gomb (opJoinBtn, alap 1) – eddig csak a Flotta lap TF-csoportjában volt. A gomb ugyanazt a CAMP.joinTF-et hívja (szabad hely, mentő kötelék, küldetés-ellenőrzés változatlan); csak kifutott konvojnál és nem mentő (vontató) kötelékre látszik
 //   v1.14.366 (2026-11-04) – CSATA-ÖSSZESÍTÉS (sumTorp, alap 1): az U-boatok torpedói célpont szerint: hány torpedó érintette a kísérő hajók útját (és ebből hány talált), hány a teherhajókét (találat), és hány ment ÜRESEN (egyik hajó útjába sem esett). Az „érintés”: a torpedó pályáján volt a hajó (TDC-dobás); egy torpedó egyszerre kísérőt és teherhajót is érinthet. Az U-boat táblázat új oszlopai + összes-sor. A statisztika a torpedó számlálójából (seg) gyűlik
@@ -3473,7 +3474,7 @@ applyLogPos();renderCfg();try{qbRender()}catch(e){}   // a pálya felállítás�
 //   v1.14.239 (2026-10-26) – ÚJ: (1) LUT torpedó (lutOn, alap 1; 1944. januártól): az U-boat kártyán „LUT” jelölőnégyzet (az AI lutAiP %); a FAT utóda: lutLen 18 cella, lutRun 6 egyenes, lutLeg 3 fél-szélesség, találat teherhajón d6 ≤ lutHit (3), hadihajón ≤ lutHitE (1); ha FAT is be van jelölve, a LUT számít. (2) LÉGPERISZKÓP / SCHNORCHEL (schOn, alap 1; 1944. júniustól; csak szabad mozgásnál): 1/8-as mélységen a kártya „Légperiszkóp” jelölőnégyzetével a dízel hajt: az akku nem fogy, hanem schRech (2) cellát tölt körönként, max schSpd (2) lépés, kimerült akkuval is halad; kiesett dízelnél nem működik; az AI az akku fele alatt automatikusan használja.
 //   v1.14.238 (2026-10-26) – SZABAD MOZGÁS: az U-boat a belső játékterületen (pl. 80-as táblán az 50×50-esen) bárhol léphet be, nem csak a szélén (uInner, alapból BE; KI = a régi szél-belépés uEdge szerint).
 //   v1.14.237 (2026-10-26) – HEDGEHOG / SQUID ELLENŐRZÉS: az U-boat lépés utáni kiértékelésében a hedgehog / Squid „nincs találat” eredmény akkor is kiíródik, ha a vízibombák is hatottak (eddig ilyenkor csak a vízibomba-sor látszott, a hedgehog-ellenőrzés nem)
-const VER = 'v1.14.368';
+const VER = 'v1.14.369';
 // ===== MEGFIGYELŐ / TESZT MÓD (obsMode, v1.14.195) =====
 // Megfigyelő módban mindkét oldalt az AI vezérli (a kísérők is: NPC-logikával), a pálya mindent mutat (nincs köd), és a körök maguktól léptetődnek;
 // a lezárt csatákból statisztika készül (konvoj-, U-boat-, kísérő-veszteség, kimenetel), hogy látszódjon: sokféle csata születik-e, vagy egyoldalú lett a hangolás.
@@ -5219,6 +5220,14 @@ $('o_wx').onclick=()=>{   // csak az időjárás (front) lép, a dátum és a na
 // opDateEn: a játék mostani dátuma angolul (a parancs-papír fejlécéhez)
 window.opDateEn=()=>enDate(dateOf(day,year));
 window.nearAlert=(r,c)=>nearAlert(r,c);window.dir4=()=>dir4();
+// noEscortAsk (v1.14.369): a készülő konvojhoz nincs indulásra kész, kijelölt kísérő. true = elutasítja a konvojt (büntetés), false = visszalép (előbb a Flottát rendezi).
+// msgOld = 1: parancs-papír (a többi parancshoz hasonló); 0: a régi böngésző-ablak
+function noEscortAsk(v,w,pen){
+ const wait=w.length?' ('+w.map(f=>f.id).join(', ')+' még szerviz / javítás alatt áll)':'';
+ if(!CFG.msgOld)return Promise.resolve(confirm('Konvoj készül: '+v.code+' ('+v.from+' → '+v.to+'), '+v.m.length+' hajó, de nincs indulásra kész, kijelölt kísérőd'+wait+'. Kíséret nélkül a konvoj nem indul el.\n\nOK = elutasítás (−'+pen+' EGp)\nMégse = visszalépés (előbb rendezd a Flottát)'));
+ return parancs({date:enDate(dateOf(day,year)),title:'KONVOJ KÍSÉRET NÉLKÜL',to:'Escort Force Commander',stamp:'URGENT',sign:'Western Approaches',
+  body:'<p>1. A fent megnevezett konvoj indulásra készen áll, de nincs indulásra kész, kijelölt kísérőhajója.</p><p class="k">ÚTVONAL: '+v.from+' – '+v.to+'<br>KONVOJ NEVE: '+v.code+'<br>KONVOJ ÖSSZETÉTELE: '+v.m.length+' teherhajó'+(w.length?'<br>SZERVIZ / JAVÍTÁS ALATT: '+w.map(f=>f.id).join(', '):'')+'</p><p>2. Kíséret nélkül a konvoj nem indulhat el.</p><p>3. Ha lemondja a kíséretet, a Parancsnokság a késésért <b>'+pen+' EGp</b> büntetést ró ki. Ha előbb rendezi a Flottát (kijelöli a kísérőket), a konvoj elindulhat.</p>',
+  buttons:[{t:'Elutasítom (−'+pen+' EGp)',v:true,cls:'bad'},{t:'Vissza – előbb rendezem a Flottát',v:false}]})}
 // orderStart: a konvojt indító parancs-papír; true = vállalja, false = elutasítja
 function orderStart(v,sl,w,pen){const wf=W[sel[0]][sel[1]],wt=['Jó','Jó','Változó','Rossz','Viharos'][wf]||'Jó';let n=0,tot=0;if(evmap)evmap.forEach((row,r)=>row.forEach((x,c)=>{if(EVZ[r][c]!='.'){tot++;if(x!='-')n++}}));const q=tot?n/tot:0,lv=q<.03?'Csekély':q<.07?'Mérsékelt':q<.12?'Jelentős':'Súlyos',st=CAMP.cvStat();
  return parancs({date:enDate(dateOf(day,year)),title:'PARANCS KONVOJ KÍSÉRÉSÉRE',to:'Escort Force Commander',stamp:'OFFICIAL',sign:'Western Approaches',
@@ -5240,7 +5249,7 @@ $('o_bw').onclick=async()=>{
   if(v.offerDay!==dk){v.offerDay=dk;v.offer=R(wf)==0&&Math.random()*100<ECO.cvP;
    if(!v.offer){waitDay('Ma nem készül konvoj ('+v.from+', front a kikötő-cellán: '+wf+'). A szerviz / javítás halad; holnap újra sorsolás.');return}}
   const pen=ECO.decPen|0,decline=why=>{CAMP.egp-=pen;CAMP.log.push('[Konvoj elutasítva] '+v.code+' ('+v.from+' → '+v.to+'): '+why+' Büntetés: '+pen+' EGp.');CAMP.save();CAMP.refresh();const nw=ECO.decNew?1:0,from=v.from;waitDay('A konvojt ('+v.code+') nem kísérted: −'+pen+' EGp (a Parancsnokság nem örül a késésnek). A konvoj nem indult el;'+(nw?'':' holnap újra sorsolás.'),nw?()=>{newConvoy(from,ECO.decScale);const w=CAMP.voy;return ' Helyette új konvoj készül: '+w.code+' ('+w.from+' → '+w.to+'), '+w.m.length+' hajó.'}:null)};
-  if(!sl.length){if(confirm('Konvoj készül: '+v.code+' ('+v.from+' → '+v.to+'), '+v.m.length+' hajó, de nincs indulásra kész, kijelölt kísérőd'+(w.length?' ('+w.map(f=>f.id).join(', ')+' még szerviz / javítás alatt áll)':'')+'. Kíséret nélkül a konvoj nem indul el.\n\nOK = elutasítás (−'+pen+' EGp)\nMégse = visszalépés (előbb rendezd a Flottát)'))decline('Nincs indulásra kész kísérő.');return}
+  if(!sl.length){if(await noEscortAsk(v,w,pen))decline('Nincs indulásra kész kísérő.');return}
   if(!(CFG.msgOld?await orderStart(v,sl,w,pen):confirm('Konvoj készül: '+v.code+' ('+v.from+' → '+v.to+'), '+v.m.length+' hajó, várható legfeljebb '+CAMP.cvStat().max+' EGp. Kíséri: '+sl.map(f=>f.id).join(', ')+(w.length?' ('+w.map(f=>f.id).join(', ')+' még szerviz / javítás alatt áll, nélkülük indul)':'')+'.\n\nOK = vállalom, a konvoj elindul\nMégse = elutasítom (−'+pen+' EGp, '+(ECO.decNew?'másnap új, kisebb konvoj készül':'holnap újabb sorsolás')+')'))){decline('A játékos nem vállalta.');return}}}
  if(!tut&&!CAMP.mission)$('o_st').checked=true;   // a vállalt konvoj elindul: az „elindult” kapcsoló bejelölve
  CAMP.sail();wind=2+R(2);   // az első WEATHER indítja a konvojt: a kijelölt kísérők vele mennek
