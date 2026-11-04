@@ -1,6 +1,6 @@
 <!doctype html><html lang="hu" data-theme="light"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>CEG – Konvoj kísérő kampány v1.14.370</title>
+<title>CEG – Konvoj kísérő kampány v1.14.371</title>
 <style>
 /* Színek: világos/sötét téma változókkal; a gombok és táblázatok stílusa */
 :root{--bg:#f4f1ea;--fg:#1d2733;--pn:#fff;--ln:#c9c2b3;--ac:#b3261e;--sea:#d6ecf4;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -3351,6 +3351,7 @@ applyLogPos();renderCfg();try{qbRender()}catch(e){}   // a pálya felállítás�
 //   v1.14.234 (2026-10-26) – OP TÉRKÉP: a szárazföldi cellákon nincs U / R / H esemény (evLand, alap 1). A szárazföld-maszk (LANDM: 20 × 42, „#” = szárazföld) az OP-térkép képéből készült (a cella több mint fele nem tenger); a kikötő-cellák (eseménymentes, „.”) változatlanok. Az 1 / 0 kapcsoló a Beállításokban
 //   v1.14.235 (2026-10-26) – ÚJ: a MEGÁLLT (vagy a találat után megálló) teherhajó ég / füstöl: fogStop (alap 20; 0 = ki) cellára látszik (az időjárás levonva); a periszkópmélységű U-boat is látja (fogStopPer, alap 1). Az észlelhetőség-táblázatban külön sor (köd-réteg)
 //   v1.14.236 (2026-10-26) – HEDGEHOG / SQUID ELLENŐRZÉS LÁTHATÓVÁ: (1) a sortűz / lövés után a napló kiírja az eredményt is („ellenőrizve: nincs U-boat a célcellákban” / „a találatot a lépése után ellenőrzöm”), nem csak a találatot; (2) JAVÍTÁS: az az U-boat, amelyik már lépett és kiértékelődött (bl), de még nem „kész”, eddig kimaradt az azonnali ellenőrzésből – most a hedgehog / Squid rá is azonnal hat; (3) az U-boat kiértékelésénél, ha volt hedgehog / Squid jel, de egyik cellában sem volt, ezt is kiírja
+//   v1.14.371 (2026-11-04) – OP LAP: a TF csoportban (a „Most ez lép” sorban) az elérhető kikötők listája is megjelenik, mint a Flotta lapon: az összes kikötő légvonalban, cellában, a legközelebbi elöl; zöld = az üzemanyag odáig elég, piros = nem. Ugyanaz a kapcsoló (fuelPorts) vezérli, mint a Flotta lapi listát
 //   v1.14.370 (2026-11-04) – HAJÓKÁRTYA TÖMÖRÍTÉS (cardCmp, alap 1): (1) a „C2 ? súgó ki” fejléc elmarad (az azonosító sor ugyanazt mutatja), a súgó-gomb az azonosító sor jobb szélére kerül; (2) a „Sorrend: konvoj → kísérők → U-boat” sor a súgó-szövegek közé tartozik (a súgóval együtt rejthető); (3) a vízibomba / Hedgehog-Squid / torpedó irány-négyzetek kisebbek (csak nyíl a gombon, kisebb hajó-ikon, keskenyebb panelek), így a kártya keskenyebb lehet. Kikapcsolva (0) a régi méret marad
 //   v1.14.369 (2026-11-04) – A konvoj-elutasító kártya parancs-papír formátumú: ha a készülő konvojhoz nincs indulásra kész, kijelölt kísérő, a döntés eddig a böngésző saját ablakában (confirm) jött; most a többi parancshoz hasonló papír (KONVOJ KÍSÉRET NÉLKÜL) kérdez: „Elutasítom (−EGp)” / „Vissza – előbb rendezem a Flottát”. A msgOld = 0 (egyszerű üzenetek) beállításnál a régi ablak marad
 //   v1.14.368 (2026-11-04) – TAKTIKAI LAP: kompakt fejléc: az „ⓘ” gomb a műveleti sáv feliratait (Irány, automata kíséret, Ellenség, Kézi dobás, Időjárás, Útvonalak, időjárás-színek, Effektek) ki / bekapcsolja; kikapcsolva minden felirat helyén egy rövid jel áll (↗ 🤖 ⚔ 🎲 🌦 🧭 🎨 ✨), a kezelőelemek és a súgó-tooltipek megmaradnak; az állapot megjegyződik (tacNoLbl, alap 0 = feliratok látszanak)
@@ -3485,7 +3486,7 @@ applyLogPos();renderCfg();try{qbRender()}catch(e){}   // a pálya felállítás�
 //   v1.14.239 (2026-10-26) – ÚJ: (1) LUT torpedó (lutOn, alap 1; 1944. januártól): az U-boat kártyán „LUT” jelölőnégyzet (az AI lutAiP %); a FAT utóda: lutLen 18 cella, lutRun 6 egyenes, lutLeg 3 fél-szélesség, találat teherhajón d6 ≤ lutHit (3), hadihajón ≤ lutHitE (1); ha FAT is be van jelölve, a LUT számít. (2) LÉGPERISZKÓP / SCHNORCHEL (schOn, alap 1; 1944. júniustól; csak szabad mozgásnál): 1/8-as mélységen a kártya „Légperiszkóp” jelölőnégyzetével a dízel hajt: az akku nem fogy, hanem schRech (2) cellát tölt körönként, max schSpd (2) lépés, kimerült akkuval is halad; kiesett dízelnél nem működik; az AI az akku fele alatt automatikusan használja.
 //   v1.14.238 (2026-10-26) – SZABAD MOZGÁS: az U-boat a belső játékterületen (pl. 80-as táblán az 50×50-esen) bárhol léphet be, nem csak a szélén (uInner, alapból BE; KI = a régi szél-belépés uEdge szerint).
 //   v1.14.237 (2026-10-26) – HEDGEHOG / SQUID ELLENŐRZÉS: az U-boat lépés utáni kiértékelésében a hedgehog / Squid „nincs találat” eredmény akkor is kiíródik, ha a vízibombák is hatottak (eddig ilyenkor csak a vízibomba-sor látszott, a hedgehog-ellenőrzés nem)
-const VER = 'v1.14.370';
+const VER = 'v1.14.371';
 // ===== MEGFIGYELŐ / TESZT MÓD (obsMode, v1.14.195) =====
 // Megfigyelő módban mindkét oldalt az AI vezérli (a kísérők is: NPC-logikával), a pálya mindent mutat (nincs köd), és a körök maguktól léptetődnek;
 // a lezárt csatákból statisztika készül (konvoj-, U-boat-, kísérő-veszteség, kimenetel), hogy látszódjon: sokféle csata születik-e, vagy egyoldalú lett a hangolás.
@@ -5044,7 +5045,7 @@ function rollUnit(u){fuelStrand(u);if(u.tow){const hs=u.ships.map(id=>CAMP.get(i
 function unitNote(){return units.length?' Kötelékek: '+units.map(u=>u.id+' '+(u.spd?u.spd+' lépés':'nem mozog')).join(', ')+'.':''}
 // uiUnits: az aktív egység választója és adatai a felső táblázatban
 function uiUnits(){const s=$('o_us');if(s){s.innerHTML=(tut?'':'<option value="C">'+conv.name+' (konvoj)</option>')+units.map(u=>'<option value="'+u.id+'">'+u.id+' ('+addr(u.r,u.c)+(u.moved?', kész':', '+u.left+' lépés')+')</option>').join('');s.value=act}
- const i=$('o_ui');if(i){const K=cur();i.style.fontWeight=700;i.style.color='#b3261e';i.innerHTML=K.u?'▶ Most ez lép: '+K.u.id+' ('+K.u.ships.join(', ')+') – ma: '+K.u.spd+' lépés, hátra: '+K.u.left+'. '+(CFG.fuelWarn?tfHomeTxt(K.u)+'. ':'')+'Üzemanyag: legfeljebb '+CAMP.fuelCells(Math.min(...K.u.ships.map(id=>{const f=CAMP.get(id);return f?f.fu:1e9})))+' cella.<span class="hint"> A célcellára kattintva ez a kötelék lép, nem a konvoj.</span>':'▶ Most a konvoj lép<span class="hint"> (a leválasztott kötelékek a saját sorukban, az Egység listából választhatók)</span>.';dockBtn(i,K.u);joinBtns(i)}}
+ const i=$('o_ui');if(i){const K=cur();i.style.fontWeight=700;i.style.color='#b3261e';i.innerHTML=K.u?'▶ Most ez lép: '+K.u.id+' ('+K.u.ships.join(', ')+') – ma: '+K.u.spd+' lépés, hátra: '+K.u.left+'. '+(CFG.fuelWarn?tfHomeTxt(K.u)+'. ':'')+'Üzemanyag: legfeljebb '+CAMP.fuelCells(Math.min(...K.u.ships.map(id=>{const f=CAMP.get(id);return f?f.fu:1e9})))+' cella.'+tfPortsLine(K.u)+'<span class="hint"> A célcellára kattintva ez a kötelék lép, nem a konvoj.</span>':'▶ Most a konvoj lép<span class="hint"> (a leválasztott kötelékek a saját sorukban, az Egység listából választhatók)</span>.';dockBtn(i,K.u);joinBtns(i)}}
 // joinBtns (v1.14.367, opJoinBtn): „Csatlakozás a konvojhoz” gomb minden olyan kötelékhez (TF), amelyik a konvojjal azonos cellában áll; csak kifutott konvojnál, a mentő (vontató) kötelék nem csatlakozhat
 function joinBtns(el){
  if(!+CFG.opJoinBtn||tut)return;
@@ -5078,6 +5079,11 @@ function tfHome(u){const p=nearPortOf(addr(u.r,u.c));if(!p)return null;const[pr,
  return{port:p,d,need,cells,ok:cells>=need,miss:Math.max(0,need-cells),all}}
 // tfHomeTxt: a hazaút-ellenőrzés szövege (egy sor)
 function tfHomeTxt(u){const h=tfHome(u);if(!h)return '';return '⚓ '+h.port+': '+h.d+' cella'+(h.ok?' – az üzemanyag elég':' – NEM ELÉG (hiányzik '+h.miss+' cella)')}
+// tfPortsLine (v1.14.371, fuelPorts): az összes kikötő listája egy kötelékhez (az OP lap TF-csoportja): kikötő + távolság (cella, légvonalban); zöld = az üzemanyag odáig elég
+function tfPortsLine(u){
+ const h=CFG.fuelPorts&&CFG.fuelWarn?tfHome(u):null;   /* a Flotta lapi listával azonos feltételek */
+ if(!h||!h.all)return '';
+ return '<div style="font-size:12px;line-height:1.3;font-weight:400" title="Az összes kikötő légvonalban, cellában; zöld = az üzemanyag odáig elég">⚓ '+h.all.map(a=>'<span style="color:'+(a.ok?'#2e7d32':'#b3261e')+'">'+a.port+' '+a.d+'</span>').join(' · ')+'</div>'}
 // pickTF: a kötelék egy lépése (az irányához képest előre vagy ±45°-ra); cellánként 160 üzemanyag; kikötő cellájába érve kikötött; esemény esetén azonnal taktikai csata
 function pickTF(r,c){const u=units.find(x=>x.id===act);if(!u)return;
  if(u.moved||u.left<1){say(u.id+' ma már nem léphet.');return}
