@@ -1,6 +1,6 @@
 <!doctype html><html lang="hu" data-theme="light"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>CEG – Konvoj kísérő kampány v1.14.372</title>
+<title>CEG – Konvoj kísérő kampány v1.14.373</title>
 <style>
 /* Színek: világos/sötét téma változókkal; a gombok és táblázatok stílusa */
 :root{--bg:#f4f1ea;--fg:#1d2733;--pn:#fff;--ln:#c9c2b3;--ac:#b3261e;--sea:#d6ecf4;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -427,13 +427,12 @@ body.opN #vOP #o_notes>div:not(#zz):nth-child(2n)::before{transform:rotate(2deg)
 /* lebegő gyorsgombok (floatTabs): a Taktikai lapon a Kör léptetése, az OP lapon a WEATHER; a 🎲 füllel egy stílusban */
 /* cardCmp (v1.14.370): tömör Hajókártya: az irány-négyzetek gombjain csak a nyíl (a szám a súgó-címkében), keskeny panelek, kisebb hajó-ikon */
 #card .dgp{flex:1 1 112px}
-body.cardCmp #card table.dg button{min-width:20px;padding:0 2px;font-size:12px;line-height:1.15}
-body.cardCmp #card table.dg button small{display:none}
+/* v1.14.373: a négyzet gombjai ugyanolyanok, mint az Irányok gombjai (#side button: 13 px, 3×7 px belső tér) */
+body.cardCmp #card table.dg button{min-width:0;padding:3px 7px;font-size:13px;line-height:normal;white-space:nowrap}
 body.cardCmp #card table.dg{margin:2px 0}
-body.cardCmp #card table.dg td{padding:0 1px}
-body.cardCmp #card .dgp{flex:1 1 0;min-width:76px;padding:2px 4px;font-size:11px}
-body.cardCmp #card .dgship{width:20px!important;height:20px!important}
-body.cardCmp #card .dgship svg{transform:translate(-50%,-50%) scale(.75)!important}
+body.cardCmp #card table.dg td{padding:0}
+body.cardCmp #card .dgp{flex:1 1 auto;padding:2px 4px;font-size:11px}
+body.cardCmp #card .dgship{width:26px!important;height:26px!important}
 /* tacNoLbl (v1.14.368): a műveleti sáv feliratai (span.lt) rejtve; a data-s rövid jel áll a helyükön */
 body.tacNoLbl #vTAC .lt{font-size:0}body.tacNoLbl #vTAC .lt::after{content:attr(data-s);font-size:15px}
 #ktab,#wtab{display:none;position:fixed;left:0;top:50%;z-index:49;color:#fff;padding:8px 6px;border-radius:0 8px 8px 0;cursor:pointer;font-size:18px;text-align:center;line-height:1.1;box-shadow:2px 2px 8px rgba(0,0,0,.35);user-select:none}
@@ -1779,7 +1778,7 @@ function dirGrid(s,okFn,fn){
  const g=[[8,1,2],[7,0,3],[6,5,4]];   /* a sorok: felső, középső, alsó; 0 = a hajó */
  const cell=d=>d==0
   ?dcCenter(s)
-  :'<td><button '+(okFn(d)?'':'disabled ')+'title="irány '+d+'" onclick="'+fn+'('+d+')">'+AR[d]+'<br><small>'+d+'</small></button></td>';
+  :'<td><button '+(okFn(d)?'':'disabled ')+'title="irány '+d+'" onclick="'+fn+'('+d+')">'+AR[d]+(+CFG.cardCmp?d:'<br><small>'+d+'</small>')+'</button></td>';
  return '<table class="m dg" style="width:auto;margin:4px 0">'+g.map(r=>'<tr>'+r.map(cell).join('')+'</tr>').join('')+'</table>'}
 // dcPanelBox: egy panel kerete; inactive = szürke (a modul hiányzik)
 function dcPanelBox(title,active,body){
@@ -2449,7 +2448,10 @@ if(s.t=='A')info.push(['Mai sebesség / lépés',s.spd+' / '+Math.min(s.idx,s.sp
  if(+CFG.cardWrap)h+='<details class="mods" data-k="det"><summary>Részletek (alapadatok, fogyóeszközök, érzékelés)</summary>'+infoH+'</details>';
  if(s.dmg&&k){const mx=k.mod.map((m,i)=>i).filter(i=>!(k.mod[i][0]=='HF/DF'&&!hfOn(s)&&!hfDate('from')));   // HF/DF-sor csak ha van / lehet
  /* modulTábla (v1.14.312): a megadott modul-indexek táblázata; a sérült sor piros (teljesen elpusztult: sötétebb) */
- const modT=ix=>TB(['Modul','Páncél','Life','Damage','Stand'],ix.map(i=>{const m=k.mod[i];return[m[0],m[1]-6,m[1],s.dmg[i],s.st&&s.st[i]!=null?s.st[i]:'–']}),ix.map(i=>{const m=k.mod[i];return s.dmg[i]>=m[1]?'rgba(211,47,47,.34)':s.dmg[i]>0?'rgba(211,47,47,.16)':''}));
+ const modT=ix=>{   /* v1.14.373: a háttér a CELLÁKON (nem a soron): a téma opak cella-háttere nem takarja ki; a névben jelzés: ⚠ sérült, ✖ elpusztult */
+  const bgc=i=>s.dmg[i]>=k.mod[i][1]?'rgba(211,47,47,.34)':s.dmg[i]>0?'rgba(211,47,47,.16)':'';
+  const t=TB(['Modul','Páncél','Life','Damage','Stand'],ix.map(i=>{const m=k.mod[i],mk=s.dmg[i]>=m[1]?'✖ ':s.dmg[i]>0?'⚠ ':'';return[mk+m[0],m[1]-6,m[1],s.dmg[i],s.st&&s.st[i]!=null?s.st[i]:'–']}),ix.map(bgc));
+  let n=-1;return t.replace(/<tr style="background:([^"]*)">((?:<td>.*?<\/td>)+)<\/tr>/g,(x,c,tds)=>'<tr>'+tds.replace(/<td>/g,'<td style="background:'+c+'">')+'</tr>')};
  if(!CFG.cardMod)h+=modT(mx);
  else{const bad=mx.filter(i=>s.dmg[i]>0);   /* cardMod: alapból csak a sérültek, a többi kinyitható */
   h+=bad.length?modT(bad):'<div style="margin-top:6px"><small>Nincs sérült modul.</small></div>';
@@ -3351,6 +3353,7 @@ applyLogPos();renderCfg();try{qbRender()}catch(e){}   // a pálya felállítás�
 //   v1.14.234 (2026-10-26) – OP TÉRKÉP: a szárazföldi cellákon nincs U / R / H esemény (evLand, alap 1). A szárazföld-maszk (LANDM: 20 × 42, „#” = szárazföld) az OP-térkép képéből készült (a cella több mint fele nem tenger); a kikötő-cellák (eseménymentes, „.”) változatlanok. Az 1 / 0 kapcsoló a Beállításokban
 //   v1.14.235 (2026-10-26) – ÚJ: a MEGÁLLT (vagy a találat után megálló) teherhajó ég / füstöl: fogStop (alap 20; 0 = ki) cellára látszik (az időjárás levonva); a periszkópmélységű U-boat is látja (fogStopPer, alap 1). Az észlelhetőség-táblázatban külön sor (köd-réteg)
 //   v1.14.236 (2026-10-26) – HEDGEHOG / SQUID ELLENŐRZÉS LÁTHATÓVÁ: (1) a sortűz / lövés után a napló kiírja az eredményt is („ellenőrizve: nincs U-boat a célcellákban” / „a találatot a lépése után ellenőrzöm”), nem csak a találatot; (2) JAVÍTÁS: az az U-boat, amelyik már lépett és kiértékelődött (bl), de még nem „kész”, eddig kimaradt az azonnali ellenőrzésből – most a hedgehog / Squid rá is azonnal hat; (3) az U-boat kiértékelésénél, ha volt hedgehog / Squid jel, de egyik cellában sem volt, ezt is kiírja
+//   v1.14.373 (2026-11-04) – HAJÓKÁRTYA: (1) a vízibomba / Hedgehog-Squid / torpedó 3×3-as négyzetek gombjai ugyanakkorák, mint a Lépés / Irányok gombjai (egy sorban a nyíl és az irány száma, pl. „↘4”; a hajó-ikon cellája is ekkora); ha három panel nem fér egy sorba, a harmadik új sorba törik. (2) A modul-táblák (sérült modulok, Összes modul) sérült sorai most a cellákat színezik (korábban a sor hátterét, amit egyes témák – pl. fehér – kitakartak), és a modul nevében jelzés áll: ⚠ sérült, ✖ elpusztult (U-boaton is)
 //   v1.14.372 (2026-11-04) – KESKENYEBB HAJÓKÁRTYA: a kártya szélessége a hajó-grafika szélességét követi (cardFit), ennek alapja (cardImgW) 519 → 400 px (a kártya ~416 px; korábban ~535). A tömör irány-négyzetek (v1.14.370) miatt a panelek, a Lövegek és a modul-táblák elférnek. Régi méret: cardImgW = 519; szélesebb / keskenyebb: tetszőleges érték (a sideW felülírja)
 //   v1.14.371 (2026-11-04) – OP LAP: a TF csoportban (a „Most ez lép” sorban) az elérhető kikötők listája is megjelenik, mint a Flotta lapon: az összes kikötő légvonalban, cellában, a legközelebbi elöl; zöld = az üzemanyag odáig elég, piros = nem. Ugyanaz a kapcsoló (fuelPorts) vezérli, mint a Flotta lapi listát
 //   v1.14.370 (2026-11-04) – HAJÓKÁRTYA TÖMÖRÍTÉS (cardCmp, alap 1): (1) a „C2 ? súgó ki” fejléc elmarad (az azonosító sor ugyanazt mutatja), a súgó-gomb az azonosító sor jobb szélére kerül; (2) a „Sorrend: konvoj → kísérők → U-boat” sor a súgó-szövegek közé tartozik (a súgóval együtt rejthető); (3) a vízibomba / Hedgehog-Squid / torpedó irány-négyzetek kisebbek (csak nyíl a gombon, kisebb hajó-ikon, keskenyebb panelek), így a kártya keskenyebb lehet. Kikapcsolva (0) a régi méret marad
@@ -3487,7 +3490,7 @@ applyLogPos();renderCfg();try{qbRender()}catch(e){}   // a pálya felállítás�
 //   v1.14.239 (2026-10-26) – ÚJ: (1) LUT torpedó (lutOn, alap 1; 1944. januártól): az U-boat kártyán „LUT” jelölőnégyzet (az AI lutAiP %); a FAT utóda: lutLen 18 cella, lutRun 6 egyenes, lutLeg 3 fél-szélesség, találat teherhajón d6 ≤ lutHit (3), hadihajón ≤ lutHitE (1); ha FAT is be van jelölve, a LUT számít. (2) LÉGPERISZKÓP / SCHNORCHEL (schOn, alap 1; 1944. júniustól; csak szabad mozgásnál): 1/8-as mélységen a kártya „Légperiszkóp” jelölőnégyzetével a dízel hajt: az akku nem fogy, hanem schRech (2) cellát tölt körönként, max schSpd (2) lépés, kimerült akkuval is halad; kiesett dízelnél nem működik; az AI az akku fele alatt automatikusan használja.
 //   v1.14.238 (2026-10-26) – SZABAD MOZGÁS: az U-boat a belső játékterületen (pl. 80-as táblán az 50×50-esen) bárhol léphet be, nem csak a szélén (uInner, alapból BE; KI = a régi szél-belépés uEdge szerint).
 //   v1.14.237 (2026-10-26) – HEDGEHOG / SQUID ELLENŐRZÉS: az U-boat lépés utáni kiértékelésében a hedgehog / Squid „nincs találat” eredmény akkor is kiíródik, ha a vízibombák is hatottak (eddig ilyenkor csak a vízibomba-sor látszott, a hedgehog-ellenőrzés nem)
-const VER = 'v1.14.372';
+const VER = 'v1.14.373';
 // ===== MEGFIGYELŐ / TESZT MÓD (obsMode, v1.14.195) =====
 // Megfigyelő módban mindkét oldalt az AI vezérli (a kísérők is: NPC-logikával), a pálya mindent mutat (nincs köd), és a körök maguktól léptetődnek;
 // a lezárt csatákból statisztika készül (konvoj-, U-boat-, kísérő-veszteség, kimenetel), hogy látszódjon: sokféle csata születik-e, vagy egyoldalú lett a hangolás.
