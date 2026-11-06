@@ -1,6 +1,6 @@
 <!doctype html><html lang="hu" data-theme="light"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>CEG – Konvoj kísérő kampány v1.14.381</title>
+<title>CEG – Konvoj kísérő kampány v1.14.382</title>
 <style>
 /* Színek: világos/sötét téma változókkal; a gombok és táblázatok stílusa */
 :root{--bg:#f4f1ea;--fg:#1d2733;--pn:#fff;--ln:#c9c2b3;--ac:#b3261e;--sea:#d6ecf4;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -3427,6 +3427,7 @@ applyLogPos();renderCfg();try{qbRender()}catch(e){}   // a pálya felállítás�
 //   v1.14.234 (2026-10-26) – OP TÉRKÉP: a szárazföldi cellákon nincs U / R / H esemény (evLand, alap 1). A szárazföld-maszk (LANDM: 20 × 42, „#” = szárazföld) az OP-térkép képéből készült (a cella több mint fele nem tenger); a kikötő-cellák (eseménymentes, „.”) változatlanok. Az 1 / 0 kapcsoló a Beállításokban
 //   v1.14.235 (2026-10-26) – ÚJ: a MEGÁLLT (vagy a találat után megálló) teherhajó ég / füstöl: fogStop (alap 20; 0 = ki) cellára látszik (az időjárás levonva); a periszkópmélységű U-boat is látja (fogStopPer, alap 1). Az észlelhetőség-táblázatban külön sor (köd-réteg)
 //   v1.14.236 (2026-10-26) – HEDGEHOG / SQUID ELLENŐRZÉS LÁTHATÓVÁ: (1) a sortűz / lövés után a napló kiírja az eredményt is („ellenőrizve: nincs U-boat a célcellákban” / „a találatot a lépése után ellenőrzöm”), nem csak a találatot; (2) JAVÍTÁS: az az U-boat, amelyik már lépett és kiértékelődött (bl), de még nem „kész”, eddig kimaradt az azonnali ellenőrzésből – most a hedgehog / Squid rá is azonnal hat; (3) az U-boat kiértékelésénél, ha volt hedgehog / Squid jel, de egyik cellában sem volt, ezt is kiírja
+//   v1.14.382 (2026-11-06) – JAVÍTÁS: a már felszerelt Hedgehog (hhi) és HF/DF (hfi) a Flotta lapon továbbra is „most felszerelhető (−150 EGp)” ajánlatként látszott. Ok: az ajánlat-lista (f.off) a fejlesztés ALATT is újrasorsolódott (ekkor még f.hh = 0), a befejezéskor viszont a hajó f.off.hhi jelzője igaz maradt a következő sorsolásig. Javítás: (1) a sorsolás nem kínálja azt, ami fejlesztés alatt áll (f.up), (2) a befejezéskor törlődik a jelző, (3) a gomb és az upgrade() ellenőrzi az f.hh / f.hf állapotot is, (4) betöltéskor / frissítéskor a mentett, elavult jelzők is kitisztulnak (a meglévő mentések is javulnak)
 //   v1.14.381 (2026-11-06) – KÉZI LÉGVÉDELEM (aaManual, alap 1): a kézzel irányított kísérő kártyáján új „Légvédelem (AA)” rész: minden AA modul (AA1-AA2, AA3, …) saját gombbal lőhet a hatótávon (aaRng) belüli repülőre – ugyanazzal a szabállyal, mint a bombázáskor az automata AA (a lövés a repülő távolságára szóló dobás, ha = a távolság: lelövi; modulonként körönként annyi lövés, ahány AA tagja van, csak ha a modul működik és a Stand = 0). A lőtt modul a bombázáskori automata védelemben nem lő újra (közös körönkénti számláló). 0 = a régi (csak ágyúk, a modulok csak automatikusan, bombázáskor)
 //   v1.14.380 (2026-11-06) – DOBÁS-ABLAK, TÁBLÁZATOS TÖMÖR MÓD (dxCompact): négy oszlop: Mi | Találat | Dobás | Eredmény. (1) A „Mi” oszlop egyszerűbb (a zárójeles részletek nélkül, pl. „Vizibomba AW48 → U8: robbanási mélység”; a teljes szöveg a tooltipben) és elrejthető (a fejléc 👁 gombja; a választás megmarad: ceg_dxwho). (2) A „Találat” oszlop fixen a találathoz kellő értéket mutatja (a szabály szövegéből: pl. „≥ 4” = a 4-es vagy nagyobb dobás találat, „= 4”, „4 ± 1”), így nem kell kiolvasni a hosszú szövegből. (3) A „Dobás” a dobott érték (d6-nál kockalap). Az animáció marad
 //   v1.14.379 (2026-11-06) – (1) A „Kész” gomb két megerősítése parancs-papír formátumú (VÍZIBOMBA LÉPÉS NÉLKÜL, JAVÍTÁS HIÁNYZIK; msgOld = 0: a régi ablak). (2) TÖMÖR DOBÁS-ABLAK (dxCompact, alap 1): a négyoszlopos táblázat helyett egy-egy rövid sor: felirat + dobott érték kockalappal (⚀–⚅; nem d6-nál számjegy-jelvény) + eredmény; a szabály (d(a–b), tipp) a jelvény fölé víve látszik; a fejléc gombjai kisebbek (Auto, ✕), a „vagy írd be…” szöveg tooltip lett; a dobás-animáció változatlan. 0 = a régi táblázatos ablak
@@ -3572,7 +3573,7 @@ applyLogPos();renderCfg();try{qbRender()}catch(e){}   // a pálya felállítás�
 //   v1.14.239 (2026-10-26) – ÚJ: (1) LUT torpedó (lutOn, alap 1; 1944. januártól): az U-boat kártyán „LUT” jelölőnégyzet (az AI lutAiP %); a FAT utóda: lutLen 18 cella, lutRun 6 egyenes, lutLeg 3 fél-szélesség, találat teherhajón d6 ≤ lutHit (3), hadihajón ≤ lutHitE (1); ha FAT is be van jelölve, a LUT számít. (2) LÉGPERISZKÓP / SCHNORCHEL (schOn, alap 1; 1944. júniustól; csak szabad mozgásnál): 1/8-as mélységen a kártya „Légperiszkóp” jelölőnégyzetével a dízel hajt: az akku nem fogy, hanem schRech (2) cellát tölt körönként, max schSpd (2) lépés, kimerült akkuval is halad; kiesett dízelnél nem működik; az AI az akku fele alatt automatikusan használja.
 //   v1.14.238 (2026-10-26) – SZABAD MOZGÁS: az U-boat a belső játékterületen (pl. 80-as táblán az 50×50-esen) bárhol léphet be, nem csak a szélén (uInner, alapból BE; KI = a régi szél-belépés uEdge szerint).
 //   v1.14.237 (2026-10-26) – HEDGEHOG / SQUID ELLENŐRZÉS: az U-boat lépés utáni kiértékelésében a hedgehog / Squid „nincs találat” eredmény akkor is kiíródik, ha a vízibombák is hatottak (eddig ilyenkor csak a vízibomba-sor látszott, a hedgehog-ellenőrzés nem)
-const VER = 'v1.14.381';
+const VER = 'v1.14.382';
 // ===== MEGFIGYELŐ / TESZT MÓD (obsMode, v1.14.195) =====
 // Megfigyelő módban mindkét oldalt az AI vezérli (a kísérők is: NPC-logikával), a pálya mindent mutat (nincs köd), és a körök maguktól léptetődnek;
 // a lezárt csatákból statisztika készül (konvoj-, U-boat-, kísérő-veszteség, kimenetel), hogy látszódjon: sokféle csata születik-e, vagy egyoldalú lett a hangolás.
@@ -3919,7 +3920,7 @@ const CAMP = {
   },
   shopLeft(c) { const a = this.shop && this.shop.av[c]; return a === true ? Infinity : (+a || 0); },
   // rollOffers: a fejlesztési lehetőségek sorsolása a kikötőben álló hajókra (radar / szonár minőség −1, ha a kikötő fejleszthet)
-  rollOffers(port) { this.fleet.forEach(f => { const P = PORTS_T[f.loc]; f.off = { rad: false, son: false, hf: false, hhi: false }; if (P && P.upg) f.off = { hhi: D[vcls(f)].hhIdx != null && !f.hh && this.rfYear() >= ECO.hhFrom, hfi: D[vcls(f)].hfIdx != null && !f.hf && hfDate('from'), hf: D[vcls(f)].hfIdx != null && !!f.hf && f.hq > ECO.hfBest && R(1, 100) <= ECO.upgP, rad: f.rq > this.sensFloor() && R(1, 100) <= ECO.upgP, son: f.sq > this.sensFloor() && R(1, 100) <= ECO.upgP }; }); },
+  rollOffers(port) { this.fleet.forEach(f => { const P = PORTS_T[f.loc]; f.off = { rad: false, son: false, hf: false, hhi: false }; if (P && P.upg) f.off = { hhi: D[vcls(f)].hhIdx != null && !f.hh && !(f.up || []).includes('hhi') && this.rfYear() >= ECO.hhFrom, hfi: D[vcls(f)].hfIdx != null && !f.hf && !(f.up || []).includes('hfi') && hfDate('from'), hf: D[vcls(f)].hfIdx != null && !!f.hf && f.hq > ECO.hfBest && R(1, 100) <= ECO.upgP, rad: f.rq > this.sensFloor() && R(1, 100) <= ECO.upgP, son: f.sq > this.sensFloor() && R(1, 100) <= ECO.upgP }; }); },
 
   // newVoyage: új konvoj indul az aktuális kikötőből (az OP hívja). Sorsolja a teherhajókat, kijelöli a kíséretet, sorsolja a boltot és a fejlesztéseket.
   newVoyage(conv, day, scale) {
@@ -4016,7 +4017,7 @@ const CAMP = {
       } else if (f.st === 'refit' && this.t >= f.rd) {
         const cap0 = D[vcls(f)].bomb; f.rf = f.rfNew || f.rf; delete f.rfNew; f.qs = null; if (f.nmNew) { f.nm = f.nmNew; } delete f.nmNew; this.normFleet(); const k1 = D[vcls(f)]; f.b = Math.min(k1.bomb, (f.b || 0) + Math.max(0, k1.bomb - cap0)); f.st = 'ready'; this.log.push(f.id + ' átépítése kész (' + cname(f) + ', vízibomba-készlet ' + k1.bomb + ').');
       } else if (f.st === 'upg' && this.t >= f.rd) {
-        (f.up || []).forEach(w => { if (w === 'rad') f.rq--; else if (w === 'hf') f.hq--; else if (w === 'hfi') { f.hf = 1; f.hq = ECO.hfStart; } else if (w === 'hhi') { f.hh = 1; f.hs = ECO.hhSalvo; } else f.sq--; }); f.up = []; f.st = 'ready'; this.log.push(f.id + ' fejlesztése kész.');
+        (f.up || []).forEach(w => { if (w === 'rad') f.rq--; else if (w === 'hf') f.hq--; else if (w === 'hfi') { f.hf = 1; f.hq = ECO.hfStart; if (f.off) f.off.hfi = false; } else if (w === 'hhi') { f.hh = 1; f.hs = ECO.hhSalvo; if (f.off) f.off.hhi = false; } else f.sq--; }); f.up = []; f.st = 'ready'; this.log.push(f.id + ' fejlesztése kész.');
       }
     });
     this.save();
@@ -4041,7 +4042,7 @@ const CAMP = {
   },
   upgrade(id, list) {
     const f = this.get(id), P = f && PORTS_T[f.loc]; if (!f || !P || !P.upg || f.st !== 'ready') return;
-    list = list.filter(w => f.off[w]); const cost = list.reduce((a, w) => a + (w === 'hfi' ? +ECO.hfFitCost : w === 'hhi' ? +ECO.hhFitCost : +ECO.upgCost), 0); if (!list.length || cost > this.egp) return;
+    list = list.filter(w => f.off[w] && !(w === 'hhi' && f.hh) && !(w === 'hfi' && f.hf)); const cost = list.reduce((a, w) => a + (w === 'hfi' ? +ECO.hfFitCost : w === 'hhi' ? +ECO.hhFitCost : +ECO.upgCost), 0); if (!list.length || cost > this.egp) return;
     this.egp -= cost; f.st = 'upg'; this.deSel(f); f.up = list; f.rd = this.t + (list.every(w => w === 'hfi' || w === 'hhi') ? Math.max(1, ...list.map(w => (w === 'hhi' ? +ECO.hhFitDays : +ECO.hfFitDays) | 0)) : R(ECO.upgLo, ECO.upgHi)); list.forEach(w => f.off[w] = false);
     this.log.push(f.id + ' fejlesztése (' + list.map(w => w == 'rad' ? 'radar' : w == 'hf' ? 'HF/DF' : w == 'hfi' ? 'HF/DF felszerelése' : w == 'hhi' ? 'Hedgehog felszerelése' : 'szonár').join(', ') + ') megkezdődött, ' + cost + ' EGp.'); this.save(); this.refresh(); this.fleetView();
   },
@@ -4469,7 +4470,10 @@ const CAMP = {
       if (on.join('|') !== tn.join('|')) f.dmg = tn.map(n => { const i = on.indexOf(n); return i >= 0 ? (f.dmg[i] || 0) : 0; });
       f.mn = tn; if (f.b != null && f.b > k.bomb) f.b = k.bomb; if (k.hfIdx != null && f.hq == null) f.hq = ECO.hfStart; if (f.hf == null) f.hf = hfDate('new') ? 1 : 0; if (f.hh == null) f.hh = 0; }); },   // régi mentés: az „új hajók” dátuma előtt nincs felszerelt HF/DF
   // refresh: az EGp, a verzió és a kikötői jegyzet kiírása
+  // fixOff (v1.14.382): az elavult ajánlat-jelzők törlése (a már felszerelt hedgehog / HF/DF nem kínálható újra) – a régi mentéseket is javítja
+  fixOff() { (this.fleet || []).forEach(f => { if (!f.off) return; if (f.hh) f.off.hhi = false; if (f.hf) f.off.hfi = false; }); },
   refresh() {
+    this.fixOff();
     this.normFleet(); this.eraClamp();
     try { qbRender(); } catch (e) { }   // a gyorsbeállító gombok állapota a betöltés / változás után
     try { this.thrShow(); } catch (e) { }
@@ -4574,6 +4578,7 @@ const CAMP = {
     saveCfg(); this.fleetView();
   },
   fleetView() {
+    this.fixOff();
     const v = this.voy, port = v ? v.from : '–', pre = v && !v.sailed, P = PORTS_T[port] || {};
     let h = '<h2>Flotta <small>(' + VER + ')</small></h2>';
     h += TB(['Pénztár (EGp)', 'Összes szerzett EGp', 'Kampánynap', 'Hely', 'Kíséret indulásra'], [[this.egp, this.earned, this.t, pre ? 'kikötőben: ' + port : 'úton (a kikötőben hagyott hajók kezelhetők)', this.fleet.filter(f => f.sel || f.loc === 'convoy').length + ' / ' + ECO.maxGroup]]);
@@ -4585,7 +4590,7 @@ const CAMP = {
       if (here && fp.rep && f.st === 'ready' && ECO.ageOn && (f.age == null ? 100 : f.age) < 100) ops.push('<button ' + (this.egp >= this.svcCostOf(f) ? '' : 'disabled ') + 'onclick="CAMP.service(\'' + f.id + '\')">Szerviz (' + this.svcCostOf(f) + ' EGp, ' + this.svcDaysOf(f) + ' nap)</button>');
       if (here && hhHas(f, k) && (f.hs == null ? ECO.hhSalvo : f.hs) < ECO.hhSalvo) { const hn = ECO.hhSalvo - (f.hs == null ? ECO.hhSalvo : f.hs); ops.push('<input type="number" id="hn_' + f.id + '" value="' + Math.min(hn, Math.floor(this.egp / Math.max(1, ECO.hhPrice))) + '" min="0" max="' + hn + '" style="width:54px"><button onclick="CAMP.refillH(\'' + f.id + '\',document.getElementById(\'hn_' + f.id + '\').value)">Sortűz + (' + ECO.hhPrice + ' EGp)</button>'); }
       if (here && f.b < k.bomb) ops.push('<input type="number" id="bn_' + f.id + '" value="' + Math.min(k.bomb - f.b, Math.floor(this.egp / Math.max(1, ECO.bombPrice))) + '" min="0" max="' + (k.bomb - f.b) + '" style="width:54px"><button onclick="CAMP.refill(\'' + f.id + '\',document.getElementById(\'bn_' + f.id + '\').value)">Bomba +</button>');
-      if (here && fp.upg && f.st === 'ready') { if (f.off.rad) ops.push('<button onclick="CAMP.upgrade(\'' + f.id + '\',[\'rad\'])">Radar −1 (' + ECO.upgCost + ')</button>'); if (f.off.son) ops.push('<button onclick="CAMP.upgrade(\'' + f.id + '\',[\'son\'])">Szonár −1 (' + ECO.upgCost + ')</button>'); if (f.off.hhi) ops.push('<button onclick="CAMP.upgrade(\'' + f.id + '\',[\'hhi\'])">Hedgehog felszerelése (' + ECO.hhFitCost + ', ' + ECO.hhFitDays + ' nap)</button>'); if (f.off.hfi) ops.push('<button onclick="CAMP.upgrade(\'' + f.id + '\',[\'hfi\'])">HF/DF felszerelése (' + ECO.hfFitCost + ', ' + ECO.hfFitDays + ' nap)</button>'); if (f.off.hf) ops.push('<button onclick="CAMP.upgrade(\'' + f.id + '\',[\'hf\'])">HF/DF −1 (' + ECO.upgCost + ')</button>'); }
+      if (here && fp.upg && f.st === 'ready') { if (f.off.rad) ops.push('<button onclick="CAMP.upgrade(\'' + f.id + '\',[\'rad\'])">Radar −1 (' + ECO.upgCost + ')</button>'); if (f.off.son) ops.push('<button onclick="CAMP.upgrade(\'' + f.id + '\',[\'son\'])">Szonár −1 (' + ECO.upgCost + ')</button>'); if (f.off.hhi && !f.hh) ops.push('<button onclick="CAMP.upgrade(\'' + f.id + '\',[\'hhi\'])">Hedgehog felszerelése (' + ECO.hhFitCost + ', ' + ECO.hhFitDays + ' nap)</button>'); if (f.off.hfi) ops.push('<button onclick="CAMP.upgrade(\'' + f.id + '\',[\'hfi\'])">HF/DF felszerelése (' + ECO.hfFitCost + ', ' + ECO.hfFitDays + ' nap)</button>'); if (f.off.hf) ops.push('<button onclick="CAMP.upgrade(\'' + f.id + '\',[\'hf\'])">HF/DF −1 (' + ECO.upgCost + ')</button>'); }
       const sel = pre && this.canSail(f) ? '<input type="checkbox"' + (f.sel ? ' checked' : '') + ' onchange="CAMP.toggle(\'' + f.id + '\')">' : (f.loc === 'convoy' ? '✔ úton' : '–');
       const tcb = (this.inPort(f) && f.st === 'ready') || (f.loc === 'convoy' && v && v.sailed) ? '<input type="checkbox"' + (f.tsel ? ' checked' : '') + ' onchange="CAMP.toggleT(\'' + f.id + '\')">' : '–';
       return ['<a href="#" onclick="CAMP.showShip(\'' + f.id + '\');return false"><b>' + f.id + '</b></a>', artImg(vcls(f), f.id, 90) + cname(f), f.loc === 'convoy' ? 'konvojjal' : f.loc, stx(f), f.med + (f.cr ? '<br><small title="Pályafutás: elsüllyesztett U / megsérült U / sérülést okozó vízibomba / lelőtt repülő">🏆' + f.cr.us + ' · U✱' + f.cr.uh + ' · 💣' + f.cr.bh + ' · ✈' + f.cr.air + '</small>' : ''), dsum, ECO.ageOn ? '<b style="color:' + ((f.age == null ? 100 : f.age) < ECO.ageThr ? '#b3261e' : 'inherit') + '">' + (f.age == null ? 100 : f.age) + '%</b>' : '–', this.fuelHTML(f.fu, k.fuel), f.b + '/' + k.bomb, f.rq + ' / ' + f.sq + (k.hfIdx != null && (f.hf || hfDate('from')) ? ' / ' + (f.hf ? f.hq : '–') : ''), sel, ops.join(' ') || '–', tcb];
