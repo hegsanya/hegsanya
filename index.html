@@ -1,6 +1,6 @@
 <!doctype html><html lang="hu" data-theme="light"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>CEG – Konvoj kísérő kampány v1.14.383</title>
+<title>CEG – Konvoj kísérő kampány v1.14.384</title>
 <style>
 /* Színek: világos/sötét téma változókkal; a gombok és táblázatok stílusa */
 :root{--bg:#f4f1ea;--fg:#1d2733;--pn:#fff;--ln:#c9c2b3;--ac:#b3261e;--sea:#d6ecf4;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -1028,6 +1028,8 @@ function hintOff(){if(!CFG.hintMin)return false;try{return localStorage.getItem(
 function hintApply(){document.body.classList.toggle('hintoff',hintOff());const b=document.getElementById('nHT');if(b){b.style.display=CFG.hintMin?'':'none';b.textContent=hintOff()?'ⓘ Súgó: ki':'ⓘ Súgó: be'}hlpApply()}
 function hintToggle(){const off=hintOff();try{localStorage.setItem('ceg_hint',off?'1':'0')}catch(e){}hintApply();try{card()}catch(e){}}
 function hlpApply(){document.body.classList.toggle('noHlp',!CFG.cardHelp||hintOff())}
+// fadeTog (v1.14.384): az átlátszó Hajókártya (cardFade) kapcsolója a kártya fejlécében, mint a súgó gomb
+function fadeTog(){CFG.cardFade=+CFG.cardFade?0:1;saveCfg();cardFadeApply();try{renderCfg()}catch(e){}card()}
 function hlpTog(){CFG.cardHelp=CFG.cardHelp?0:1;saveCfg();hlpApply();try{renderCfg()}catch(e){}card()}
 /* sensWrap (v1.14.347, cardTSens): a szenzor-táblázat kinyitható blokkban; a fejlécben a kapott Joker-irányok rövid összegzése; 0 = a táblázat közvetlenül */
 function sensWrap(s,t){if(!+CFG.cardTSens)return t;const j=(s.jokers||[]).map(j=>j.src+' '+AR[j.d]+j.d+(j.used?' ✓':'')).join(', ');return '<details class="mods" data-k="sens"><summary>Szenzorok (dobások)'+(j?' – Joker: '+j:' – nincs Joker')+'</summary>'+t+'</details>'}
@@ -2470,7 +2472,7 @@ function card(){obsVis();
  const c=$('card'),s=sel;lst();
  if(!s){c.innerHTML='<h2>Hajókártya</h2>Kattints egy hajóra (egy mezőn több hajó: kattints újra, vagy a listából).';return}
  const k=s.c&&D[s.c],cm=s.id===cmd().id,E=s.t=='E',man=(E&&(!$('fo').checked||s.en||!s.zid))||s.t=='U'||s.t=='A';
- const hb='<button onclick="hlpTog()" title="Magyarázó szövegek mutatása / elrejtése" style="font-size:12px;padding:0 6px;vertical-align:middle">'+(CFG.cardHelp?'? súgó be':'? súgó ki')+'</button>',cmp=+CFG.cardCmp&&+CFG.cardWrap;   /* cmp: a „Cx ? súgó” fejléc helyett az azonosító sor tartalmazza a gombot */
+ const hb='<button onclick="hlpTog()" title="Magyarázó szövegek mutatása / elrejtése" style="font-size:12px;padding:0 6px;vertical-align:middle">'+(CFG.cardHelp?'? súgó be':'? súgó ki')+'</button> <button onclick="fadeTog()" title="A kártya átlátszó, amíg nincs felette a kurzor (a pálya látszik alatta); telefonon általában ki" style="font-size:12px;padding:0 6px;vertical-align:middle">'+(+CFG.cardFade?'◐ átlátszó be':'◐ átlátszó ki')+'</button>',cmp=+CFG.cardCmp&&+CFG.cardWrap;   /* cmp: a „Cx ? súgó” fejléc helyett az azonosító sor tartalmazza a gombot */
  let h=cmp?'':'<h2>'+s.id+(cm?' – Commodore':'')+' '+hb+'</h2>';h+=idHdr(s,k,cmp?hb:'',cm);{const pic=(s.t=='M'||s.t=='A'?artImg(s.t=='M'?'M':'A',s.id,imgW(300)):modOver(s,sideImg(s.c,s.id,imgW(420)))),dg=depthGauge(s);
   h+=dg?'<div style="display:flex;align-items:flex-start"><div style="flex:1 1 auto;min-width:0">'+pic+'</div>'+dg+'</div>':pic;
   if(!(s.t=='M'||s.t=='A'))h+=mpBar(s)}   // a hajó képe, ha van
@@ -3432,6 +3434,7 @@ applyLogPos();renderCfg();try{qbRender()}catch(e){}   // a pálya felállítás�
 //   v1.14.234 (2026-10-26) – OP TÉRKÉP: a szárazföldi cellákon nincs U / R / H esemény (evLand, alap 1). A szárazföld-maszk (LANDM: 20 × 42, „#” = szárazföld) az OP-térkép képéből készült (a cella több mint fele nem tenger); a kikötő-cellák (eseménymentes, „.”) változatlanok. Az 1 / 0 kapcsoló a Beállításokban
 //   v1.14.235 (2026-10-26) – ÚJ: a MEGÁLLT (vagy a találat után megálló) teherhajó ég / füstöl: fogStop (alap 20; 0 = ki) cellára látszik (az időjárás levonva); a periszkópmélységű U-boat is látja (fogStopPer, alap 1). Az észlelhetőség-táblázatban külön sor (köd-réteg)
 //   v1.14.236 (2026-10-26) – HEDGEHOG / SQUID ELLENŐRZÉS LÁTHATÓVÁ: (1) a sortűz / lövés után a napló kiírja az eredményt is („ellenőrizve: nincs U-boat a célcellákban” / „a találatot a lépése után ellenőrzöm”), nem csak a találatot; (2) JAVÍTÁS: az az U-boat, amelyik már lépett és kiértékelődött (bl), de még nem „kész”, eddig kimaradt az azonnali ellenőrzésből – most a hedgehog / Squid rá is azonnal hat; (3) az U-boat kiértékelésénél, ha volt hedgehog / Squid jel, de egyik cellában sem volt, ezt is kiírja
+//   v1.14.384 (2026-11-06) – A cardFade (átlátszó Hajókártya) kapcsolója a kártyán is: a „? súgó” gomb mellett „◐ átlátszó be / ki” gomb (fadeTog), ugyanúgy mentődik, mint a súgó; a Beállítások sor is követi
 //   v1.14.383 (2026-11-06) – ÁTLÁTSZÓ HAJÓKÁRTYA (cardFade, alap 0; cardFadeO = átlátszóság %, alap 35): a lebegő Hajókártya (a Taktikai lap oldalpanelje) halvány, amíg nincs felette a kurzor, így látszik alatta a pálya (az U-boat nem „szökik be” a kártya takarásában); rávíve vagy beleérintve teljesen fedő. Kapcsolható (telefonon érintésnél nincs „fölötte a kurzor”, ott ki kell kapcsolni vagy az érintés után marad fedő)
 //   v1.14.382 (2026-11-06) – JAVÍTÁS: a már felszerelt Hedgehog (hhi) és HF/DF (hfi) a Flotta lapon továbbra is „most felszerelhető (−150 EGp)” ajánlatként látszott. Ok: az ajánlat-lista (f.off) a fejlesztés ALATT is újrasorsolódott (ekkor még f.hh = 0), a befejezéskor viszont a hajó f.off.hhi jelzője igaz maradt a következő sorsolásig. Javítás: (1) a sorsolás nem kínálja azt, ami fejlesztés alatt áll (f.up), (2) a befejezéskor törlődik a jelző, (3) a gomb és az upgrade() ellenőrzi az f.hh / f.hf állapotot is, (4) betöltéskor / frissítéskor a mentett, elavult jelzők is kitisztulnak (a meglévő mentések is javulnak)
 //   v1.14.381 (2026-11-06) – KÉZI LÉGVÉDELEM (aaManual, alap 1): a kézzel irányított kísérő kártyáján új „Légvédelem (AA)” rész: minden AA modul (AA1-AA2, AA3, …) saját gombbal lőhet a hatótávon (aaRng) belüli repülőre – ugyanazzal a szabállyal, mint a bombázáskor az automata AA (a lövés a repülő távolságára szóló dobás, ha = a távolság: lelövi; modulonként körönként annyi lövés, ahány AA tagja van, csak ha a modul működik és a Stand = 0). A lőtt modul a bombázáskori automata védelemben nem lő újra (közös körönkénti számláló). 0 = a régi (csak ágyúk, a modulok csak automatikusan, bombázáskor)
@@ -3579,7 +3582,7 @@ applyLogPos();renderCfg();try{qbRender()}catch(e){}   // a pálya felállítás�
 //   v1.14.239 (2026-10-26) – ÚJ: (1) LUT torpedó (lutOn, alap 1; 1944. januártól): az U-boat kártyán „LUT” jelölőnégyzet (az AI lutAiP %); a FAT utóda: lutLen 18 cella, lutRun 6 egyenes, lutLeg 3 fél-szélesség, találat teherhajón d6 ≤ lutHit (3), hadihajón ≤ lutHitE (1); ha FAT is be van jelölve, a LUT számít. (2) LÉGPERISZKÓP / SCHNORCHEL (schOn, alap 1; 1944. júniustól; csak szabad mozgásnál): 1/8-as mélységen a kártya „Légperiszkóp” jelölőnégyzetével a dízel hajt: az akku nem fogy, hanem schRech (2) cellát tölt körönként, max schSpd (2) lépés, kimerült akkuval is halad; kiesett dízelnél nem működik; az AI az akku fele alatt automatikusan használja.
 //   v1.14.238 (2026-10-26) – SZABAD MOZGÁS: az U-boat a belső játékterületen (pl. 80-as táblán az 50×50-esen) bárhol léphet be, nem csak a szélén (uInner, alapból BE; KI = a régi szél-belépés uEdge szerint).
 //   v1.14.237 (2026-10-26) – HEDGEHOG / SQUID ELLENŐRZÉS: az U-boat lépés utáni kiértékelésében a hedgehog / Squid „nincs találat” eredmény akkor is kiíródik, ha a vízibombák is hatottak (eddig ilyenkor csak a vízibomba-sor látszott, a hedgehog-ellenőrzés nem)
-const VER = 'v1.14.383';
+const VER = 'v1.14.384';
 // ===== MEGFIGYELŐ / TESZT MÓD (obsMode, v1.14.195) =====
 // Megfigyelő módban mindkét oldalt az AI vezérli (a kísérők is: NPC-logikával), a pálya mindent mutat (nincs köd), és a körök maguktól léptetődnek;
 // a lezárt csatákból statisztika készül (konvoj-, U-boat-, kísérő-veszteség, kimenetel), hogy látszódjon: sokféle csata születik-e, vagy egyoldalú lett a hangolás.
