@@ -1,6 +1,6 @@
 <!doctype html><html lang="hu" data-theme="light"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>CEG – Konvoj kísérő kampány v1.14.377</title>
+<title>CEG – Konvoj kísérő kampány v1.14.378</title>
 <style>
 /* Színek: világos/sötét téma változókkal; a gombok és táblázatok stílusa */
 :root{--bg:#f4f1ea;--fg:#1d2733;--pn:#fff;--ln:#c9c2b3;--ac:#b3261e;--sea:#d6ecf4;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -1448,8 +1448,15 @@ function aiRepair(u){if(!u||u.t=='U'||u.t=='A'||u.rep||!ships.includes(u))return
  l.sort((a,b)=>pri(a)-pri(b)||u.dmg[b]-u.dmg[a]);const keep=sel;sel=u;try{fix(l[0])}finally{sel=keep}}
 // finChk: a „Kész” gomb: ha van javítható sérülés és még nem javítottál, megerősítést kér
 // endAsk (v1.14.363, endConfirm): a „Csata vége → OP” gomb: lezárás előtt rákérdez, hogy valóban le akarod-e zárni a csatát (a lezárás után az eredmények a kampányba kerülnek, nincs visszaút)
-function endAsk(){
- if(+CFG.endConfirm&&typeof confirm=='function'&&!confirm('Valóban lezárod a taktikai csatát, és visszatérsz az OP lapra?\n\nA csata eredményei (veszteségek, sérülések, medálok) a kampányba kerülnek, a csata nem folytatható.'))return;
+async function endAsk(){
+ if(+CFG.endConfirm){
+  let ok;
+  if(CFG.msgOld){   /* parancs-papír: true = lezárja, false = folytatja */
+   ok=await parancs({date:window.opDateEn?opDateEn():'',title:'CSATA LEZÁRÁSA',to:'Escort Force Commander',stamp:'OFFICIAL',sign:'Western Approaches',
+    body:'<p>1. Parancsnok úr a taktikai csata lezárására készül, és visszatér az operatív térképre.</p><p>2. A csata eredményei (<b>veszteségek, sérülések, medálok</b>) a kampányba kerülnek.</p><p class="k">FIGYELEM: a lezárt csata nem folytatható.</p>',
+    buttons:[{t:'Lezárom a csatát',v:true,cls:'bad'},{t:'Folytatom',v:false}]})}
+  else ok=typeof confirm!='function'||confirm('Valóban lezárod a taktikai csatát, és visszatérsz az OP lapra?\n\nA csata eredményei (veszteségek, sérülések, medálok) a kampányba kerülnek, a csata nem folytatható.');
+  if(!ok)return}
  CAMP.end()}
 function finChk(){const s=sel;if(s&&s.bpend&&!(s.idx|0)&&typeof confirm=='function'&&!confirm(s.id+': '+s.bm.length+' vízibombát dobtál, de még nem léptél. Ha most a Kész-t nyomod, a bombák érvénytelenek lesznek (a készlet visszaáll). Mégis kész?'))return;if(s&&!s.rep&&repList(s).length&&typeof confirm=='function'&&!confirm(s.id+': van sérült modul, és ebben a körben még nem javítottál. Mégis kész?'))return;fin()}
 function runAI(){if(aiBusy)return;aiBusy=true;const keep=sel;try{ships.filter(q=>aiOn(q)&&!q.done&&!q.sup&&!q.npc).forEach(u=>aiTurn(u))}finally{aiBusy=false;sel=keep}draw();card()}
@@ -3368,6 +3375,7 @@ applyLogPos();renderCfg();try{qbRender()}catch(e){}   // a pálya felállítás�
 //   v1.14.234 (2026-10-26) – OP TÉRKÉP: a szárazföldi cellákon nincs U / R / H esemény (evLand, alap 1). A szárazföld-maszk (LANDM: 20 × 42, „#” = szárazföld) az OP-térkép képéből készült (a cella több mint fele nem tenger); a kikötő-cellák (eseménymentes, „.”) változatlanok. Az 1 / 0 kapcsoló a Beállításokban
 //   v1.14.235 (2026-10-26) – ÚJ: a MEGÁLLT (vagy a találat után megálló) teherhajó ég / füstöl: fogStop (alap 20; 0 = ki) cellára látszik (az időjárás levonva); a periszkópmélységű U-boat is látja (fogStopPer, alap 1). Az észlelhetőség-táblázatban külön sor (köd-réteg)
 //   v1.14.236 (2026-10-26) – HEDGEHOG / SQUID ELLENŐRZÉS LÁTHATÓVÁ: (1) a sortűz / lövés után a napló kiírja az eredményt is („ellenőrizve: nincs U-boat a célcellákban” / „a találatot a lépése után ellenőrzöm”), nem csak a találatot; (2) JAVÍTÁS: az az U-boat, amelyik már lépett és kiértékelődött (bl), de még nem „kész”, eddig kimaradt az azonnali ellenőrzésből – most a hedgehog / Squid rá is azonnal hat; (3) az U-boat kiértékelésénél, ha volt hedgehog / Squid jel, de egyik cellában sem volt, ezt is kiírja
+//   v1.14.378 (2026-11-06) – A „Csata vége → OP” megerősítése parancs-papír formátumú (CSATA LEZÁRÁSA; „Lezárom a csatát” / „Folytatom”), a böngésző saját ablaka helyett. msgOld = 0 esetén a régi ablak marad; az endConfirm kapcsoló változatlan
 //   v1.14.377 (2026-11-06) – ÜZEMANYAG A CSATA HOSSZÁBÓL (fuelAuto, alap 0): a lépett cella alapfogyasztása = napi keret (opFuel, 160) / a csata hossza (maxT; nagy pályán maxTWide), lefelé kerekítve (35 kör → 4): 32 kör → 5, 40 kör → 4, 20 kör → 8 egység / cella (160 egység = 1 nap = a teljes csata). Az időjárási pótlék (W3 / W4) és a FULL-pótlék (fuelFull) az alapra adódik, mint eddig. Ha a csata korábban véget ér, a kísérők kevesebbet égettek – ez a nyereség. 0 = a régi fix fuelStep (4). ÓRA (tacClock, alap 1): a „Kör n / max” mellett a csata ideje (óó:pp), a nap = a csata hossza, indulás 00:00 (32 kör → 45 perc/kör, 40 kör → 36 perc/kör, 10. kör: 7:30 / 6:00)
 //   v1.14.376 (2026-11-05) – HAJÓKÁRTYA SZÉLESSÉG: a böngészőben mentett beállítás (cardImgW) felülírta az új alapot, ezért a régi, 519 / 400 px-es mentés maradt (a három panel mellett ~60 px üres hely). Egyszeri átállás: ha a mentett érték a régi alapok (519 vagy 400) egyike, 430 lesz; a kézzel beállított más érték érintetlen. A jelölő: ceg_mig376
 //   v1.14.375 (2026-11-05) – OP TÉRKÉP: a kikötők jele az X (az Excel-változat öröksége) helyett horgony (SVG: gyűrű, szár, keresztrúd, ívelt kar hegyekkel; fehér szegéllyel, hogy bármilyen háttéren olvasható). Kapcsoló: portAnchor (alap 1); 0 = a régi X. A célkikötő piros köre marad
@@ -3509,7 +3517,7 @@ applyLogPos();renderCfg();try{qbRender()}catch(e){}   // a pálya felállítás�
 //   v1.14.239 (2026-10-26) – ÚJ: (1) LUT torpedó (lutOn, alap 1; 1944. januártól): az U-boat kártyán „LUT” jelölőnégyzet (az AI lutAiP %); a FAT utóda: lutLen 18 cella, lutRun 6 egyenes, lutLeg 3 fél-szélesség, találat teherhajón d6 ≤ lutHit (3), hadihajón ≤ lutHitE (1); ha FAT is be van jelölve, a LUT számít. (2) LÉGPERISZKÓP / SCHNORCHEL (schOn, alap 1; 1944. júniustól; csak szabad mozgásnál): 1/8-as mélységen a kártya „Légperiszkóp” jelölőnégyzetével a dízel hajt: az akku nem fogy, hanem schRech (2) cellát tölt körönként, max schSpd (2) lépés, kimerült akkuval is halad; kiesett dízelnél nem működik; az AI az akku fele alatt automatikusan használja.
 //   v1.14.238 (2026-10-26) – SZABAD MOZGÁS: az U-boat a belső játékterületen (pl. 80-as táblán az 50×50-esen) bárhol léphet be, nem csak a szélén (uInner, alapból BE; KI = a régi szél-belépés uEdge szerint).
 //   v1.14.237 (2026-10-26) – HEDGEHOG / SQUID ELLENŐRZÉS: az U-boat lépés utáni kiértékelésében a hedgehog / Squid „nincs találat” eredmény akkor is kiíródik, ha a vízibombák is hatottak (eddig ilyenkor csak a vízibomba-sor látszott, a hedgehog-ellenőrzés nem)
-const VER = 'v1.14.377';
+const VER = 'v1.14.378';
 // ===== MEGFIGYELŐ / TESZT MÓD (obsMode, v1.14.195) =====
 // Megfigyelő módban mindkét oldalt az AI vezérli (a kísérők is: NPC-logikával), a pálya mindent mutat (nincs köd), és a körök maguktól léptetődnek;
 // a lezárt csatákból statisztika készül (konvoj-, U-boat-, kísérő-veszteség, kimenetel), hogy látszódjon: sokféle csata születik-e, vagy egyoldalú lett a hangolás.
