@@ -1,6 +1,6 @@
 <!doctype html><html lang="hu" data-theme="light"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>CEG – Konvoj kísérő kampány v1.14.379</title>
+<title>CEG – Konvoj kísérő kampány v1.14.380</title>
 <style>
 /* Színek: világos/sötét téma változókkal; a gombok és táblázatok stílusa */
 :root{--bg:#f4f1ea;--fg:#1d2733;--pn:#fff;--ln:#c9c2b3;--ac:#b3261e;--sea:#d6ecf4;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -2192,6 +2192,8 @@ function dxFxPlay(res){const f=$('dxfx');if(!f)return;f.classList.remove('play',
 // dxUI: az ablak és a pálya szélén lévő fül frissítése: a táblázat a dobott és a függő dobásokkal; kész akciónál röviden látszik, majd becsukódik
 // dxClose: a dobás-ablak bezárása (dxKeep = 1: csak ez zárja be)
 function dxClose(){DX.pin=false;DX.closed=true;const w=$('dxw');if(w)w.style.display='none'}
+// dxWhoTog (v1.14.380): a dobás-ablak „Mi” oszlopának elrejtése / megjelenítése (megjegyzett)
+function dxWhoTog(){let v=false;try{v=localStorage.getItem('ceg_dxwho')==='1';localStorage.setItem('ceg_dxwho',v?'0':'1')}catch(e){}dxUI()}
 function dxUI(fin){const w=$('dxw'),tab=$('dxtab');if(tab)tab.style.display=(CFG.manualDice>0||DX.last)?'block':'none';if(!w)return;
  const j=DX.job||DX.last;if(DX.t){clearTimeout(DX.t);DX.t=null}
  const rows=j?j.q.filter(q=>q.lab):[];
@@ -2199,13 +2201,22 @@ function dxUI(fin){const w=$('dxw'),tab=$('dxtab');if(tab)tab.style.display=(CFG
  if(!j||(!DX.job&&!rows.length)||(!DX.job&&!fin&&!(DX.pin||(CFG.dxKeep&&!DX.closed)))){w.style.display='none';return}   // dxKeep: az ablak nyitva marad, amíg be nem zárod
  const p=DX.job&&j.pend;
  const CP=+CFG.dxCompact;   /* v1.14.379: tömör ablak (dxCompact): keskenyebb is */
- w.style.width=CP?'340px':'400px';
+ w.style.width=CP?'380px':'400px';
  let h='<div id="dxhd" style="cursor:move;background:#b3261e;color:#fff;padding:'+(CP?'3px 6px':'5px 8px')+';border-radius:7px 7px 0 0;display:flex;gap:6px;align-items:center"><b style="flex:1">🎲 '+j.title+'</b>'+(DX.job?'<button onclick="dxAuto()" title="A hátralévő dobások automatikusan"'+(CP?' style="padding:1px 6px;font-size:12px"':'')+'>Auto</button>':'<span>kész</span>')+'<button onclick="dxClose()" title="Az ablak bezárása (a Kockanapló később is megnyitható)" style="font-weight:700'+(CP?';padding:1px 6px;font-size:12px':'')+'">'+(CP?'✕':'✕ Bezárás')+'</button></div>';
  /* dxFace: a dobott érték – d6-nál kockalap (⚀–⚅), különben számjegy-jelvény; a szabály (d(a–b), tipp) a tooltipben */
  const dxFace=(q)=>'<span title="d('+q.a+'–'+q.b+')'+(q.hint?' · '+String(q.hint).replace(/<[^>]*>/g,' '):'')+(q.man?'':' · automata')+'" style="display:inline-block;min-width:26px;text-align:center;font-size:'+((q.a==1&&q.b==6&&q.v>=1&&q.v<=6)?'24px;line-height:1':'14px;font-weight:700;border:1px solid var(--ln);border-radius:5px;padding:1px 4px')+'">'+((q.a==1&&q.b==6&&q.v>=1&&q.v<=6)?'⚀⚁⚂⚃⚄⚅'.charAt(q.v-1):q.v)+'</span>';
- if(CP){h+='<div style="padding:4px 6px;max-height:55vh;overflow:auto;font-size:12px">';
-  rows.forEach(q=>{const bad=/TALÁLAT|KO|sérül|ÜTKÖZÉS|lelő/i.test(q.res||'')&&!/nincs|nem /i.test(q.res||'');h+='<div style="display:flex;gap:6px;align-items:center;padding:1px 0;border-bottom:1px dotted var(--ln)"><span style="flex:1">'+q.lab+'</span>'+dxFace(q)+'<span style="flex:1;text-align:right;'+(bad?'color:#d32f2f;font-weight:600':'')+'">'+(bad?'💥 ':'')+(q.res||'')+'</span></div>'});
-  if(p)h+='<div style="display:flex;gap:6px;align-items:center;padding:3px 0;background:rgba(179,38,30,.12)"><span style="flex:1"><b>'+p.lab+'</b></span><input id="dxin" type="number" min="'+p.a+'" max="'+p.b+'" title="Írd be a valódi kockád értékét (d('+p.a+'–'+p.b+')), majd OK" style="width:46px" onkeydown="if(event.key===\'Enter\')dxOk()"><button class="go" onclick="dxOk()">OK</button></div>';
+ if(CP){
+  /* dxThr: a találathoz kellő érték a szabály-szövegből: „találat, ha ≥ 4” → „≥ 4”; „… a mélység 4 ± 1 közé esik” → „4 ± 1”; ha nincs „ha”, a tipp maga */
+  const dxThr=(hint)=>{const t0=String(hint||'').replace(/<[^>]*>/g,' ').replace(/\s+/g,' ').trim();const m=t0.match(/\bha\s+(.*)$/i);let t=m?m[1]:t0;t=t.replace(/^a mélység\s*/i,'').replace(/\s*közé esik$/i,'');return t||'–'};
+  /* dxWho: a „Mi” felirat egyszerűsítve: a zárójeles részletek nélkül (a teljes szöveg a tooltipben) */
+  const dxWho=(lab)=>String(lab).replace(/\s*\([^)]*\)/g,'').replace(/\s+:/g,':');
+  let hideWho=false;try{hideWho=localStorage.getItem('ceg_dxwho')==='1'}catch(e){}
+  const th='<th style="padding:2px 4px">';
+  h+='<div style="padding:4px 6px;max-height:55vh;overflow:auto"><table class="m" style="font-size:12px;width:100%"><tr>'+(hideWho?'':th+'Mi <button onclick="dxWhoTog()" title="A „Mi” oszlop elrejtése" style="padding:0 4px;font-size:11px">👁</button></th>')+th+(hideWho?'<button onclick="dxWhoTog()" title="A „Mi” oszlop megjelenítése" style="padding:0 4px;font-size:11px">👁</button> ':'')+'Találat</th>'+th+'Dobás</th>'+th+'Eredmény</th></tr>';
+  rows.forEach(q=>{const bad=/TALÁLAT|KO|sérül|ÜTKÖZÉS|lelő/i.test(q.res||'')&&!/nincs|nem /i.test(q.res||'');
+   h+='<tr>'+(hideWho?'':'<td style="text-align:left;padding:1px 4px" title="'+String(q.lab).replace(/"/g,'&quot;')+'">'+dxWho(q.lab)+'</td>')+'<td style="padding:1px 4px" title="d('+q.a+'–'+q.b+')">'+dxThr(q.hint)+'</td><td style="padding:1px 4px">'+dxFace(q)+'</td><td style="padding:1px 4px;'+(bad?'color:#d32f2f;font-weight:600':'')+'">'+(bad?'💥 ':'')+(q.res||'')+'</td></tr>'});
+  if(p)h+='<tr style="background:rgba(179,38,30,.12)">'+(hideWho?'':'<td style="text-align:left;padding:1px 4px" title="'+String(p.lab).replace(/"/g,'&quot;')+'"><b>'+dxWho(p.lab)+'</b></td>')+'<td style="padding:1px 4px" title="d('+p.a+'–'+p.b+')">'+dxThr(p.hint)+'</td><td style="padding:1px 4px"><input id="dxin" type="number" min="'+p.a+'" max="'+p.b+'" title="Írd be a valódi kockád értékét (d('+p.a+'–'+p.b+')), majd OK" style="width:46px" onkeydown="if(event.key===\'Enter\')dxOk()"></td><td style="padding:1px 4px"><button class="go" onclick="dxOk()">OK</button></td></tr>';
+  h+='</table>';
   if(p)h+='<div style="display:flex;gap:10px;align-items:center;margin-top:6px"><div id="dxdie" style="width:48px;height:48px;border:2px solid #333;border-radius:10px;background:#fff;color:#111;font-size:'+((p.a==1&&p.b==6)?'36':'22')+'px;display:flex;align-items:center;justify-content:center">🎲</div><button class="go" style="font-size:15px;padding:6px 14px" onclick="dxRoll()" title="Dobás a géppel (vagy írd be a valódi kockád értékét, és OK)">Kocka</button>'+dxFxHtml(dxKind(p.lab,j.name),'',false)+'</div>';
   if(!p){const lr=rows.slice().reverse().find(q=>dxKind(q.lab,j.name));if(lr)h+='<div style="margin-top:6px">'+dxFxHtml(dxKind(lr.lab,j.name),/TALÁLAT|KO|sérül|ÜTKÖZÉS|lelő/i.test(lr.res||'')?'hit':'miss',true)+'</div>'}
   h+='</div>';w.innerHTML=h;w.style.display='block';
@@ -3396,6 +3407,7 @@ applyLogPos();renderCfg();try{qbRender()}catch(e){}   // a pálya felállítás�
 //   v1.14.234 (2026-10-26) – OP TÉRKÉP: a szárazföldi cellákon nincs U / R / H esemény (evLand, alap 1). A szárazföld-maszk (LANDM: 20 × 42, „#” = szárazföld) az OP-térkép képéből készült (a cella több mint fele nem tenger); a kikötő-cellák (eseménymentes, „.”) változatlanok. Az 1 / 0 kapcsoló a Beállításokban
 //   v1.14.235 (2026-10-26) – ÚJ: a MEGÁLLT (vagy a találat után megálló) teherhajó ég / füstöl: fogStop (alap 20; 0 = ki) cellára látszik (az időjárás levonva); a periszkópmélységű U-boat is látja (fogStopPer, alap 1). Az észlelhetőség-táblázatban külön sor (köd-réteg)
 //   v1.14.236 (2026-10-26) – HEDGEHOG / SQUID ELLENŐRZÉS LÁTHATÓVÁ: (1) a sortűz / lövés után a napló kiírja az eredményt is („ellenőrizve: nincs U-boat a célcellákban” / „a találatot a lépése után ellenőrzöm”), nem csak a találatot; (2) JAVÍTÁS: az az U-boat, amelyik már lépett és kiértékelődött (bl), de még nem „kész”, eddig kimaradt az azonnali ellenőrzésből – most a hedgehog / Squid rá is azonnal hat; (3) az U-boat kiértékelésénél, ha volt hedgehog / Squid jel, de egyik cellában sem volt, ezt is kiírja
+//   v1.14.380 (2026-11-06) – DOBÁS-ABLAK, TÁBLÁZATOS TÖMÖR MÓD (dxCompact): négy oszlop: Mi | Találat | Dobás | Eredmény. (1) A „Mi” oszlop egyszerűbb (a zárójeles részletek nélkül, pl. „Vizibomba AW48 → U8: robbanási mélység”; a teljes szöveg a tooltipben) és elrejthető (a fejléc 👁 gombja; a választás megmarad: ceg_dxwho). (2) A „Találat” oszlop fixen a találathoz kellő értéket mutatja (a szabály szövegéből: pl. „≥ 4” = a 4-es vagy nagyobb dobás találat, „= 4”, „4 ± 1”), így nem kell kiolvasni a hosszú szövegből. (3) A „Dobás” a dobott érték (d6-nál kockalap). Az animáció marad
 //   v1.14.379 (2026-11-06) – (1) A „Kész” gomb két megerősítése parancs-papír formátumú (VÍZIBOMBA LÉPÉS NÉLKÜL, JAVÍTÁS HIÁNYZIK; msgOld = 0: a régi ablak). (2) TÖMÖR DOBÁS-ABLAK (dxCompact, alap 1): a négyoszlopos táblázat helyett egy-egy rövid sor: felirat + dobott érték kockalappal (⚀–⚅; nem d6-nál számjegy-jelvény) + eredmény; a szabály (d(a–b), tipp) a jelvény fölé víve látszik; a fejléc gombjai kisebbek (Auto, ✕), a „vagy írd be…” szöveg tooltip lett; a dobás-animáció változatlan. 0 = a régi táblázatos ablak
 //   v1.14.378 (2026-11-06) – A „Csata vége → OP” megerősítése parancs-papír formátumú (CSATA LEZÁRÁSA; „Lezárom a csatát” / „Folytatom”), a böngésző saját ablaka helyett. msgOld = 0 esetén a régi ablak marad; az endConfirm kapcsoló változatlan
 //   v1.14.377 (2026-11-06) – ÜZEMANYAG A CSATA HOSSZÁBÓL (fuelAuto, alap 0): a lépett cella alapfogyasztása = napi keret (opFuel, 160) / a csata hossza (maxT; nagy pályán maxTWide), lefelé kerekítve (35 kör → 4): 32 kör → 5, 40 kör → 4, 20 kör → 8 egység / cella (160 egység = 1 nap = a teljes csata). Az időjárási pótlék (W3 / W4) és a FULL-pótlék (fuelFull) az alapra adódik, mint eddig. Ha a csata korábban véget ér, a kísérők kevesebbet égettek – ez a nyereség. 0 = a régi fix fuelStep (4). ÓRA (tacClock, alap 1): a „Kör n / max” mellett a csata ideje (óó:pp), a nap = a csata hossza, indulás 00:00 (32 kör → 45 perc/kör, 40 kör → 36 perc/kör, 10. kör: 7:30 / 6:00)
@@ -3539,7 +3551,7 @@ applyLogPos();renderCfg();try{qbRender()}catch(e){}   // a pálya felállítás�
 //   v1.14.239 (2026-10-26) – ÚJ: (1) LUT torpedó (lutOn, alap 1; 1944. januártól): az U-boat kártyán „LUT” jelölőnégyzet (az AI lutAiP %); a FAT utóda: lutLen 18 cella, lutRun 6 egyenes, lutLeg 3 fél-szélesség, találat teherhajón d6 ≤ lutHit (3), hadihajón ≤ lutHitE (1); ha FAT is be van jelölve, a LUT számít. (2) LÉGPERISZKÓP / SCHNORCHEL (schOn, alap 1; 1944. júniustól; csak szabad mozgásnál): 1/8-as mélységen a kártya „Légperiszkóp” jelölőnégyzetével a dízel hajt: az akku nem fogy, hanem schRech (2) cellát tölt körönként, max schSpd (2) lépés, kimerült akkuval is halad; kiesett dízelnél nem működik; az AI az akku fele alatt automatikusan használja.
 //   v1.14.238 (2026-10-26) – SZABAD MOZGÁS: az U-boat a belső játékterületen (pl. 80-as táblán az 50×50-esen) bárhol léphet be, nem csak a szélén (uInner, alapból BE; KI = a régi szél-belépés uEdge szerint).
 //   v1.14.237 (2026-10-26) – HEDGEHOG / SQUID ELLENŐRZÉS: az U-boat lépés utáni kiértékelésében a hedgehog / Squid „nincs találat” eredmény akkor is kiíródik, ha a vízibombák is hatottak (eddig ilyenkor csak a vízibomba-sor látszott, a hedgehog-ellenőrzés nem)
-const VER = 'v1.14.379';
+const VER = 'v1.14.380';
 // ===== MEGFIGYELŐ / TESZT MÓD (obsMode, v1.14.195) =====
 // Megfigyelő módban mindkét oldalt az AI vezérli (a kísérők is: NPC-logikával), a pálya mindent mutat (nincs köd), és a körök maguktól léptetődnek;
 // a lezárt csatákból statisztika készül (konvoj-, U-boat-, kísérő-veszteség, kimenetel), hogy látszódjon: sokféle csata születik-e, vagy egyoldalú lett a hangolás.
