@@ -1,6 +1,6 @@
 <!doctype html><html lang="hu" data-theme="light"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>CEG – Konvoj kísérő kampány v1.14.388</title>
+<title>CEG – Konvoj kísérő kampány v1.14.389</title>
 <style>
 /* Színek: világos/sötét téma változókkal; a gombok és táblázatok stílusa */
 :root{--bg:#f4f1ea;--fg:#1d2733;--pn:#fff;--ln:#c9c2b3;--ac:#b3261e;--sea:#d6ecf4;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -1149,6 +1149,8 @@ function hblast(u,b){if(!ships.includes(u)||!cellsOf(u).some(c=>c[0]==b[0]&&c[1]
  u.hhs=u.hhs||[];if(u.hhs.includes(b[5]))return ' (ugyanazt az U-boatot egy sortűz csak egyszer sebezheti)';
  u.hhs.push(b[5]);bst(b[3]).bhit++;u.revT=turn;
  const q=b[6]=='Q',nm=q?'Squid':'hedgehog',mx=q?ECO.sqDmg:ECO.hhDmg;
+ /* kockalista (v1.14.389): a találat biztos, nincs kocka – tájékoztató sor (1–1 = fix), cellánként / U-boatonként */
+ R(1,1,null,'találat biztos: nincs kocka ('+nm+')',b[3],v=>'TALÁLAT',(q?'Squid ':'Hedgehog ')+bAd(b[0],b[1])+' → '+u.id);
  return ' → '+nm+' TALÁLAT: '+u.id+' sérül: '+hurt(u,R(0,u.dmg.length-1,u.id+': melyik modul sérül ('+nm+')','0–'+(u.dmg.length-1)+' = a modul sorszáma',b[3],v=>D[u.c].mod[v][0]),R(1,mx,u.id+': a sérülés mértéke ('+nm+')','1–'+mx,b[3],v=>'+'+v),b[3])+'.'+(fatal(u)?' Végzetes sérülés: a következő körben megsemmisül.':'')}
 // hfire: a sortűz leadása (készlet −1, találat nélkül is); a már lépett U-boatokra azonnal hat, a többire az U-boat lépése után
 function hfire(s0){const s=s0||sel;if(!s||!hok(s))return;const cs=hcells(s);if(!cs.length)return;s.hs--;s.hm=s.hm||[];s.hn=(s.hn||0)+1;const sv=s.id+'#'+turn+'.'+s.hn;   // a sortűz egyedi azonosítója (egy sortűz egy U-boatot csak egyszer sebezhet)
@@ -3441,6 +3443,7 @@ applyLogPos();renderCfg();try{qbRender()}catch(e){}   // a pálya felállítás�
 //   v1.14.234 (2026-10-26) – OP TÉRKÉP: a szárazföldi cellákon nincs U / R / H esemény (evLand, alap 1). A szárazföld-maszk (LANDM: 20 × 42, „#” = szárazföld) az OP-térkép képéből készült (a cella több mint fele nem tenger); a kikötő-cellák (eseménymentes, „.”) változatlanok. Az 1 / 0 kapcsoló a Beállításokban
 //   v1.14.235 (2026-10-26) – ÚJ: a MEGÁLLT (vagy a találat után megálló) teherhajó ég / füstöl: fogStop (alap 20; 0 = ki) cellára látszik (az időjárás levonva); a periszkópmélységű U-boat is látja (fogStopPer, alap 1). Az észlelhetőség-táblázatban külön sor (köd-réteg)
 //   v1.14.236 (2026-10-26) – HEDGEHOG / SQUID ELLENŐRZÉS LÁTHATÓVÁ: (1) a sortűz / lövés után a napló kiírja az eredményt is („ellenőrizve: nincs U-boat a célcellákban” / „a találatot a lépése után ellenőrzöm”), nem csak a találatot; (2) JAVÍTÁS: az az U-boat, amelyik már lépett és kiértékelődött (bl), de még nem „kész”, eddig kimaradt az azonnali ellenőrzésből – most a hedgehog / Squid rá is azonnal hat; (3) az U-boat kiértékelésénél, ha volt hedgehog / Squid jel, de egyik cellában sem volt, ezt is kiírja
+//   v1.14.389 (2026-11-06) – KOCKALISTA: a hedgehog / Squid találata biztos (nincs kocka), ezért eddig nem volt sora; most minden eltalált U-boatról külön tájékoztató sor kerül a listába („Hedgehog AS41 → U15: találat biztos, nincs kocka”) – egy sortűz akár több U-boatot is eltalálhat, mindegyik külön sort és külön sérülés-dobást kap. A szabály nem változott
 //   v1.14.388 (2026-11-06) – LEBEGŐ GYORSFÜLEK (floatTabs kapcsoló alatt, a Weather fül mellett): az OP lapon „⚓ Flotta” (a Weather fül alatt), a Flotta lapon „🗺 OP térkép” – a napi ide-oda lépéshez (fejlesztések sorsolása)
 //   v1.14.387 (2026-11-06) – (1) OP: a vihar extra (rajz) animációja – wxSmSwirl – alapból 0 (ki); a mentett 60-as érték egyszeri átállítással 0 lesz (ceg_mig387); a vihar SZABÁLYA (wxSwirl) külön marad. (2) HAJÓKÁRTYA: a „✎ Modul-helyek” gomb a fejlécbe került, a „? súgó” és az „◐ átlátszó” mellé (cardCmp + cardWrap); a szerkesztő módban a Másol / Alap helyek gombok és a szövegmező a kép alatt maradnak. (3) A DOBÁS-ABLAK is áttetsző a cardFade kapcsolóval (ugyanaz a fedettség, rávíve teljesen fedő)
 //   v1.14.386 (2026-11-06) – A VIHAR SZABÁLYA: KAVARGÓ FRONT (wxSwirl, alap 0 – szabályváltoztatás, ezért alapból kikapcsolva). Eddig a front minden cellája ugyanazt az irányt követte (a szél: jobbra fel / jobbra / jobbra le), ezért a viharok egyenesen sodródtak. Bekapcsolva a napi front-lépés cellánként helyi: (1) IRÁNYSZÓRÁS: a cella forrása a közös iránytól wxSwirlJ % eséllyel ±45°-kal eltér (szálkás, kígyózó mozgás), (2) CIKLONSZERŰ FORGÁS: a vihar-magok (W3 / W4 cellák, 3 cellás körzetben, a viharosság szerint súlyozott középpontjuk) körül a cella wxSwirlP % eséllyel a forgás szerinti (balra, óramutatóval ellentétes) forrásból kapja az értékét: a vihar helyben is forog, nem csak sodródik. A fő sodródás iránya változatlan; a front-kereten belüli növekedés / csökkenés (dec / inc) és a belépő (bal oldali) oszlop szabálya is marad. A forrás a régi állapotból olvas (nem a már frissített cellákból). 0 = a régi, egyenes front
@@ -3593,7 +3596,7 @@ applyLogPos();renderCfg();try{qbRender()}catch(e){}   // a pálya felállítás�
 //   v1.14.239 (2026-10-26) – ÚJ: (1) LUT torpedó (lutOn, alap 1; 1944. januártól): az U-boat kártyán „LUT” jelölőnégyzet (az AI lutAiP %); a FAT utóda: lutLen 18 cella, lutRun 6 egyenes, lutLeg 3 fél-szélesség, találat teherhajón d6 ≤ lutHit (3), hadihajón ≤ lutHitE (1); ha FAT is be van jelölve, a LUT számít. (2) LÉGPERISZKÓP / SCHNORCHEL (schOn, alap 1; 1944. júniustól; csak szabad mozgásnál): 1/8-as mélységen a kártya „Légperiszkóp” jelölőnégyzetével a dízel hajt: az akku nem fogy, hanem schRech (2) cellát tölt körönként, max schSpd (2) lépés, kimerült akkuval is halad; kiesett dízelnél nem működik; az AI az akku fele alatt automatikusan használja.
 //   v1.14.238 (2026-10-26) – SZABAD MOZGÁS: az U-boat a belső játékterületen (pl. 80-as táblán az 50×50-esen) bárhol léphet be, nem csak a szélén (uInner, alapból BE; KI = a régi szél-belépés uEdge szerint).
 //   v1.14.237 (2026-10-26) – HEDGEHOG / SQUID ELLENŐRZÉS: az U-boat lépés utáni kiértékelésében a hedgehog / Squid „nincs találat” eredmény akkor is kiíródik, ha a vízibombák is hatottak (eddig ilyenkor csak a vízibomba-sor látszott, a hedgehog-ellenőrzés nem)
-const VER = 'v1.14.388';
+const VER = 'v1.14.389';
 // ===== MEGFIGYELŐ / TESZT MÓD (obsMode, v1.14.195) =====
 // Megfigyelő módban mindkét oldalt az AI vezérli (a kísérők is: NPC-logikával), a pálya mindent mutat (nincs köd), és a körök maguktól léptetődnek;
 // a lezárt csatákból statisztika készül (konvoj-, U-boat-, kísérő-veszteség, kimenetel), hogy látszódjon: sokféle csata születik-e, vagy egyoldalú lett a hangolás.
