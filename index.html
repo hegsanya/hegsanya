@@ -1,6 +1,6 @@
 <!doctype html><html lang="hu" data-theme="light"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>CEG – Konvoj kísérő kampány v1.14.405</title>
+<title>CEG – Konvoj kísérő kampány v1.14.406</title>
 <style>
 /* Színek: világos/sötét téma változókkal; a gombok és táblázatok stílusa */
 :root{--bg:#f4f1ea;--fg:#1d2733;--pn:#fff;--ln:#c9c2b3;--ac:#b3261e;--sea:#d6ecf4;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -2421,7 +2421,8 @@ function rptBlocks(detail){
  const tons=Object.keys(tonsBy).reduce((a,i)=>a+tonsBy[i],0),
   hitM=[];allHits.filter(h=>isM(h.ship)).forEach(h=>{if(hitM.indexOf(h.ship)<0&&!sunkM.some(s=>s.id==h.ship))hitM.push(h.ship)});
  const dead=uids.filter(u=>E.uDead[u]),left=uids.filter(u=>E.uExit[u]&&!E.uDead[u]),alive=uids.filter(u=>!E.uDead[u]&&!E.uExit[u]);
- const airDown=E.airB.filter(a=>a.down).length;
+ /* v1.14.406: a lelőtt gépeket a kill-lista (KL) adja – a naplósorokból néhány lelövés (kézi ágyú, AA modul) kimaradt */
+ const airKills=KL.filter(k=>k.t=='A'&&k.why=='lelőtték'),airDown=airKills.length,airBy={};airKills.forEach(k=>{if(k.by)airBy[k.by]=(airBy[k.by]|0)+1});
  H('Összefoglaló');
  let s='A konvoj '+(E.nShips||'?')+' hajójából '+sunkM.length+' elsüllyedt'+(sunkM.length?' ('+sunkM.map(x=>x.id).join(', ')+(tons?', összesen '+tons+' t':'')+')':'')+', '+hitM.length+' megsérült'+(hitM.length?' ('+hitM.join(', ')+')':'')+'. ';
  s+=sunkE.length?'A kíséret vesztesége '+sunkE.length+' hajó ('+sunkE.map(x=>x.id).join(', ')+'). ':'A kíséret nem veszített hajót. ';
@@ -2494,9 +2495,9 @@ function rptBlocks(detail){
    const d=E.uDead[u];t+=d?'Sorsa: megsemmisült '+rptArt(d.k)+' '+d.k+'. körben'+(d.killer?' ('+d.killer+')':'')+'.':E.uExit[u]?'Sorsa: kilépett a pályáról '+rptArt(E.uExit[u])+' '+E.uExit[u]+'. körben.':'Sorsa: a csata végén a pályán maradt.';
    return t})})}
  /* légi támadás */
- if(airIds.length||E.airB.length){H('Légi támadás');
+ if(airIds.length||E.airB.length||airDown){H('Légi támadás');
   const hits=E.airB.filter(a=>a.dmg),sk=hits.filter(a=>/elsüllyed|megáll/.test(a.res)),byDown={};
-  E.airB.filter(a=>a.down).forEach(a=>byDown[a.down.by]=(byDown[a.down.by]|0)+1);
+  Object.keys(airBy).forEach(i=>byDown[i]=airBy[i]);
   const li=['Belépett repülők: '+(airIds.length||'?')+(E.airIn.length?' ('+E.airIn.map(a=>a.k+'. kör: '+a.n).join('; ')+')':'')+'.',
    'Bombázás / átrepülés: '+E.airB.length+', ebből találat: '+hits.length+' (összes sebzés: '+hits.reduce((x,a)=>x+a.dmg,0)+').',
    'Lelőtt gépek: '+airDown+(airDown?' – '+Object.keys(byDown).map(i=>i+' ('+byDown[i]+')').join(', '):'')+'.'];
@@ -2515,7 +2516,7 @@ function rptBlocks(detail){
  H('A kíséret');
  B.push({li:esc.map(id=>{const bs=E.bombs[id]||{},nb=Object.keys(bs).reduce((a,k)=>a+bs[k],0),rk=Object.keys(bs).length,sv=E.salv.filter(x=>x.id==id),
    hits=E.uHits.filter(h=>h.by==id),lost=E.sunk.find(x=>x.id==id&&x.kind!='megállt'),
-   gz=E.gun.filter(g=>g.by==id&&(isZ(g.tg)||isR(g.tg))),az=E.airB.filter(a=>a.down&&a.down.by==id).length,
+   gz=E.gun.filter(g=>g.by==id&&(isZ(g.tg)||isR(g.tg))),az=airBy[id]|0,
    first=Math.min.apply(null,Object.keys(bs).map(Number).concat(sv.map(x=>x.k)));
   let t=id+': ';
   if(!nb&&!sv.length&&!gz.length&&!az)t+='fegyvert nem használt, nem került harcérintkezésbe'+(lost?'. ':'.');
@@ -2553,7 +2554,7 @@ function rptBlocks(detail){
  if(nTor)mm.push('Az U-boatok '+nTor+' torpedót lőttek ki, ebből legalább '+nTh+' talált (teherhajó vagy kísérő).');
  if(E.bNear)mm.push('Vízibomba: '+E.bNear+' közeli kiértékelés, '+E.bNearHit+' találat ('+Math.round(E.bNearHit/E.bNear*100)+'%).');
  if(nSalv)mm.push('Hedgehog/Squid: '+nSalv+' sortűz, '+hhHits.length+' találat'+(hhHits.length?'; ebből '+hhPrev.length+' olyan U-boatot ért, amely addigra már sérült volt':'')+(nEmpty?'; '+nEmpty+' körben a sortűz üres cellába csapott (az U-boat addigra elmozdult)':'')+'. A hedgehog a találat biztos, de csak oda csap, ahová lőtték; a kitérni képes célpont ellen hatástalan.');
- if(E.airB.length)mm.push('Légvédelem: '+E.airB.length+' bombázásból '+airDown+' gép lett lelőve ('+Math.round(airDown/E.airB.length*100)+'%).');
+ if(E.airB.length||airDown)mm.push('Légvédelem: '+airDown+' gép lett lelőve ('+E.airB.length+' bombázás / átrepülés mellett).');
  const fatalBy=dead.map(u=>E.uHits.filter(h=>h.u==u).slice(-1)[0]).filter(Boolean);
  if(fatalBy.length)mm.push('A megsemmisítést kiváltó utolsó találatok: '+fatalBy.map(h=>h.u+' – '+(h.w=='hh'?'hedgehog':'vízibomba')+' ('+h.mod+')').join('; ')+'.');
  if(mm.length)B.push({li:mm});
@@ -3907,6 +3908,7 @@ applyLogPos();renderCfg();try{qbRender()}catch(e){}   // a pálya felállítás�
 //   v1.14.234 (2026-10-26) – OP TÉRKÉP: a szárazföldi cellákon nincs U / R / H esemény (evLand, alap 1). A szárazföld-maszk (LANDM: 20 × 42, „#” = szárazföld) az OP-térkép képéből készült (a cella több mint fele nem tenger); a kikötő-cellák (eseménymentes, „.”) változatlanok. Az 1 / 0 kapcsoló a Beállításokban
 //   v1.14.235 (2026-10-26) – ÚJ: a MEGÁLLT (vagy a találat után megálló) teherhajó ég / füstöl: fogStop (alap 20; 0 = ki) cellára látszik (az időjárás levonva); a periszkópmélységű U-boat is látja (fogStopPer, alap 1). Az észlelhetőség-táblázatban külön sor (köd-réteg)
 //   v1.14.236 (2026-10-26) – HEDGEHOG / SQUID ELLENŐRZÉS LÁTHATÓVÁ: (1) a sortűz / lövés után a napló kiírja az eredményt is („ellenőrizve: nincs U-boat a célcellákban” / „a találatot a lépése után ellenőrzöm”), nem csak a találatot; (2) JAVÍTÁS: az az U-boat, amelyik már lépett és kiértékelődött (bl), de még nem „kész”, eddig kimaradt az azonnali ellenőrzésből – most a hedgehog / Squid rá is azonnal hat; (3) az U-boat kiértékelésénél, ha volt hedgehog / Squid jel, de egyik cellában sem volt, ezt is kiírja
+//   v1.14.406 (2026-11-08) – csata-jelentés: a lelőtt repülők száma és lövői a kill-listából (KL) számolódnak, így a kézi ágyú- és AA-modul lövések is bekerülnek (korábban 0 lelőtt gép szerepelt)
 //   v1.14.405 (2026-11-08) – repülő-párok (CFG airPair, %): a gépek a belépéskor véletlenül párban jönnek: vezérgép + kísérő (1 cellával mellette, a haladási irányhoz képest oldalt); közös sebesség, irányok és cél; bombázni csak akkor tudnak, ha a vezérgép ÉS a kísérője is ≤1 cellára van a céltól (szigorúbb célzás); ha a vezérgép kilép / elesik, a kísérő kilép / önálló lesz; a légvédelem szabálya változatlan
 //   v1.14.404 (2026-11-08) – repülők (AI): ha még van bombájuk, nem hagyják el a pályát: ha minden lépéssor kivinné őket, a kivezető lépés kimarad és a szélen maradnak (körözés), amíg nem kapnak használható irányt (CFG airEdge)
 //   v1.14.403 (2026-11-08) – CSATA-JELENTÉS: új szakasz „A kíséret állapota a csata végén”: hajónként a végleg használhatatlan, a csata végén nem működő (Stand ≠ 0) és a sérült de használható modulok, mozgás, medál, üzemanyag; elveszett hajók jelzése (rövid változatban csak a sérültek)
@@ -4077,7 +4079,7 @@ applyLogPos();renderCfg();try{qbRender()}catch(e){}   // a pálya felállítás�
 //   v1.14.239 (2026-10-26) – ÚJ: (1) LUT torpedó (lutOn, alap 1; 1944. januártól): az U-boat kártyán „LUT” jelölőnégyzet (az AI lutAiP %); a FAT utóda: lutLen 18 cella, lutRun 6 egyenes, lutLeg 3 fél-szélesség, találat teherhajón d6 ≤ lutHit (3), hadihajón ≤ lutHitE (1); ha FAT is be van jelölve, a LUT számít. (2) LÉGPERISZKÓP / SCHNORCHEL (schOn, alap 1; 1944. júniustól; csak szabad mozgásnál): 1/8-as mélységen a kártya „Légperiszkóp” jelölőnégyzetével a dízel hajt: az akku nem fogy, hanem schRech (2) cellát tölt körönként, max schSpd (2) lépés, kimerült akkuval is halad; kiesett dízelnél nem működik; az AI az akku fele alatt automatikusan használja.
 //   v1.14.238 (2026-10-26) – SZABAD MOZGÁS: az U-boat a belső játékterületen (pl. 80-as táblán az 50×50-esen) bárhol léphet be, nem csak a szélén (uInner, alapból BE; KI = a régi szél-belépés uEdge szerint).
 //   v1.14.237 (2026-10-26) – HEDGEHOG / SQUID ELLENŐRZÉS: az U-boat lépés utáni kiértékelésében a hedgehog / Squid „nincs találat” eredmény akkor is kiíródik, ha a vízibombák is hatottak (eddig ilyenkor csak a vízibomba-sor látszott, a hedgehog-ellenőrzés nem)
-const VER = 'v1.14.405';
+const VER = 'v1.14.406';
 // ===== MEGFIGYELŐ / TESZT MÓD (obsMode, v1.14.195) =====
 // Megfigyelő módban mindkét oldalt az AI vezérli (a kísérők is: NPC-logikával), a pálya mindent mutat (nincs köd), és a körök maguktól léptetődnek;
 // a lezárt csatákból statisztika készül (konvoj-, U-boat-, kísérő-veszteség, kimenetel), hogy látszódjon: sokféle csata születik-e, vagy egyoldalú lett a hangolás.
