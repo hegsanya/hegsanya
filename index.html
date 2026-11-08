@@ -1,6 +1,6 @@
 <!doctype html><html lang="hu" data-theme="light"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>CEG – Konvoj kísérő kampány v1.14.400</title>
+<title>CEG – Konvoj kísérő kampány v1.14.401</title>
 <style>
 /* Színek: világos/sötét téma változókkal; a gombok és táblázatok stílusa */
 :root{--bg:#f4f1ea;--fg:#1d2733;--pn:#fff;--ln:#c9c2b3;--ac:#b3261e;--sea:#d6ecf4;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -577,7 +577,7 @@ MPDEF.COUNTY={'T1':[[71,86]],'T2':[[126,82]],'T3':[[383,84]],'T4':[[428,91]],'Le
 MPDEF.TOWN={'T1':[[86,79]],'T2':[[129,77]],'T3':[[386,80]],'T4':[[433,86]],'Legénység':[[184,60]],'Radar1':[[202,18]],'Radar2':[[347,20]],'AA1-AA2':[[232,48]],'AA3':[[300,50]],'AA4-AA5':[[395,56]],
  '105-1-2':[[283,72]],'105-3-4':[[317,74]],'Torp':[[350,76]],'Engine1':[[190,92]],'Engine2':[[225,92]],'Engine3':[[260,92]],'Kormány':[[505,92]]};
 /* U-boat (VIIC): az orr BALRA néz (mint a hajóké); a torpedócsövek elöl (bal) + egy hátul (jobb), a fedélzeti löveg a torony előtt */
-MPDEF.VIIC={'Torp':[[38,50],[496,50]],'G1-1':[[192,52]],'Kormány':[[502,52]],'Legénység':[[245,36]],'Akkumulátor':[[140,54]],'Diesel':[[350,54]],'Merülés':[[92,54]],'Emelkedés':[[440,54]]};
+MPDEF.VIIC={'Torp':[[45,61],[460,61]],'G1-1':[[192,48]],'Kormány':[[498,61]],'Legénység':[[253,44]],'Akkumulátor':[[140,61]],'Diesel':[[345,61]],'Merülés':[[92,61]],'Emelkedés':[[405,61]]};   /* v1.14.401: a kártya rajzához (519 × 71) igazítva: a hajótest-sor y = 61, a torony x = 253 */
 let MPEDIT=false,MPUSER=null;
 function mpUser(){if(MPUSER)return MPUSER;try{MPUSER=JSON.parse(localStorage.getItem('ceg_modpos')||'{}')||{}}catch(e){MPUSER={}}return MPUSER}
 function mpSave(){try{localStorage.setItem('ceg_modpos',JSON.stringify(MPUSER||{}))}catch(e){}}
@@ -651,7 +651,7 @@ function dmgSwitch(vw){const b=(v,t)=>'<button style="padding:1px 8px;margin-rig
 function setDmgView(v){CFG.dmgView=v?1:0;try{saveCfg()}catch(e){}card()}
 function dmgGrid(s){
  if(!+CFG.dmgGrid||!s||!s.dmg||!s.st||!D[s.c]||s.t=='M'||s.t=='A')return '';
- const k=D[s.c],cls=k.base||s.c,u=sideFor(s.c)||(MPDEF[cls]&&cls!='VIIC'?artFor(s.c,s.id):'');   /* v1.14.400: ha a hajókártya rajza (ART) és kézzel beállított modul-helyek vannak, azt használja */
+ const k=D[s.c],cls=k.base||s.c,u=sideFor(s.c)||(MPDEF[cls]?artFor(s.c,s.id):'');   /* v1.14.400: ha a hajókártya rajza (ART) és kézzel beállított modul-helyek vannak, azt használja */
  const H=u?mpH('<img src="'+u+'"'):(cls=='VIIC'?100:154),W=519,bw=30,bh=15;let boxes=[];
  /* 1) a modulok dobozai a mentett / alap helyeken (egy modulnak több helye is lehet) */
  MPH=H;k.mod.forEach((m,i)=>{mpPos(cls,k,m[0],i).forEach(p=>boxes.push({i:i,n:m[0],x:Math.max(bw/2+2,Math.min(W-bw/2-2,p[0])),y:Math.max(bh/2+2,Math.min(H-bh/2-2,p[1]))}))});
@@ -667,7 +667,7 @@ function dmgGrid(s){
  let gr='';for(let x=0;x<=W;x+=20)gr+='M'+x+',0V'+H;for(let y=0;y<=H;y+=20)gr+='M0,'+y+'H'+W;
  return '<div class="dgWrap" style="margin:4px 0;max-width:'+imgW(420)+'px;border:1px solid #5b87b5;border-radius:6px;overflow:hidden;background:#0d2b4a">'+
   '<svg viewBox="0 0 '+W+' '+(H+(u?6:0))+'" style="display:block;width:100%" xmlns="http://www.w3.org/2000/svg"><defs><filter id="dgOut" x="0" y="0" width="100%" height="100%" color-interpolation-filters="sRGB">'+
-  '<feMorphology in="SourceAlpha" operator="erode" radius="1" result="e"/><feComposite in="SourceAlpha" in2="e" operator="out" result="edge"/><feFlood flood-color="#cfe8ff"/><feComposite in2="edge" operator="in"/></filter></defs>'+
+  '<feMorphology in="SourceAlpha" operator="erode" radius="1" result="o1"/><feMorphology in="o1" operator="dilate" radius="1" result="open"/><feMorphology in="open" operator="erode" radius="1" result="e"/><feComposite in="open" in2="e" operator="out" result="edge"/><feFlood flood-color="#cfe8ff"/><feComposite in2="edge" operator="in"/></filter></defs>'+
   '<path d="'+gr+'" stroke="rgba(207,232,255,.12)" stroke-width=".6" fill="none"/>'+
   (u?'<image href="'+u+'" width="'+W+'" height="'+H+'" filter="url(#dgOut)"/>':hullSvg(cls))+g+'</svg></div>'}
 /* modOver: a kép köré egy relatív burkoló + SVG-réteg a jelölőkkel (csak ha van kép és sérülés / szerkesztő mód) */
@@ -3845,6 +3845,7 @@ applyLogPos();renderCfg();try{qbRender()}catch(e){}   // a pálya felállítás�
 //   v1.14.234 (2026-10-26) – OP TÉRKÉP: a szárazföldi cellákon nincs U / R / H esemény (evLand, alap 1). A szárazföld-maszk (LANDM: 20 × 42, „#” = szárazföld) az OP-térkép képéből készült (a cella több mint fele nem tenger); a kikötő-cellák (eseménymentes, „.”) változatlanok. Az 1 / 0 kapcsoló a Beállításokban
 //   v1.14.235 (2026-10-26) – ÚJ: a MEGÁLLT (vagy a találat után megálló) teherhajó ég / füstöl: fogStop (alap 20; 0 = ki) cellára látszik (az időjárás levonva); a periszkópmélységű U-boat is látja (fogStopPer, alap 1). Az észlelhetőség-táblázatban külön sor (köd-réteg)
 //   v1.14.236 (2026-10-26) – HEDGEHOG / SQUID ELLENŐRZÉS LÁTHATÓVÁ: (1) a sortűz / lövés után a napló kiírja az eredményt is („ellenőrizve: nincs U-boat a célcellákban” / „a találatot a lépése után ellenőrzöm”), nem csak a találatot; (2) JAVÍTÁS: az az U-boat, amelyik már lépett és kiértékelődött (bl), de még nem „kész”, eddig kimaradt az azonnali ellenőrzésből – most a hedgehog / Squid rá is azonnal hat; (3) az U-boat kiértékelésénél, ha volt hedgehog / Squid jel, de egyik cellában sem volt, ezt is kiírja
+//   v1.14.401 (2026-11-08) – az U-boat (VIIC) tervrajza is a kártya rajzából készül (modul-helyek a rajzhoz igazítva); a tervrajz körvonalából eltűnik a kötélzet (a vékony vonalakat egy „nyitás” szűrő – erózió + tágítás – eltávolítja, az árbocok és a felépítmény maradnak)
 //   v1.14.400 (2026-11-08) – a hajókártyán választható a nézet (🎨 Színes rajz a jelölőkkel | 📐 Tervrajz; CFG.dmgView, a választás mentődik); a tervrajz a kártya saját rajzát használja a River, Town, County, Hipper és német romboló (Z) osztályon is (kézzel igazított modul-helyekkel); a v1.14.400 többi része:
 //   v1.14.400 (2026-11-08) – a tervrajz-nézet (dmgGrid) a hajókártya saját rajzát használja ott, ahol kézzel beállított modul-helyek vannak: Flower (FL) és mod. (FM) új modul-helyekkel (fent löveg / híd / árboc / légvédelem, lent gépészet / szonár / kormány)
 //   v1.14.399 (2026-11-08) – ÚJ KÉP: a Black Swan sloop (BS) és a módosított változat (BB) saját oldalnézeti képet kap (átlátszó háttérrel): a hajókártyán, a Flottában és a tervrajz-nézetben; a modul-helyek (fegyverek, híd, árboc fent; gépészet, szonár, kormány lent) a képhez igazítva; CFG sloopImg
@@ -4010,7 +4011,7 @@ applyLogPos();renderCfg();try{qbRender()}catch(e){}   // a pálya felállítás�
 //   v1.14.239 (2026-10-26) – ÚJ: (1) LUT torpedó (lutOn, alap 1; 1944. januártól): az U-boat kártyán „LUT” jelölőnégyzet (az AI lutAiP %); a FAT utóda: lutLen 18 cella, lutRun 6 egyenes, lutLeg 3 fél-szélesség, találat teherhajón d6 ≤ lutHit (3), hadihajón ≤ lutHitE (1); ha FAT is be van jelölve, a LUT számít. (2) LÉGPERISZKÓP / SCHNORCHEL (schOn, alap 1; 1944. júniustól; csak szabad mozgásnál): 1/8-as mélységen a kártya „Légperiszkóp” jelölőnégyzetével a dízel hajt: az akku nem fogy, hanem schRech (2) cellát tölt körönként, max schSpd (2) lépés, kimerült akkuval is halad; kiesett dízelnél nem működik; az AI az akku fele alatt automatikusan használja.
 //   v1.14.238 (2026-10-26) – SZABAD MOZGÁS: az U-boat a belső játékterületen (pl. 80-as táblán az 50×50-esen) bárhol léphet be, nem csak a szélén (uInner, alapból BE; KI = a régi szél-belépés uEdge szerint).
 //   v1.14.237 (2026-10-26) – HEDGEHOG / SQUID ELLENŐRZÉS: az U-boat lépés utáni kiértékelésében a hedgehog / Squid „nincs találat” eredmény akkor is kiíródik, ha a vízibombák is hatottak (eddig ilyenkor csak a vízibomba-sor látszott, a hedgehog-ellenőrzés nem)
-const VER = 'v1.14.400';
+const VER = 'v1.14.401';
 // ===== MEGFIGYELŐ / TESZT MÓD (obsMode, v1.14.195) =====
 // Megfigyelő módban mindkét oldalt az AI vezérli (a kísérők is: NPC-logikával), a pálya mindent mutat (nincs köd), és a körök maguktól léptetődnek;
 // a lezárt csatákból statisztika készül (konvoj-, U-boat-, kísérő-veszteség, kimenetel), hogy látszódjon: sokféle csata születik-e, vagy egyoldalú lett a hangolás.
