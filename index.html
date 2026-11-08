@@ -1,6 +1,6 @@
 <!doctype html><html lang="hu" data-theme="light"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>CEG – Konvoj kísérő kampány v1.14.402</title>
+<title>CEG – Konvoj kísérő kampány v1.14.403</title>
 <style>
 /* Színek: világos/sötét téma változókkal; a gombok és táblázatok stílusa */
 :root{--bg:#f4f1ea;--fg:#1d2733;--pn:#fff;--ln:#c9c2b3;--ac:#b3261e;--sea:#d6ecf4;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -2503,6 +2503,25 @@ function rptBlocks(detail){
  const hhHits=E.uHits.filter(h=>h.w=='hh'),hhPrev=hhHits.filter(h=>E.uHits.some(x=>x.u==h.u&&(x.k<h.k||(x.k==h.k&&E.uHits.indexOf(x)<E.uHits.indexOf(h))))),
   nSalv=E.salv.length,nEmpty=Object.keys(E.emptyK).length,nTor=Object.keys(E.shots).reduce((a,u)=>a+E.shots[u].length,0),
   nTh=E.tHits.filter(h=>!h.u||isU(h.u)).length;
+ /* a kíséret állapota a csata végén (v1.14.403): hajónként a sérült modulok három csoportban – végleg használhatatlan (elpusztult: sérülés ≥ élet), a csata végén nem működik (Stand ≠ 0), sérült de használható (Stand = 0);
+    a mozgás, a medál és az üzemanyag. Az elveszett hajók (süllyedés / megsemmisülés) külön jelzéssel; rövid változatban csak a sérült hajók */
+ {const all=ships.concat(KL),rows=[];
+  esc.forEach(id=>{const q=all.find(x=>x.id==id),kk=q&&q.c&&D[q.c];if(!q||!kk||!q.dmg)return;
+   const gone=E.sunk.find(x=>x.id==id&&x.kind!='megállt'),perm=[],out=[],usable=[];
+   kk.mod.forEach((m,i)=>{const d=q.dmg[i]|0;if(d<=0)return;const t=m[0]+' ('+d+'/'+m[1]+')';
+    if(d>=m[1])perm.push(m[0]);else if((q.st&&q.st[i])>0)out.push(t+', Stand '+q.st[i]);else usable.push(t)});
+   const dmg=perm.length+out.length+usable.length,sp=(q.mxs!=null&&q.mxs!=kk.sp)?'sebesség '+q.mxs+' / '+kk.sp+' (kiesett motor)':'';
+   if(!detail&&!dmg&&!gone)return;
+   let t=id+': ';
+   if(gone)t+='ELVESZETT ('+gone.kind+'). ';
+   if(!dmg)t+='nem sérült modul. ';
+   else{const pt=[];if(perm.length)pt.push('végleg használhatatlan: '+perm.join(', '));
+    if(out.length)pt.push('a csata végén nem működik (javítható): '+out.join('; '));
+    if(usable.length)pt.push('sérült, de használható: '+usable.join('; '));t+=pt.join(' – ')+'. '}
+   if(sp)t+=sp[0].toUpperCase()+sp.slice(1)+'. ';
+   if(detail){const md=q.med|0;t+='Medál: '+md+'.';if(kk.fuel&&q.fu!=null)t+=' Üzemanyag: '+q.fu+' / '+kk.fuel+'.'}
+   rows.push(t.trim())});
+  if(rows.length){H('A kíséret állapota a csata végén');B.push({li:rows})}}
  H('Megállapítások');
  const mm=[];
  if(nTor)mm.push('Az U-boatok '+nTor+' torpedót lőttek ki, ebből legalább '+nTh+' talált (teherhajó vagy kísérő).');
@@ -3862,6 +3881,7 @@ applyLogPos();renderCfg();try{qbRender()}catch(e){}   // a pálya felállítás�
 //   v1.14.234 (2026-10-26) – OP TÉRKÉP: a szárazföldi cellákon nincs U / R / H esemény (evLand, alap 1). A szárazföld-maszk (LANDM: 20 × 42, „#” = szárazföld) az OP-térkép képéből készült (a cella több mint fele nem tenger); a kikötő-cellák (eseménymentes, „.”) változatlanok. Az 1 / 0 kapcsoló a Beállításokban
 //   v1.14.235 (2026-10-26) – ÚJ: a MEGÁLLT (vagy a találat után megálló) teherhajó ég / füstöl: fogStop (alap 20; 0 = ki) cellára látszik (az időjárás levonva); a periszkópmélységű U-boat is látja (fogStopPer, alap 1). Az észlelhetőség-táblázatban külön sor (köd-réteg)
 //   v1.14.236 (2026-10-26) – HEDGEHOG / SQUID ELLENŐRZÉS LÁTHATÓVÁ: (1) a sortűz / lövés után a napló kiírja az eredményt is („ellenőrizve: nincs U-boat a célcellákban” / „a találatot a lépése után ellenőrzöm”), nem csak a találatot; (2) JAVÍTÁS: az az U-boat, amelyik már lépett és kiértékelődött (bl), de még nem „kész”, eddig kimaradt az azonnali ellenőrzésből – most a hedgehog / Squid rá is azonnal hat; (3) az U-boat kiértékelésénél, ha volt hedgehog / Squid jel, de egyik cellában sem volt, ezt is kiírja
+//   v1.14.403 (2026-11-08) – CSATA-JELENTÉS: új szakasz „A kíséret állapota a csata végén”: hajónként a végleg használhatatlan, a csata végén nem működő (Stand ≠ 0) és a sérült de használható modulok, mozgás, medál, üzemanyag; elveszett hajók jelzése (rövid változatban csak a sérültek)
 //   v1.14.402 (2026-11-08) – KÉTOLDALAS HAJÓKÁRTYA: „🎮 Irányítás” és „🔧 Sérülések” fül; az első oldalon minden vezérlés marad (a színes rajz a jelölőkkel), a másodikon a tervrajz-nézet, a javítás és a modul-táblák; sérült modulnál az Irányítás oldalon figyelmeztetés + gomb. A grafikán bal felül a medálok száma, jobb felül az üzemanyag (tartály-ikon + szintjelző). A dmgView váltó megszűnt (CFG: cardSides, cardSide, cardBadge)
 //   v1.14.401 (2026-11-08) – az U-boat (VIIC) tervrajza is a kártya rajzából készül (modul-helyek a rajzhoz igazítva); a tervrajz körvonalából eltűnik a kötélzet (a vékony vonalakat egy „nyitás” szűrő – erózió + tágítás – eltávolítja, az árbocok és a felépítmény maradnak)
 //   v1.14.400 (2026-11-08) – a hajókártyán választható a nézet (🎨 Színes rajz a jelölőkkel | 📐 Tervrajz; CFG.dmgView, a választás mentődik); a tervrajz a kártya saját rajzát használja a River, Town, County, Hipper és német romboló (Z) osztályon is (kézzel igazított modul-helyekkel); a v1.14.400 többi része:
@@ -4029,7 +4049,7 @@ applyLogPos();renderCfg();try{qbRender()}catch(e){}   // a pálya felállítás�
 //   v1.14.239 (2026-10-26) – ÚJ: (1) LUT torpedó (lutOn, alap 1; 1944. januártól): az U-boat kártyán „LUT” jelölőnégyzet (az AI lutAiP %); a FAT utóda: lutLen 18 cella, lutRun 6 egyenes, lutLeg 3 fél-szélesség, találat teherhajón d6 ≤ lutHit (3), hadihajón ≤ lutHitE (1); ha FAT is be van jelölve, a LUT számít. (2) LÉGPERISZKÓP / SCHNORCHEL (schOn, alap 1; 1944. júniustól; csak szabad mozgásnál): 1/8-as mélységen a kártya „Légperiszkóp” jelölőnégyzetével a dízel hajt: az akku nem fogy, hanem schRech (2) cellát tölt körönként, max schSpd (2) lépés, kimerült akkuval is halad; kiesett dízelnél nem működik; az AI az akku fele alatt automatikusan használja.
 //   v1.14.238 (2026-10-26) – SZABAD MOZGÁS: az U-boat a belső játékterületen (pl. 80-as táblán az 50×50-esen) bárhol léphet be, nem csak a szélén (uInner, alapból BE; KI = a régi szél-belépés uEdge szerint).
 //   v1.14.237 (2026-10-26) – HEDGEHOG / SQUID ELLENŐRZÉS: az U-boat lépés utáni kiértékelésében a hedgehog / Squid „nincs találat” eredmény akkor is kiíródik, ha a vízibombák is hatottak (eddig ilyenkor csak a vízibomba-sor látszott, a hedgehog-ellenőrzés nem)
-const VER = 'v1.14.402';
+const VER = 'v1.14.403';
 // ===== MEGFIGYELŐ / TESZT MÓD (obsMode, v1.14.195) =====
 // Megfigyelő módban mindkét oldalt az AI vezérli (a kísérők is: NPC-logikával), a pálya mindent mutat (nincs köd), és a körök maguktól léptetődnek;
 // a lezárt csatákból statisztika készül (konvoj-, U-boat-, kísérő-veszteség, kimenetel), hogy látszódjon: sokféle csata születik-e, vagy egyoldalú lett a hangolás.
