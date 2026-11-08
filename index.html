@@ -1,6 +1,6 @@
 <!doctype html><html lang="hu" data-theme="light"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>CEG – Konvoj kísérő kampány v1.14.397</title>
+<title>CEG – Konvoj kísérő kampány v1.14.398</title>
 <style>
 /* Színek: világos/sötét téma változókkal; a gombok és táblázatok stílusa */
 :root{--bg:#f4f1ea;--fg:#1d2733;--pn:#fff;--ln:#c9c2b3;--ac:#b3261e;--sea:#d6ecf4;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -558,20 +558,74 @@ MPDEF.VIIC={'Torp':[[38,50],[496,50]],'G1-1':[[192,52]],'Kormány':[[502,52]],'L
 let MPEDIT=false,MPUSER=null;
 function mpUser(){if(MPUSER)return MPUSER;try{MPUSER=JSON.parse(localStorage.getItem('ceg_modpos')||'{}')||{}}catch(e){MPUSER={}}return MPUSER}
 function mpSave(){try{localStorage.setItem('ceg_modpos',JSON.stringify(MPUSER||{}))}catch(e){}}
+/* ===== SÉMATIKUS HAJÓTEST ÉS AUTOMATIKUS MODUL-ELRENDEZÉS (v1.14.398, dmgGrid) =====
+   Azoknál az osztályoknál, amelyeknek nincs oldalnézeti képük (Flower, River, Black Swan, Town, County, Hipper, német romboló, U-boat), a tervrajz-nézet egy sematikus körvonalat rajzol,
+   és a modulok helyét is egy leírásból (HULLD) számolja: lent (a hajótestben) a gépészet, a kormány, a szonár; fent a fegyverek (lövegtornyok), a torpedók, a légvédelem;
+   a felépítményben a legénység; az árbocon a radar. A leírás mezői (koordináták a 519 × 154 egységes rajzon, a hajó orra BALRA):
+   x0, x1 = a hajótest eleje / vége; deck = a fedélzet magassága; fun = kémények x helye; bri = a híd x helye; mast = az árboc x helye (mastTop = a teteje);
+   tur = a főlövegek helyei (orrtól a tatig, a G / T számok szerinti sorrendben); sec = a másodlagos (105-…) lövegek; torp = torpedócsövek; big = nagy (Hipper / County) tornyok. */
+const HULLD={
+ FL:{x0:70,x1:470,deck:108,fun:[300],bri:170,mast:185,mastTop:30,tur:[112]},
+ RV:{x0:30,x1:495,deck:106,fun:[270],bri:175,mast:190,mastTop:26,tur:[95,135,425]},
+ Z:{x0:15,x1:505,deck:106,fun:[215,265],bri:150,mast:168,mastTop:22,tur:[75,110,395,430,465],torp:[310,345]},
+ TOWN:{x0:15,x1:505,deck:106,fun:[190,225,260,295],bri:130,mast:150,mastTop:22,tur:[75,110,425,460],sec:[345,380],torp:[310]},
+ COUNTY:{x0:5,x1:514,deck:102,fun:[215,275],bri:150,mast:166,mastTop:12,tur:[70,112,395,437],sec:[320,355],torp:[480],big:1},
+ HIPPER:{x0:5,x1:514,deck:100,fun:[255],bri:195,mast:210,mastTop:8,tur:[70,112,390,432],sec:[155,300,335],torp:[480],big:1}};
+HULLD.FM=HULLD.FL;HULLD.BS=HULLD.BB=HULLD.RV;
+const hullOf=cls=>HULLD[cls]||HULLD.RV;
+/* mpAuto: az osztály moduljainak alap-helye a HULLD leírásból (név → [[x, y]]); gyorsítótárazott */
+const MPAUTO={};
+function mpAuto(cls,k){if(MPAUTO[cls])return MPAUTO[cls];const h=hullOf(cls),nm=k.mod.map(m=>m[0]),out={},nat=(a,b)=>a.localeCompare(b,'hu',{numeric:true}),
+ YD=h.deck-10 /* fegyver-sor a fedélzeten */,YH=138 /* gépészet-sor a hajótestben */,YU=120 /* a fedélzet alatt: mélységi bomba, hedgehog */,cx=h.fun.reduce((a,b)=>a+b,0)/h.fun.length;
+ /* sorba rakás: a lista elemei a megadott helyekre (ha kevesebb a hely, a first–last közt egyenletesen) */
+ const spread=(list,xs,y)=>list.forEach((n,i)=>{const x=list.length<=xs.length?xs[i]:xs[0]+(xs[xs.length-1]-xs[0])*i/Math.max(1,list.length-1);out[n]=[[Math.round(x),y]]});
+ spread(nm.filter(n=>/^(G\d|T\d)/.test(n)).sort(nat),h.tur,YD);
+ spread(nm.filter(n=>/^105/.test(n)).sort(nat),h.sec||[h.fun[0]-60],YD);
+ spread(nm.filter(n=>/^Torp/.test(n)).sort(nat),h.torp||[h.fun[h.fun.length-1]+55],YD);
+ spread(nm.filter(n=>/^AA/.test(n)).sort(nat),nm.filter(n=>/^AA/.test(n)).map((n,i)=>h.fun[h.fun.length-1]+45+i*34),h.deck-52);
+ spread(nm.filter(n=>/^DP/.test(n)).sort(nat),[h.x1-85,h.x1-52],YU);
+ spread(nm.filter(n=>/^Engine/.test(n)).sort(nat),nm.filter(n=>/^Engine/.test(n)).map((n,i,a)=>cx+(i-(a.length-1)/2)*40),YH);
+ spread(nm.filter(n=>/^Hedgehog/.test(n)),[h.x0+52],YU);
+ spread(nm.filter(n=>/^Sonar/.test(n)),[h.x0+72],YH);
+ spread(nm.filter(n=>/^Kormány/.test(n)),[h.x1-8],YH);
+ spread(nm.filter(n=>/^Legénység/.test(n)),[h.bri],h.deck-36);
+ nm.filter(n=>/^Radar/.test(n)).sort(nat).forEach((n,i)=>out[n]=[[h.mast,h.mastTop+i*24]]);   /* radar(ok) az árboc tetején, alatta HF/DF */
+ nm.filter(n=>/^HF/.test(n)).forEach(n=>out[n]=[[h.mast,h.mastTop+nm.filter(z=>/^Radar/.test(z)).length*24]]);
+ nm.forEach((n,i)=>{if(!out[n])out[n]=[[30+(i+.5)*(460/nm.length),Math.round(MPH*.58)]]});   /* ismeretlen modul: a hajótest mentén sorban */
+ return MPAUTO[cls]=out}
+/* hullSvg: a sematikus körvonal (SVG vonalak) az osztály leírásából; az U-boat külön: szivar alakú test, kisebb magassággal */
+function hullSvg(cls){
+ const st='fill="none" stroke="#cfe8ff" stroke-width="1.3" stroke-linejoin="round"';
+ if(cls=='VIIC')return '<g '+st+'><path d="M16,54 Q30,40 70,40 L450,40 Q490,40 504,54 Q490,68 450,68 L70,68 Q30,68 16,54Z"/><rect x="198" y="26" width="52" height="14" rx="2"/><path d="M224,26 V8 M210,26 V14 M236,26 V14"/><path d="M170,40 V34 H190 V40 M176,34 L168,30" /><path d="M60,68 V74 M440,68 V74" stroke-dasharray="2 2"/></g>';
+ const h=hullOf(cls),d=h.deck,big=h.big?1:0;let g='';
+ /* hajótest: orr (ferde tőkével), fedélzet, tat (tükör), fenék; a vízvonal szaggatott */
+ g+='<path d="M'+h.x0+','+(d-14)+' L'+(h.x0+50)+','+d+' L'+(h.x1-30)+','+d+' L'+h.x1+','+(d-4)+' L'+h.x1+','+(d+30)+' L'+(h.x1-35)+',148 L'+(h.x0+60)+',148Z"/>';
+ g+='<path d="M'+(h.x0+22)+',128 H'+(h.x1-5)+'" stroke-dasharray="4 3" stroke-width=".8"/>';
+ /* felépítmény: híd két szinten, kémények, árboc kereszttartóval és kötélzettel */
+ g+='<rect x="'+(h.bri-24)+'" y="'+(d-26)+'" width="48" height="26"/><rect x="'+(h.bri-13)+'" y="'+(d-40)+'" width="26" height="14"/>';
+ h.fun.forEach(f=>{g+='<path d="M'+(f-10)+','+d+' V'+(d-34)+' L'+(f+10)+','+(d-38)+' V'+d+'"/>'});
+ g+='<path d="M'+h.mast+','+(d-40)+' V'+h.mastTop+' M'+(h.mast-14)+','+(h.mastTop+14)+' H'+(h.mast+14)+'"/>';
+ g+='<path d="M'+h.mast+','+h.mastTop+' L'+(h.x0+6)+','+(d-14)+' M'+h.mast+','+h.mastTop+' L'+(h.x1-4)+','+(d-4)+'" stroke-width=".7"/>';
+ /* lövegtornyok: doboz + a csövek balra (előre); a nagy hajóknál magasabb torony */
+ const tw=big?18:14,th=big?20:12;
+ (h.tur||[]).concat(h.sec||[]).forEach((t,i)=>{const sm=(h.sec||[]).length&&i>=(h.tur||[]).length,w=sm?10:tw,hh=sm?8:th;
+  g+='<rect x="'+(t-w)+'" y="'+(d-hh)+'" width="'+(w*2)+'" height="'+hh+'" rx="2"/><path d="M'+(t-w)+','+(d-hh*.6)+' H'+(t-w-(sm?10:big?26:20))+'"/>'});
+ (h.torp||[]).forEach(t=>{g+='<rect x="'+(t-12)+'" y="'+(d-8)+'" width="24" height="8"/><path d="M'+(t-12)+','+(d-4)+' H'+(t+12)+'"/>'});
+ return '<g '+st+'>'+g+'</g>'}
 /* mpPos: egy modul helye(i) – a felhasználó mentése > az alapérték > a hajótest mentén sorban elosztva */
 /* mpH: a jelölő-réteg magassága a 519 egység széles koordináta-rendszerben = a kép valódi aspektusa (PNG fejlécből); ismeretlen → 154 (a romboló képe) */
 function mpH(imgHtml){const m=/src="data:image\/png;base64,([A-Za-z0-9+\/=]{32})/.exec(imgHtml||'');if(!m)return 154;try{const b=atob(m[1]),g=i=>((b.charCodeAt(i)<<24)|(b.charCodeAt(i+1)<<16)|(b.charCodeAt(i+2)<<8)|b.charCodeAt(i+3))>>>0,w=g(16),h=g(20);return(w>0&&h>0)?Math.round(519*h/w):154}catch(e){return 154}}
 let MPH=154;
 function mpPos(cls,k,name,i){const u=mpUser()[cls];if(u&&u[name]&&!u[name].some(p=>p[0]>=519&&p[1]>=MPH-1))return u[name];   /* a sarokba „ragadt” (hibás) mentést eldobja */
- const d=MPDEF[cls];if(d&&d[name])return d[name];const n=k.mod.length;return [[30+(i+.5)*(460/n),Math.round(MPH*.58)]]}
+ const d=MPDEF[cls];if(d&&d[name])return d[name];const a=mpAuto(cls,k);return a[name]||[[30+(i+.5)*(460/k.mod.length),Math.round(MPH*.58)]]}   /* v1.14.398: nincs kézi alapérték → a HULLD-ből számolt hely */
 /* ===== TERVRAJZ-NÉZET: MODUL-RÁCS A HAJÓKÁRTYÁN (v1.14.396, dmgGrid) =====
    A hajó oldalnézeti képének csak a KÖRVONALA (az átlátszóság széle; terepszín és felület nélkül) kék, tervrajz-stílusú alapon, rajta a modulok rácsa: minden modul egy keret a hajón
    a modul-jelölők (MPDEF / szerkesztett hely) helyén. Működő modul: színtelen (csak keret); nem működő (Stand ≠ 0, vagy a modul elpusztult): piros kitöltés.
    A kép: ugyanaz, mint a hajókártyán (sideFor); ha az osztálynak nincs oldalnézeti képe (pl. U-boat), a nézet nem jelenik meg. */
 function dmgGrid(s){
  if(!+CFG.dmgGrid||!s||!s.dmg||!s.st||!D[s.c]||s.t=='M'||s.t=='A')return '';
- const k=D[s.c],cls=k.base||s.c,u=sideFor(s.c);if(!u)return '';
- const H=mpH('<img src="'+u+'"'),W=519,bw=30,bh=15;let boxes=[];
+ const k=D[s.c],cls=k.base||s.c,u=sideFor(s.c);
+ const H=u?mpH('<img src="'+u+'"'):(cls=='VIIC'?100:154),W=519,bw=30,bh=15;let boxes=[];
  /* 1) a modulok dobozai a mentett / alap helyeken (egy modulnak több helye is lehet) */
  MPH=H;k.mod.forEach((m,i)=>{mpPos(cls,k,m[0],i).forEach(p=>boxes.push({i:i,n:m[0],x:Math.max(bw/2+2,Math.min(W-bw/2-2,p[0])),y:Math.max(bh/2+2,Math.min(H-bh/2-2,p[1]))}))});
  /* 2) a fedő dobozok szétrakása: balról jobbra haladva, ha az új doboz fedi egy korábbit, függőlegesen odébb kerül (a kép határán belül) */
@@ -588,7 +642,7 @@ function dmgGrid(s){
   '<svg viewBox="0 0 '+W+' '+H+'" style="display:block;width:100%" xmlns="http://www.w3.org/2000/svg"><defs><filter id="dgOut" x="0" y="0" width="100%" height="100%" color-interpolation-filters="sRGB">'+
   '<feMorphology in="SourceAlpha" operator="erode" radius="1" result="e"/><feComposite in="SourceAlpha" in2="e" operator="out" result="edge"/><feFlood flood-color="#cfe8ff"/><feComposite in2="edge" operator="in"/></filter></defs>'+
   '<path d="'+gr+'" stroke="rgba(207,232,255,.12)" stroke-width=".6" fill="none"/>'+
-  '<image href="'+u+'" width="'+W+'" height="'+H+'" filter="url(#dgOut)"/>'+g+'</svg></div>'}
+  (u?'<image href="'+u+'" width="'+W+'" height="'+H+'" filter="url(#dgOut)"/>':hullSvg(cls))+g+'</svg></div>'}
 /* modOver: a kép köré egy relatív burkoló + SVG-réteg a jelölőkkel (csak ha van kép és sérülés / szerkesztő mód) */
 function modOver(s,imgHtml){
  if(!CFG.modMark||!imgHtml||imgHtml.indexOf('class="shipimg"')<0||!s.dmg||!D[s.c])return imgHtml;
@@ -3763,6 +3817,7 @@ applyLogPos();renderCfg();try{qbRender()}catch(e){}   // a pálya felállítás�
 //   v1.14.234 (2026-10-26) – OP TÉRKÉP: a szárazföldi cellákon nincs U / R / H esemény (evLand, alap 1). A szárazföld-maszk (LANDM: 20 × 42, „#” = szárazföld) az OP-térkép képéből készült (a cella több mint fele nem tenger); a kikötő-cellák (eseménymentes, „.”) változatlanok. Az 1 / 0 kapcsoló a Beállításokban
 //   v1.14.235 (2026-10-26) – ÚJ: a MEGÁLLT (vagy a találat után megálló) teherhajó ég / füstöl: fogStop (alap 20; 0 = ki) cellára látszik (az időjárás levonva); a periszkópmélységű U-boat is látja (fogStopPer, alap 1). Az észlelhetőség-táblázatban külön sor (köd-réteg)
 //   v1.14.236 (2026-10-26) – HEDGEHOG / SQUID ELLENŐRZÉS LÁTHATÓVÁ: (1) a sortűz / lövés után a napló kiírja az eredményt is („ellenőrizve: nincs U-boat a célcellákban” / „a találatot a lépése után ellenőrzöm”), nem csak a találatot; (2) JAVÍTÁS: az az U-boat, amelyik már lépett és kiértékelődött (bl), de még nem „kész”, eddig kimaradt az azonnali ellenőrzésből – most a hedgehog / Squid rá is azonnal hat; (3) az U-boat kiértékelésénél, ha volt hedgehog / Squid jel, de egyik cellában sem volt, ezt is kiírja
+//   v1.14.398 (2026-11-08) – tervrajz-nézet (dmgGrid) minden osztályra: ahol nincs oldalnézeti kép (Flower, River, Black Swan, Town, County, Hipper, német romboló, U-boat), sematikus körvonal (HULLD leírás: hajótest, híd, kémények, árboc, tornyok), és a modulok automatikus elrendezése: lent a gépészet / kormány / szonár, fent a fegyverek, torpedók, légvédelem; a már mentett saját helyek érvényesek maradnak
 //   v1.14.397 (2026-11-08) – modul-helyek (romboló T, H): a gépészet (Engine1-3) és a Kormány a hajótestben, a Szonár mellett (alul), így lent a gépészet, fent a fegyverek; a DP1-2 / DP3-4-5 kissé följebb (nem fedi a Kormányt). A böngészőben már mentett, saját helyek változatlanok
 //   v1.14.396 (2026-11-08) – ÚJ: dmgGrid (alap 1): a hajókártyán a kép alatt tervrajz-nézet – a hajó körvonala (az oldalnézeti kép átlátszóságának széle, terepszín nélkül) kék, rácsos alapon, rajta a modulok keretei a modul-jelölők helyén; a működő modul színtelen, a nem működő (Stand ≠ 0 vagy elpusztult) piros
 //   v1.14.395 (2026-11-07) – a konvoj közé berepülő gépre a teherhajók légvédelme már a repülés közben is lő (minden lépés után, ami 2 cellán belül ér; hajónként körönként egy lövés, közös a bombázáskori lövéssel); CFG aaMerchFly
@@ -3924,7 +3979,7 @@ applyLogPos();renderCfg();try{qbRender()}catch(e){}   // a pálya felállítás�
 //   v1.14.239 (2026-10-26) – ÚJ: (1) LUT torpedó (lutOn, alap 1; 1944. januártól): az U-boat kártyán „LUT” jelölőnégyzet (az AI lutAiP %); a FAT utóda: lutLen 18 cella, lutRun 6 egyenes, lutLeg 3 fél-szélesség, találat teherhajón d6 ≤ lutHit (3), hadihajón ≤ lutHitE (1); ha FAT is be van jelölve, a LUT számít. (2) LÉGPERISZKÓP / SCHNORCHEL (schOn, alap 1; 1944. júniustól; csak szabad mozgásnál): 1/8-as mélységen a kártya „Légperiszkóp” jelölőnégyzetével a dízel hajt: az akku nem fogy, hanem schRech (2) cellát tölt körönként, max schSpd (2) lépés, kimerült akkuval is halad; kiesett dízelnél nem működik; az AI az akku fele alatt automatikusan használja.
 //   v1.14.238 (2026-10-26) – SZABAD MOZGÁS: az U-boat a belső játékterületen (pl. 80-as táblán az 50×50-esen) bárhol léphet be, nem csak a szélén (uInner, alapból BE; KI = a régi szél-belépés uEdge szerint).
 //   v1.14.237 (2026-10-26) – HEDGEHOG / SQUID ELLENŐRZÉS: az U-boat lépés utáni kiértékelésében a hedgehog / Squid „nincs találat” eredmény akkor is kiíródik, ha a vízibombák is hatottak (eddig ilyenkor csak a vízibomba-sor látszott, a hedgehog-ellenőrzés nem)
-const VER = 'v1.14.397';
+const VER = 'v1.14.398';
 // ===== MEGFIGYELŐ / TESZT MÓD (obsMode, v1.14.195) =====
 // Megfigyelő módban mindkét oldalt az AI vezérli (a kísérők is: NPC-logikával), a pálya mindent mutat (nincs köd), és a körök maguktól léptetődnek;
 // a lezárt csatákból statisztika készül (konvoj-, U-boat-, kísérő-veszteség, kimenetel), hogy látszódjon: sokféle csata születik-e, vagy egyoldalú lett a hangolás.
