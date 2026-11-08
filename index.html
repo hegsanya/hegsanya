@@ -1,6 +1,6 @@
 <!doctype html><html lang="hu" data-theme="light"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>CEG – Konvoj kísérő kampány v1.14.399</title>
+<title>CEG – Konvoj kísérő kampány v1.14.400</title>
 <style>
 /* Színek: világos/sötét téma változókkal; a gombok és táblázatok stílusa */
 :root{--bg:#f4f1ea;--fg:#1d2733;--pn:#fff;--ln:#c9c2b3;--ac:#b3261e;--sea:#d6ecf4;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -558,6 +558,9 @@ const MPDEF={
 /* Black Swan sloop (BS) és mod. (BB): a v1.14.399-es kép (519 × 135) szerint – fent a fegyverek, a híd és az árbocok; lent, a hajótestben a gépészet, a szonár és a kormány */
 MPDEF.BS=MPDEF.BB={'G1':[[75,96]],'G2':[[119,83]],'G3':[[389,100]],'Hedgehog':[[38,106]],'Legénység':[[176,80]],'Radar':[[228,16]],'HF/DF':[[360,64]],
  'AA1-AA2':[[268,92]],'AA3':[[440,104]],'DP1-2':[[474,122]],'DP3-4-5':[[502,106]],'Engine1':[[250,124]],'Engine2':[[292,124]],'Sonar':[[62,124]],'Kormány':[[506,124]]};
+/* Flower (FL) és mod. (FM): a hajókártya rajza (1003 × 262 → 519 × 136) szerint – fent a löveg, a híd, az árboc, a légvédelem; lent a gépészet, a szonár, a kormány */
+MPDEF.FL=MPDEF.FM={'G1-1':[[122,92]],'Hedgehog':[[62,96]],'Legénység':[[199,92]],'Radar':[[204,62]],'HF/DF':[[165,22]],'AA1-AA2':[[352,93]],
+ 'DP1-2':[[430,106]],'DP3-5':[[472,106]],'Engine1':[[250,127]],'Engine2':[[292,127]],'Sonar':[[62,127]],'Kormány':[[506,127]]};
 /* U-boat (VIIC): az orr BALRA néz (mint a hajóké); a torpedócsövek elöl (bal) + egy hátul (jobb), a fedélzeti löveg a torony előtt */
 MPDEF.VIIC={'Torp':[[38,50],[496,50]],'G1-1':[[192,52]],'Kormány':[[502,52]],'Legénység':[[245,36]],'Akkumulátor':[[140,54]],'Diesel':[[350,54]],'Merülés':[[92,54]],'Emelkedés':[[440,54]]};
 let MPEDIT=false,MPUSER=null;
@@ -629,7 +632,7 @@ function mpPos(cls,k,name,i){const u=mpUser()[cls];if(u&&u[name]&&!u[name].some(
    A kép: ugyanaz, mint a hajókártyán (sideFor); ha az osztálynak nincs oldalnézeti képe (pl. U-boat), a nézet nem jelenik meg. */
 function dmgGrid(s){
  if(!+CFG.dmgGrid||!s||!s.dmg||!s.st||!D[s.c]||s.t=='M'||s.t=='A')return '';
- const k=D[s.c],cls=k.base||s.c,u=sideFor(s.c);
+ const k=D[s.c],cls=k.base||s.c,u=sideFor(s.c)||(MPDEF[cls]&&cls!='VIIC'?artFor(s.c,s.id):'');   /* v1.14.400: ha a hajókártya rajza (ART) és kézzel beállított modul-helyek vannak, azt használja */
  const H=u?mpH('<img src="'+u+'"'):(cls=='VIIC'?100:154),W=519,bw=30,bh=15;let boxes=[];
  /* 1) a modulok dobozai a mentett / alap helyeken (egy modulnak több helye is lehet) */
  MPH=H;k.mod.forEach((m,i)=>{mpPos(cls,k,m[0],i).forEach(p=>boxes.push({i:i,n:m[0],x:Math.max(bw/2+2,Math.min(W-bw/2-2,p[0])),y:Math.max(bh/2+2,Math.min(H-bh/2-2,p[1]))}))});
@@ -3822,6 +3825,7 @@ applyLogPos();renderCfg();try{qbRender()}catch(e){}   // a pálya felállítás�
 //   v1.14.234 (2026-10-26) – OP TÉRKÉP: a szárazföldi cellákon nincs U / R / H esemény (evLand, alap 1). A szárazföld-maszk (LANDM: 20 × 42, „#” = szárazföld) az OP-térkép képéből készült (a cella több mint fele nem tenger); a kikötő-cellák (eseménymentes, „.”) változatlanok. Az 1 / 0 kapcsoló a Beállításokban
 //   v1.14.235 (2026-10-26) – ÚJ: a MEGÁLLT (vagy a találat után megálló) teherhajó ég / füstöl: fogStop (alap 20; 0 = ki) cellára látszik (az időjárás levonva); a periszkópmélységű U-boat is látja (fogStopPer, alap 1). Az észlelhetőség-táblázatban külön sor (köd-réteg)
 //   v1.14.236 (2026-10-26) – HEDGEHOG / SQUID ELLENŐRZÉS LÁTHATÓVÁ: (1) a sortűz / lövés után a napló kiírja az eredményt is („ellenőrizve: nincs U-boat a célcellákban” / „a találatot a lépése után ellenőrzöm”), nem csak a találatot; (2) JAVÍTÁS: az az U-boat, amelyik már lépett és kiértékelődött (bl), de még nem „kész”, eddig kimaradt az azonnali ellenőrzésből – most a hedgehog / Squid rá is azonnal hat; (3) az U-boat kiértékelésénél, ha volt hedgehog / Squid jel, de egyik cellában sem volt, ezt is kiírja
+//   v1.14.400 (2026-11-08) – a tervrajz-nézet (dmgGrid) a hajókártya saját rajzát használja ott, ahol kézzel beállított modul-helyek vannak: Flower (FL) és mod. (FM) új modul-helyekkel (fent löveg / híd / árboc / légvédelem, lent gépészet / szonár / kormány)
 //   v1.14.399 (2026-11-08) – ÚJ KÉP: a Black Swan sloop (BS) és a módosított változat (BB) saját oldalnézeti képet kap (átlátszó háttérrel): a hajókártyán, a Flottában és a tervrajz-nézetben; a modul-helyek (fegyverek, híd, árboc fent; gépészet, szonár, kormány lent) a képhez igazítva; CFG sloopImg
 //   v1.14.398 (2026-11-08) – tervrajz-nézet (dmgGrid) minden osztályra: ahol nincs oldalnézeti kép (Flower, River, Black Swan, Town, County, Hipper, német romboló, U-boat), sematikus körvonal (HULLD leírás: hajótest, híd, kémények, árboc, tornyok), és a modulok automatikus elrendezése: lent a gépészet / kormány / szonár, fent a fegyverek, torpedók, légvédelem; a már mentett saját helyek érvényesek maradnak
 //   v1.14.397 (2026-11-08) – modul-helyek (romboló T, H): a gépészet (Engine1-3) és a Kormány a hajótestben, a Szonár mellett (alul), így lent a gépészet, fent a fegyverek; a DP1-2 / DP3-4-5 kissé följebb (nem fedi a Kormányt). A böngészőben már mentett, saját helyek változatlanok
@@ -3985,7 +3989,7 @@ applyLogPos();renderCfg();try{qbRender()}catch(e){}   // a pálya felállítás�
 //   v1.14.239 (2026-10-26) – ÚJ: (1) LUT torpedó (lutOn, alap 1; 1944. januártól): az U-boat kártyán „LUT” jelölőnégyzet (az AI lutAiP %); a FAT utóda: lutLen 18 cella, lutRun 6 egyenes, lutLeg 3 fél-szélesség, találat teherhajón d6 ≤ lutHit (3), hadihajón ≤ lutHitE (1); ha FAT is be van jelölve, a LUT számít. (2) LÉGPERISZKÓP / SCHNORCHEL (schOn, alap 1; 1944. júniustól; csak szabad mozgásnál): 1/8-as mélységen a kártya „Légperiszkóp” jelölőnégyzetével a dízel hajt: az akku nem fogy, hanem schRech (2) cellát tölt körönként, max schSpd (2) lépés, kimerült akkuval is halad; kiesett dízelnél nem működik; az AI az akku fele alatt automatikusan használja.
 //   v1.14.238 (2026-10-26) – SZABAD MOZGÁS: az U-boat a belső játékterületen (pl. 80-as táblán az 50×50-esen) bárhol léphet be, nem csak a szélén (uInner, alapból BE; KI = a régi szél-belépés uEdge szerint).
 //   v1.14.237 (2026-10-26) – HEDGEHOG / SQUID ELLENŐRZÉS: az U-boat lépés utáni kiértékelésében a hedgehog / Squid „nincs találat” eredmény akkor is kiíródik, ha a vízibombák is hatottak (eddig ilyenkor csak a vízibomba-sor látszott, a hedgehog-ellenőrzés nem)
-const VER = 'v1.14.399';
+const VER = 'v1.14.400';
 // ===== MEGFIGYELŐ / TESZT MÓD (obsMode, v1.14.195) =====
 // Megfigyelő módban mindkét oldalt az AI vezérli (a kísérők is: NPC-logikával), a pálya mindent mutat (nincs köd), és a körök maguktól léptetődnek;
 // a lezárt csatákból statisztika készül (konvoj-, U-boat-, kísérő-veszteség, kimenetel), hogy látszódjon: sokféle csata születik-e, vagy egyoldalú lett a hangolás.
