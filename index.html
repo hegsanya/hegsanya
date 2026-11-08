@@ -1,6 +1,6 @@
 <!doctype html><html lang="hu" data-theme="light"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>CEG – Konvoj kísérő kampány v1.14.410</title>
+<title>CEG – Konvoj kísérő kampány v1.14.411</title>
 <style>
 /* Színek: világos/sötét téma változókkal; a gombok és táblázatok stílusa */
 :root{--bg:#f4f1ea;--fg:#1d2733;--pn:#fff;--ln:#c9c2b3;--ac:#b3261e;--sea:#d6ecf4;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -2942,7 +2942,8 @@ function idHdr(s,k,hb,cm){   // hb: súgó-gomb (cardCmp), cm: Commodore
  const id=s.t=='M'?['MN',s.tons]:s.t=='A'?['DE',null]:(CARDID[s.c]||[s.en?'DE':'RN',null]);
  const nm=s.t=='M'?'Teherhajó':k?cnameT(s,k):s.t=='A'?'Repülő':'—',pos=addr(s.x,s.y)+(s.dir?' · '+AR[s.dir]+' '+s.dir:'')+(s.dep!=null&&!FOGND.has(s)?' · mélység '+s.dep:'');
  const cargo=s.t=='M'?' · sérülés / rakomány '+(s.cd||0)+' / '+s.cp+(s.stop?' (megállt)':''):'';
- return '<div style="margin:2px 0 4px;padding:3px 6px;border:1px solid rgba(128,128,128,.5);border-radius:5px;background:rgba(128,128,128,.10)">'+(hb?'<span style="float:right">'+hb+'</span>':'')+flagSvg(id[0])+' <b>'+s.id+'</b>'+(hb&&cm?' – Commodore':'')+' · '+nm+(id[1]?' · '+id[1].toLocaleString('hu-HU')+' t':'')+'<br><small>'+pos+cargo+'</small></div>'}
+ return '<div style="margin:2px 0 4px;padding:2px 6px;line-height:1.25;border:1px solid rgba(128,128,128,.5);border-radius:5px;background:rgba(128,128,128,.10)">'+flagSvg(id[0])+' <b>'+s.id+'</b>'+(hb&&cm?' – Commodore':'')+' · '+nm+(id[1]?' · '+id[1].toLocaleString('hu-HU')+' t':'')+   /* v1.14.411: kompakt fejléc – 1. sor: azonosító és név (teljes szélesség), 2. sor: pozíció balra, gombok jobbra (korábban a lebegő gombok miatt a név 3 sorba tört) */
+  '<div style="display:flex;align-items:center;justify-content:space-between;gap:6px;flex-wrap:wrap"><small>'+pos+cargo+'</small>'+(hb?'<span style="white-space:nowrap">'+hb+'</span>':'')+'</div></div>'}
 // cardOpen (v1.14.352, cardKeepOpen): a Hajókártya kinyitható blokkjainak (data-k) nyitott állapota; a kártya minden újrarajzolásakor
 // (card()) a megjegyzett állapot visszaáll, így pl. a Részletek alatti zóna-eltoló nyilak többszöri kattintás után is látszanak.
 const cardOpen={};
@@ -3924,6 +3925,7 @@ applyLogPos();renderCfg();try{qbRender()}catch(e){}   // a pálya felállítás�
 //   v1.14.234 (2026-10-26) – OP TÉRKÉP: a szárazföldi cellákon nincs U / R / H esemény (evLand, alap 1). A szárazföld-maszk (LANDM: 20 × 42, „#” = szárazföld) az OP-térkép képéből készült (a cella több mint fele nem tenger); a kikötő-cellák (eseménymentes, „.”) változatlanok. Az 1 / 0 kapcsoló a Beállításokban
 //   v1.14.235 (2026-10-26) – ÚJ: a MEGÁLLT (vagy a találat után megálló) teherhajó ég / füstöl: fogStop (alap 20; 0 = ki) cellára látszik (az időjárás levonva); a periszkópmélységű U-boat is látja (fogStopPer, alap 1). Az észlelhetőség-táblázatban külön sor (köd-réteg)
 //   v1.14.236 (2026-10-26) – HEDGEHOG / SQUID ELLENŐRZÉS LÁTHATÓVÁ: (1) a sortűz / lövés után a napló kiírja az eredményt is („ellenőrizve: nincs U-boat a célcellákban” / „a találatot a lépése után ellenőrzöm”), nem csak a találatot; (2) JAVÍTÁS: az az U-boat, amelyik már lépett és kiértékelődött (bl), de még nem „kész”, eddig kimaradt az azonnali ellenőrzésből – most a hedgehog / Squid rá is azonnal hat; (3) az U-boat kiértékelésénél, ha volt hedgehog / Squid jel, de egyik cellában sem volt, ezt is kiírja
+//   v1.14.411 (2026-11-08) – kompakt kártya-fejléc: a név a teljes szélességet kapja (nem tör 3 sorba), a pozíció és a gombok egy közös 2. sorba kerülnek
 //   v1.14.410 (2026-11-08) – a torpedós repülő rajza (ART['AT'], He 111 torpedóval, átlátszó háttérrel); a kártya ezt mutatja
 //   v1.14.409 (2026-11-08) – torpedós repülők (airTorp %, airTpLo/airTpHi): egyfajta kötelékek; lassabbak (4–6), csak szomszédos (1 cella) célról támadnak, a védelem (AA, ágyúk) ugyanúgy lő; gépenként 1 torpedó, 3 cellát fut (seg: TDC, az útjába eső hajót eltalálhatja), nincs második kör; géppárban is; a kártya képe: ART['AT'] ha van
 //   v1.14.408 (2026-11-08) – repülő-bomba kísérő hadihajón: sebzés-keret (bmbBudget, bmbHiE): a bomba ereje d(1; 30) pont, modulokra / sebzésre dobunk, amíg el nem fogy; a kiesett modul elnyeli a sebzést
@@ -4099,7 +4101,7 @@ applyLogPos();renderCfg();try{qbRender()}catch(e){}   // a pálya felállítás�
 //   v1.14.239 (2026-10-26) – ÚJ: (1) LUT torpedó (lutOn, alap 1; 1944. januártól): az U-boat kártyán „LUT” jelölőnégyzet (az AI lutAiP %); a FAT utóda: lutLen 18 cella, lutRun 6 egyenes, lutLeg 3 fél-szélesség, találat teherhajón d6 ≤ lutHit (3), hadihajón ≤ lutHitE (1); ha FAT is be van jelölve, a LUT számít. (2) LÉGPERISZKÓP / SCHNORCHEL (schOn, alap 1; 1944. júniustól; csak szabad mozgásnál): 1/8-as mélységen a kártya „Légperiszkóp” jelölőnégyzetével a dízel hajt: az akku nem fogy, hanem schRech (2) cellát tölt körönként, max schSpd (2) lépés, kimerült akkuval is halad; kiesett dízelnél nem működik; az AI az akku fele alatt automatikusan használja.
 //   v1.14.238 (2026-10-26) – SZABAD MOZGÁS: az U-boat a belső játékterületen (pl. 80-as táblán az 50×50-esen) bárhol léphet be, nem csak a szélén (uInner, alapból BE; KI = a régi szél-belépés uEdge szerint).
 //   v1.14.237 (2026-10-26) – HEDGEHOG / SQUID ELLENŐRZÉS: az U-boat lépés utáni kiértékelésében a hedgehog / Squid „nincs találat” eredmény akkor is kiíródik, ha a vízibombák is hatottak (eddig ilyenkor csak a vízibomba-sor látszott, a hedgehog-ellenőrzés nem)
-const VER = 'v1.14.410';
+const VER = 'v1.14.411';
 // ===== MEGFIGYELŐ / TESZT MÓD (obsMode, v1.14.195) =====
 // Megfigyelő módban mindkét oldalt az AI vezérli (a kísérők is: NPC-logikával), a pálya mindent mutat (nincs köd), és a körök maguktól léptetődnek;
 // a lezárt csatákból statisztika készül (konvoj-, U-boat-, kísérő-veszteség, kimenetel), hogy látszódjon: sokféle csata születik-e, vagy egyoldalú lett a hangolás.
