@@ -1,6 +1,6 @@
 <!doctype html><html lang="hu" data-theme="light"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>CEG – Konvoj kísérő kampány v1.14.418</title>
+<title>CEG – Konvoj kísérő kampány v1.14.419</title>
 <style>
 /* Színek: világos/sötét téma változókkal; a gombok és táblázatok stílusa */
 :root{--bg:#f4f1ea;--fg:#1d2733;--pn:#fff;--ln:#c9c2b3;--ac:#b3261e;--sea:#d6ecf4;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -415,7 +415,7 @@ body.opN #vOP #o_notes>div:not(#zz):nth-child(2n)::before{transform:rotate(2deg)
 <!-- Konvoj-elrendezés (v1.14.246): a műveleti sávra került; turn 0-n azonnal átrendez --><select id="cvl" title="Konvoj-elrendezés: a csata legelején azonnal átrendez, később a következő csatára érvényes" onchange="cvRelayout()"><option value="">Elrendezés: alap</option><option value="0">Lyuk középen</option><option value="1">Kitöltött sorok</option><option value="2">Véletlen</option><option value="3">Hosszú (keskeny)</option></select>
 <label title="Automata kíséret: a nem kijelölt kísérőket az AI vezérli"><input type="checkbox" id="fo" checked> <span class="lt" data-s="🤖">automata kíséret</span></label>
 <label id="aiAllW" title="Az ellenség (U-boat, felszíni hajók, repülők) AI-vezérelt vagy kézi. Váltáskor a hajónkénti beállítások törlődnek. Részletek: Beállítások → Ellenség AI"><span class="lt" data-s="⚔">Ellenség:</span> <select id="aiAll" onchange="aiAllSet(this.value)"><option value="1">AI</option><option value="0">Kézi</option><option value="x" disabled>Vegyes</option></select></label>
-<button id="t_advb" title="Nagyítás, kézi dobás, időjárás, effektek megjelenítése / elrejtése" onclick="advTog('t_adv','ceg_tadv')">⚙</button><span id="t_adv" style="display:none"><button id="zfit" title="A pálya kitölti a képernyő szélességét" onclick="zoomFit()">⤢</button> <button id="sidebtn" title="Hajókártya / napló panel" onclick="sideShow(2)">📋</button><button id="dlbtn" title="Kockanapló: az összes címkézett dobás (ki, mit, mennyit dobott, mi lett az eredménye)" onclick="dlogShow()">🎲</button><button id="bff" title="Ködben: léptet a következő kontaktusig (kézi egységek egyenesen, az AI az AI-val)">⏩ Gyorstekerés</button>   <!-- v1.14.412: a kockanapló mellé, a ⚙ mögé rejtve --><button id="albtn" title="Elemzési napló: a teljes csata szabály-ellenőrzéshez szükséges sorai (másolható / menthető)" onclick="alogShow()">📋</button><button id="zo" title="Kicsinyítés">−</button><button id="zi" title="Nagyítás">+</button><button id="zf" title="A kijelölt hajó a látótér közepére">⌖</button>
+<button id="t_advb" title="Nagyítás, kézi dobás, időjárás, effektek megjelenítése / elrejtése" onclick="advTog('t_adv','ceg_tadv')">⚙</button><span id="t_adv" style="display:none"><button id="zfit" title="A pálya kitölti a képernyő szélességét" onclick="zoomFit()">⤢</button> <button id="sidebtn" title="Hajókártya / napló panel" onclick="sideShow(2)">📋</button><button id="dlbtn" title="Kockanapló: az összes címkézett dobás (ki, mit, mennyit dobott, mi lett az eredménye)" onclick="dlogShow()">🎲</button><button id="bff" title="Ködben: léptet a következő kontaktusig (kézi egységek egyenesen, az AI az AI-val)">⏩ Gyorstekerés</button>   <!-- v1.14.412: a kockanapló mellé, a ⚙ mögé rejtve --><button id="mdbtn" title="Kézi kísérő iránya: narancs vonal a legközelebbi látható U-boat felé (kattintásra: ki → minden kézi kísérő → csak a kijelölt)" onclick="manDirCycle()">🧭</button>   <!-- v1.14.419: a ⚙ mögé rejtve, mint a többi --><button id="albtn" title="Elemzési napló: a teljes csata szabály-ellenőrzéshez szükséges sorai (másolható / menthető)" onclick="alogShow()">📋</button><button id="zo" title="Kicsinyítés">−</button><button id="zi" title="Nagyítás">+</button><button id="zf" title="A kijelölt hajó a látótér közepére">⌖</button>
 <label title="Kézi dobás"><span class="lt" data-s="🎲">Kézi dobás</span> <select id="dxm" title="Ki: a gép dob; Csak saját: a saját oldal akcióit te dobod; Mindenki: az ellenségét is"><option value="0">Ki</option><option value="1">Csak saját</option><option value="2">Mindenki</option></select></label>
 <label title="Időjárás (0–4)"><span class="lt" data-s="🌦">Időjárás</span> <input type="number" id="wx" min="0" max="4" value="2" style="width:46px" oninput="draw()"></label>
 <details style="display:inline-block;vertical-align:top"><summary style="cursor:pointer" title="Effektek"><span class="lt" data-s="✨">Effektek</span></summary><div style="position:absolute;z-index:50;background:var(--pn);border:1px solid var(--ln);border-radius:8px;padding:6px 10px;display:flex;flex-direction:column;gap:3px">
@@ -2625,6 +2625,9 @@ function dlogAdd(a,b,lab,hint,ev,v){let res='';try{res=ev?String(ev(v)):''}catch
  DLOG.unshift({t:(typeof turn!=='undefined'?turn:0),a:a,b:b,v:v,lab:String(lab),hint:hint?String(hint):'',res:res});const mx=Math.max(20,+CFG.diceLogMax||400);if(DLOG.length>mx)DLOG.length=mx}
 function dlogJob(j){if(!j||!j.q)return;j.q.forEach(e=>{if(e.lab||e.ll)dlogAdd(e.a,e.b,e.lab||e.ll,e.hint,e.res?(()=>e.res):null,e.v)})}
 // dlogShow: a kockanapló ablaka (másolható szöveg); a ködben rejtett egységek neve „?”
+/* manDirCycle (v1.14.419): a 🧭 gomb körbeléptet: 0 ki → 1 minden kézi kísérő → 2 csak a kijelölt → 0; a kapcsoló a CFG.manDir-t állítja és menti */
+function manDirCycle(){CFG.manDir=((+CFG.manDir||0)+1)%3;try{saveCfg()}catch(e){}manDirBtn();draw()}
+function manDirBtn(){const b=$('mdbtn');if(!b)return;const m=+CFG.manDir||0;b.style.outline=m?'2px solid #ff9800':'';b.style.opacity=m?'1':'.6';b.textContent=m==2?'🧭¹':'🧭';b.title='Kézi kísérő iránya: '+['ki','minden kézi kísérő','csak a kijelölt'][m]+' (kattintásra: következő mód)'}
 function dlogShow(){let box=$('dlogbox');if(box)box.remove();box=document.createElement('div');box.id='dlogbox';
  box.style.cssText='position:fixed;z-index:9999;left:8%;right:8%;top:6%;bottom:6%;background:#fff;color:#111;border:2px solid #555;border-radius:8px;padding:10px;display:flex;flex-direction:column;box-shadow:0 4px 24px rgba(0,0,0,.5)';
  const lines=DLOG.map(e=>{const d=e.a==e.b?String(e.a):(e.a==1?'d'+e.b:e.a+'–'+e.b);return (CFG.diceLogReveal?(x=>x):fogRedact)('K'+e.t+' · '+e.lab+' · ['+d+'] = '+e.v+(e.res?' → '+e.res:'')+(e.hint?'  ('+e.hint+')':''))});
@@ -3599,6 +3602,7 @@ const wxFx=(()=>{
   fxc.dataset.on=on?'1':'0'}catch(e){}},66);
  return{frame}})();
 function draw(){
+ try{manDirBtn()}catch(e){}   /* v1.14.419: a 🧭 gomb állapota */
  try{bfqFlush()}catch(e){}   // v1.14.211: a korábban elrejtett bomba-effektek lejátszása
  fogFrame();
  try{rlScan()}catch(e){}   // v1.14.221: rádiónapló
@@ -3983,6 +3987,7 @@ applyLogPos();renderCfg();try{qbRender()}catch(e){}   // a pálya felállítás�
 //   v1.14.234 (2026-10-26) – OP TÉRKÉP: a szárazföldi cellákon nincs U / R / H esemény (evLand, alap 1). A szárazföld-maszk (LANDM: 20 × 42, „#” = szárazföld) az OP-térkép képéből készült (a cella több mint fele nem tenger); a kikötő-cellák (eseménymentes, „.”) változatlanok. Az 1 / 0 kapcsoló a Beállításokban
 //   v1.14.235 (2026-10-26) – ÚJ: a MEGÁLLT (vagy a találat után megálló) teherhajó ég / füstöl: fogStop (alap 20; 0 = ki) cellára látszik (az időjárás levonva); a periszkópmélységű U-boat is látja (fogStopPer, alap 1). Az észlelhetőség-táblázatban külön sor (köd-réteg)
 //   v1.14.236 (2026-10-26) – HEDGEHOG / SQUID ELLENŐRZÉS LÁTHATÓVÁ: (1) a sortűz / lövés után a napló kiírja az eredményt is („ellenőrizve: nincs U-boat a célcellákban” / „a találatot a lépése után ellenőrzöm”), nem csak a találatot; (2) JAVÍTÁS: az az U-boat, amelyik már lépett és kiértékelődött (bl), de még nem „kész”, eddig kimaradt az azonnali ellenőrzésből – most a hedgehog / Squid rá is azonnal hat; (3) az U-boat kiértékelésénél, ha volt hedgehog / Squid jel, de egyik cellában sem volt, ezt is kiírja
+//   v1.14.419 (2026-11-09) – a manDir kapcsoló a Taktikai lapon a ⚙ mögé rejtett ikonok között (🧭): kattintásra ki → minden kézi kísérő → csak a kijelölt
 //   v1.14.418 (2026-11-09) – kézi kísérő iránya (manDir: 0 ki / 1 minden kézi kísérő / 2 csak a kijelölt): narancs szaggatott vonal a legközelebbi látható U-boat felé (az AI-vonal mintájára, az AI érzékelési sugarán belül)
 //   v1.14.417 (2026-11-09) – a napfény és a csillogás (W0–W1) a TELJES taktikai pályán (korábban csak a keretben); az időjárás-effektek (felhő, eső, villám, napfény, csillogás) mind az egész pályán
 //   v1.14.416 (2026-11-09) – a belső felhők kisebbek (3–6 cella) és szintenként sötétednek / szaporodnak: W2 fehér, W3 szürke, W4 sötét, összefüggő tömbökben (csoportok); a pályát nem borítják el
@@ -4166,7 +4171,7 @@ applyLogPos();renderCfg();try{qbRender()}catch(e){}   // a pálya felállítás�
 //   v1.14.239 (2026-10-26) – ÚJ: (1) LUT torpedó (lutOn, alap 1; 1944. januártól): az U-boat kártyán „LUT” jelölőnégyzet (az AI lutAiP %); a FAT utóda: lutLen 18 cella, lutRun 6 egyenes, lutLeg 3 fél-szélesség, találat teherhajón d6 ≤ lutHit (3), hadihajón ≤ lutHitE (1); ha FAT is be van jelölve, a LUT számít. (2) LÉGPERISZKÓP / SCHNORCHEL (schOn, alap 1; 1944. júniustól; csak szabad mozgásnál): 1/8-as mélységen a kártya „Légperiszkóp” jelölőnégyzetével a dízel hajt: az akku nem fogy, hanem schRech (2) cellát tölt körönként, max schSpd (2) lépés, kimerült akkuval is halad; kiesett dízelnél nem működik; az AI az akku fele alatt automatikusan használja.
 //   v1.14.238 (2026-10-26) – SZABAD MOZGÁS: az U-boat a belső játékterületen (pl. 80-as táblán az 50×50-esen) bárhol léphet be, nem csak a szélén (uInner, alapból BE; KI = a régi szél-belépés uEdge szerint).
 //   v1.14.237 (2026-10-26) – HEDGEHOG / SQUID ELLENŐRZÉS: az U-boat lépés utáni kiértékelésében a hedgehog / Squid „nincs találat” eredmény akkor is kiíródik, ha a vízibombák is hatottak (eddig ilyenkor csak a vízibomba-sor látszott, a hedgehog-ellenőrzés nem)
-const VER = 'v1.14.418';
+const VER = 'v1.14.419';
 // ===== MEGFIGYELŐ / TESZT MÓD (obsMode, v1.14.195) =====
 // Megfigyelő módban mindkét oldalt az AI vezérli (a kísérők is: NPC-logikával), a pálya mindent mutat (nincs köd), és a körök maguktól léptetődnek;
 // a lezárt csatákból statisztika készül (konvoj-, U-boat-, kísérő-veszteség, kimenetel), hogy látszódjon: sokféle csata születik-e, vagy egyoldalú lett a hangolás.
