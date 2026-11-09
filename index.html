@@ -1,6 +1,6 @@
 <!doctype html><html lang="hu" data-theme="light"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>CEG – Konvoj kísérő kampány v1.14.416</title>
+<title>CEG – Konvoj kísérő kampány v1.14.417</title>
 <style>
 /* Színek: világos/sötét téma változókkal; a gombok és táblázatok stílusa */
 :root{--bg:#f4f1ea;--fg:#1d2733;--pn:#fff;--ln:#c9c2b3;--ac:#b3261e;--sea:#d6ecf4;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -3570,10 +3570,6 @@ const wxFx=(()=>{
     if(r<2*B*m)return[O+u*B,O+B-m+hash(i*17+k+5)*m];                            // alsó sáv
     if(r<2*B*m+(B-2*m)*m)return[O+hash(i*17+k+5)*m,O+m+u*(B-2*m)];              // bal sáv
     return[O+B-m+hash(i*17+k+5)*m,O+m+u*(B-2*m)]};                              // jobb sáv
-  // napfény (W0): halvány meleg fény + lassan csillanó fehér pontok
-  if(w==0){fg.fillStyle='rgba(255,244,200,'+(.09*A)+')';fg.fillRect(O,O,B,B)}
-  for(let i=0;i<ng;i++){const[x,y]=mp(i,0),ph=hash(i*3+2)*6.28,a=Math.max(0,Math.sin(t*1.3+ph))*.8*A;if(a<.03)continue;
-   fg.strokeStyle='rgba(255,255,255,'+a+')';fg.lineWidth=1.4;fg.beginPath();fg.moveTo(x-3,y);fg.lineTo(x+3,y);fg.moveTo(x,y-2.5);fg.lineTo(x,y+2.5);fg.stroke()}
   // felhőárnyékok: lassan úsznak balról jobbra (körbefordulva); a magasságuk a keret sávjaiba esik (felül / alul / bárhol)
   for(let i=0;i<nc;i++){const rx=(60+hash(i*7)*70)*S/18,ry=rx*(.45+hash(i*7+1)*.3),x=((hash(i*7+2)*(B+2*rx)+t*sp*S/18)%(B+2*rx))-rx+O,q=hash(i*7+3),
     y=q<.4?O+hash(i*7+4)*m:q<.8?O+B-m+hash(i*7+4)*m:O+hash(i*7+4)*B;cloud(x,y,rx,ry,cc,ca*A)}
@@ -3581,6 +3577,13 @@ const wxFx=(()=>{
   for(let i=0;i<nw;i++){const[x0,y]=mp(i,1),x=O+((x0-O+t*sp*1.4*S/18)%B),wv=(6+hash(i*5+2)*8)*S/18;
    fg.strokeStyle='rgba(255,255,255,'+((.22+.08*w)*A)+')';fg.lineWidth=1.4;fg.beginPath();fg.moveTo(x-wv,y);fg.quadraticCurveTo(x-wv/2,y-3,x,y);fg.quadraticCurveTo(x+wv/2,y+3,x+wv,y);fg.stroke()}
   fg.restore();   // innen a teljes pályára rajzolunk (a keret-vágás megszűnik)
+  // napfény (W0 / W1): halvány meleg fény + lassan csillanó fehér pontok a TELJES pályán (v1.14.417; korábban csak a keretben)
+  {fg.save();fg.beginPath();fg.rect(O,O,B,B);fg.clip();
+   if(w==0){fg.fillStyle='rgba(255,244,200,'+(.09*A)+')';fg.fillRect(O,O,B,B)}
+   const ngB=Math.min(900,Math.ceil(N*N*lvl[3]));
+   for(let i=0;i<ngB;i++){const x=O+hash(i*17+3)*B,y=O+hash(i*17+8)*B,ph=hash(i*3+2)*6.28,a=Math.max(0,Math.sin(t*1.3+ph))*.8*A;if(a<.03)continue;
+    fg.strokeStyle='rgba(255,255,255,'+a+')';fg.lineWidth=1.4;fg.beginPath();fg.moveTo(x-3,y);fg.lineTo(x+3,y);fg.moveTo(x,y-2.5);fg.lineTo(x,y+2.5);fg.stroke()}
+   fg.restore()}
   // belső felhők (v1.14.413, wxCloud): kevés, lassan úszó OP-stílusú felhő; a hajók / repülők alatt kilyukasztva, így mindig láthatók
   if(cl2&&w>0)innerClouds(t,A,w,B);
   // vihar (W4): ferde eső-csíkok a TELJES pályán (v1.14.413; korábban csak a keretben) és ritka, rövid felvillanás
@@ -3976,6 +3979,7 @@ applyLogPos();renderCfg();try{qbRender()}catch(e){}   // a pálya felállítás�
 //   v1.14.234 (2026-10-26) – OP TÉRKÉP: a szárazföldi cellákon nincs U / R / H esemény (evLand, alap 1). A szárazföld-maszk (LANDM: 20 × 42, „#” = szárazföld) az OP-térkép képéből készült (a cella több mint fele nem tenger); a kikötő-cellák (eseménymentes, „.”) változatlanok. Az 1 / 0 kapcsoló a Beállításokban
 //   v1.14.235 (2026-10-26) – ÚJ: a MEGÁLLT (vagy a találat után megálló) teherhajó ég / füstöl: fogStop (alap 20; 0 = ki) cellára látszik (az időjárás levonva); a periszkópmélységű U-boat is látja (fogStopPer, alap 1). Az észlelhetőség-táblázatban külön sor (köd-réteg)
 //   v1.14.236 (2026-10-26) – HEDGEHOG / SQUID ELLENŐRZÉS LÁTHATÓVÁ: (1) a sortűz / lövés után a napló kiírja az eredményt is („ellenőrizve: nincs U-boat a célcellákban” / „a találatot a lépése után ellenőrzöm”), nem csak a találatot; (2) JAVÍTÁS: az az U-boat, amelyik már lépett és kiértékelődött (bl), de még nem „kész”, eddig kimaradt az azonnali ellenőrzésből – most a hedgehog / Squid rá is azonnal hat; (3) az U-boat kiértékelésénél, ha volt hedgehog / Squid jel, de egyik cellában sem volt, ezt is kiírja
+//   v1.14.417 (2026-11-09) – a napfény és a csillogás (W0–W1) a TELJES taktikai pályán (korábban csak a keretben); az időjárás-effektek (felhő, eső, villám, napfény, csillogás) mind az egész pályán
 //   v1.14.416 (2026-11-09) – a belső felhők kisebbek (3–6 cella) és szintenként sötétednek / szaporodnak: W2 fehér, W3 szürke, W4 sötét, összefüggő tömbökben (csoportok); a pályát nem borítják el
 //   v1.14.415 (2026-11-09) – kevés hullámjel a tengeren (wxWave: 1 = W2-től végig ugyanannyi, 0 = nincs, 2 = régi); a konvoj fölötti felhő halványabb, de a konvoj látszik (wxCloudM, alap 0,55)
 //   v1.14.414 (2026-11-09) – a konvoj (teherhajók) fölött is lehet felhő (csak a kíséret / U-boat / repülő kap lyukat); a keret animált hullámai kikapcsolva (wxCloud bekapcsolva)
@@ -4157,7 +4161,7 @@ applyLogPos();renderCfg();try{qbRender()}catch(e){}   // a pálya felállítás�
 //   v1.14.239 (2026-10-26) – ÚJ: (1) LUT torpedó (lutOn, alap 1; 1944. januártól): az U-boat kártyán „LUT” jelölőnégyzet (az AI lutAiP %); a FAT utóda: lutLen 18 cella, lutRun 6 egyenes, lutLeg 3 fél-szélesség, találat teherhajón d6 ≤ lutHit (3), hadihajón ≤ lutHitE (1); ha FAT is be van jelölve, a LUT számít. (2) LÉGPERISZKÓP / SCHNORCHEL (schOn, alap 1; 1944. júniustól; csak szabad mozgásnál): 1/8-as mélységen a kártya „Légperiszkóp” jelölőnégyzetével a dízel hajt: az akku nem fogy, hanem schRech (2) cellát tölt körönként, max schSpd (2) lépés, kimerült akkuval is halad; kiesett dízelnél nem működik; az AI az akku fele alatt automatikusan használja.
 //   v1.14.238 (2026-10-26) – SZABAD MOZGÁS: az U-boat a belső játékterületen (pl. 80-as táblán az 50×50-esen) bárhol léphet be, nem csak a szélén (uInner, alapból BE; KI = a régi szél-belépés uEdge szerint).
 //   v1.14.237 (2026-10-26) – HEDGEHOG / SQUID ELLENŐRZÉS: az U-boat lépés utáni kiértékelésében a hedgehog / Squid „nincs találat” eredmény akkor is kiíródik, ha a vízibombák is hatottak (eddig ilyenkor csak a vízibomba-sor látszott, a hedgehog-ellenőrzés nem)
-const VER = 'v1.14.416';
+const VER = 'v1.14.417';
 // ===== MEGFIGYELŐ / TESZT MÓD (obsMode, v1.14.195) =====
 // Megfigyelő módban mindkét oldalt az AI vezérli (a kísérők is: NPC-logikával), a pálya mindent mutat (nincs köd), és a körök maguktól léptetődnek;
 // a lezárt csatákból statisztika készül (konvoj-, U-boat-, kísérő-veszteség, kimenetel), hogy látszódjon: sokféle csata születik-e, vagy egyoldalú lett a hangolás.
