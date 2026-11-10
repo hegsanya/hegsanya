@@ -89,6 +89,30 @@ await T(b,'Küldetések: sorsolás → TF útvonal → kikötés → EGp',(fx)=>
  const e0=CAMP.egp,sum=ms.reduce((a,m)=>a+m.egp,0),left=MIS.list().length;MIS.arrive(u,'teszt');
  const saved=JSON.stringify(CAMP.pack().c.mis);
  return{ok:o.n>=2&&o.html>5000&&early===''&&CAMP.egp===e0+sum&&MIS.list().length===left-ms.length,info:'küldetés='+o.n+', EGp '+e0+'→'+CAMP.egp+' (két küldetés egy úton)'}},fx);
+// 15) v1.14.431: a jelentés ESEMÉNYTÁRA (EVL) ugyanazt adja, mint a napló szöveges elemzése (ágyú, süllyedés, légi) – automata csata minden ellenséggel
+await T(b,'Jelentés: eseménytár (EVL) = napló-elemzés',()=>{CFG.allEnemies=1;CFG.alogOn=1;CFG.evLog=1;CFG.airDie=3;$('n').value=24;reset();$('fo').checked=true;try{aiAllSet('1')}catch(e){}
+ for(let i=0;i<6;i++)ships.push(mkE({id:'X'+i,cls:'T'},SLOT_ORDER[i%6],cmd()));
+ for(let t=0;t<45&&turn<35&&!stopped;t++)$('bs').click();
+ const E=rptParse(),X=E._rx;if(!X)return{ok:false,info:'nincs eseménytár (EVFULL='+EVFULL+')'};
+ const key=g=>g.k+'|'+g.by+'|'+g.tg+'|'+(g.hit?1:0),cnt=L=>{const m={};L.forEach(g=>{m[key(g)]=(m[key(g)]||0)+1});return m},a=cnt(E.gun),c=cnt(X.gun);
+ const gunOk=Object.keys(c).every(k=>a[k]===c[k])&&Object.keys(a).every(k=>a[k]===c[k]);
+ const sk=L=>L.map(x=>x.k+'|'+x.id+'|'+x.kind).sort().join(','),sunkOk=sk(E.sunk)===sk(X.sunk);
+ const airOk=E.airB.length===X.airB.length&&E.airIn.length===X.airIn.length;
+ let rep=0;try{rep=rptText(rptBlocks(true),'T').length}catch(e){return{ok:false,info:'jelentés: '+e.message}}
+ return{ok:gunOk&&sunkOk&&airOk&&rep>500,info:'kör='+turn+', ágyú '+E.gun.length+'/'+X.gun.length+', süllyedés '+E.sunk.length+'/'+X.sunk.length+', légi '+E.airB.length+'/'+X.airB.length+', esemény='+EVL.length}});
+// 16) v1.14.421: kanyar-kocka – a 90°-os lap csak az első lépés lehet, utána nincs több lépés (diceNo90)
+await T(b,'Kanyar-kocka: 90° csak első lépés (diceNo90)',()=>{CFG.diceMode=1;CFG.turnRule=0;CFG.diceNo90=1;CFG.diceCap=0;$('n').value=12;reset();$('fo').checked=false;
+ const s=mkE({id:'X0',cls:'T'},SLOT_ORDER[0],cmd());ships.push(s);newTurn();sel=s;
+ const mk=(k,v)=>({k,v,stop:k=='S',used:false,lab:k,src:'b'});
+ const set=()=>{s.spd=3;s.done=false;s.idx=0;s.cum=0;s.d90=false;s.ch=[];s.dice=[mk('F',0),mk('R2',2),mk('S',0),mk('L1',-1)]};
+ set();chd(0);const a=diceBlk(s,s.dice[1]);                                   // előre lépés után a 90° tiltott
+ set();chd(1);const b1=s.idx,b2=need(s),b3=s.dice.filter((d,i)=>i!=1).every(d=>diceBlk(s,d));chd(3);const b4=s.idx;   // 90° elsőként: utána nincs több lépés
+ return{ok:a===true&&b1===1&&b2===1&&b3===true&&b4===1,info:JSON.stringify({a,b1,b2,b3,b4})}});
+// 17) v1.14.429: beállítás-kereső – név szerint 1 találat, ékezet nélkül is talál, törlés után minden sor visszajön
+await T(b,'Beállítás-kereső (cfgFilter)',()=>{CAMP.setupView();
+ const vis=()=>[...document.querySelectorAll('#vSET tr')].filter(t=>t.querySelector('td')&&t.style.display!='none'&&t.closest('table').style.display!='none').length;
+ const all=vis();cfgFilter('wxCloudN');const one=vis();cfgFilter('felho');const some=vis();cfgFilter('xyzzy');const none=vis();cfgFilter('');const back=vis();
+ return{ok:all>500&&one===1&&some>=3&&none===0&&back===all,info:JSON.stringify({all,one,some,none,back})}});
 await b.close();
 let bad=0;for(const r of results){console.log((r.ok?'  OK   ':'  HIBA ')+r.name+(r.info?'  ['+r.info+']':'')+(r.errs.length?'  JS-hibák: '+r.errs.join(' | '):''));if(!r.ok)bad++}
 console.log(bad?('\n'+bad+' / '+results.length+' teszt BUKOTT'):('\nMind a '+results.length+' teszt rendben'));process.exit(bad?1:0)})();
