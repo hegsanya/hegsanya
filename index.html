@@ -1374,6 +1374,7 @@ function pend(){return ships.filter(q=>((q.t=='E'&&(!$('fo').checked||q.en||q.su
 function ch(i,d){const s=sel;if(s&&s.t=='U'&&!s.done&&s.dep==0&&dieOut(s)&&!uLock(s)){say(s.id+': a Diesel ma kiesett (Stand '+s.st[mi(s,'Diesel')]+'), felszínen nem haladhat. Merülj (ha a Merülés működik), vagy maradj és lőj / javíts.');return}
  if(s&&s.t=='U'&&!s.done&&s.dep>0&&accOut(s)&&!schUse(s)&&!uLock(s)){say(s.id+': az Akkumulátor ma kiesett (Stand '+s.st[mi(s,'Akku')]+'), víz alatt nem haladhat. Merülj felszínre (mélység 0), vagy maradj és lőj / javíts.');return}
  if(!s||s.done||i!==s.idx||(s.t=='U'&&s.dep>0&&i>=1)||uLock(s))return;
+ if(+CFG.diceNo90&&s.d90&&s.idx>0)return;   /* v1.14.421: a 90°-os kocka után nincs több lépés (az AI sorozata sem léphet tovább) */
  if(s.t=='A'){const w=DV[d],ax=s.x+w[0],ay=s.y+w[1];s.dir=d;s.ch[i]=d;s.idx++;   // repülő: a pálya széle felé kilépve elhagyja a pályát
   if(!inb(s,ax,ay)){KL.push({id:s.id,t:'A',why:'elhagyta a pályát',pf:s.pref,tgt:s.bombTgt||null});ships=ships.filter(q=>q!==s);if(sel===s)sel=null;say(s.id+' elhagyta a pályát.');
    const pw=pairWing(s);if(pw){KL.push({id:pw.id,t:'A',why:'elhagyta a pályát',pf:pw.pref,tgt:pw.bombTgt||null});ships=ships.filter(q=>q!==pw);say(pw.id+' (kísérő) a vezérgéppel együtt elhagyta a pályát.')}   /* v1.14.405: a vezérgéppel a kísérő is kilép */
@@ -1743,8 +1744,9 @@ function aiSeqs(u,k){const out=[];if(trOn(u))return trSeqs(u,k);   // szabad moz
  const g=i=>[...new Set(u.groups[i]||[u.dir])];const jk=(u.jokers||[]).map((j,n)=>({j:n,d:j.d})).filter(x=>!u.jokers[x.j].used);const rec=(seq,i,uj)=>{if(i===k){out.push(seq);return}g(i).forEach(d=>rec(seq.concat([{d}]),i+1,uj));jk.forEach(x=>{if(!uj.includes(x.j))rec(seq.concat([{d:x.d,j:x.j}]),i+1,uj.concat(x.j))})};rec([],0,[]);return out.slice(0,400)}
 // aiSim: egy lépés-sorozat végállása (pályaszélen a hajó csak fordul; a kumulált kanyar-korlát betartva)
 function aiSim(u,seq,dd){let x=u.x,y=u.y,dir=u.dir,cum=u.cum||0,ok=true,st=stern(u),n=0;const sub=trOn(u)&&subOn(u,dd);   // sub: víz alatt a 90° helyben fordulás   // n: a ténylegesen megtett lépések száma (a zaj miatt)
- for(const s of seq){let d;if(s.k!=null){const di=u.dice[s.k];if(di.stop)continue;if(CFG.diceCap>0&&Math.abs(cum+di.v)>CFG.diceCap){ok=false;break}cum+=di.v;d=nd(dir+di.v)}else if(s.f)d=dir;else d=s.d;
-  n++;const v=DV[d],nx=x+v[0],ny=y+v[1],inPlace=sub&&Math.min(Math.abs(d-dir),8-Math.abs(d-dir))>=2;dir=d;if(!inPlace&&inb(u,nx,ny)&&!(st&&st[0]==nx&&st[1]==ny)){if(st)st=[x,y];x=nx;y=ny}}
+ let pos=u.idx|0,end=false;   /* v1.14.421 (diceNo90): pos = a sorozatban a soron következő lépés sorszáma; a 90°-os kocka csak pos 0-nál használható, utána nincs több lépés */
+ for(const s of seq){let d;if(end)break;if(s.k!=null){const di=u.dice[s.k];if(di.stop){pos++;continue}if(CFG.diceCap>0&&Math.abs(cum+di.v)>CFG.diceCap){ok=false;break}if(+CFG.diceNo90&&Math.abs(di.v)==2){if(pos>0){ok=false;break}end=true}cum+=di.v;d=nd(dir+di.v)}else if(s.f)d=dir;else d=s.d;
+  pos++;n++;const v=DV[d],nx=x+v[0],ny=y+v[1],inPlace=sub&&Math.min(Math.abs(d-dir),8-Math.abs(d-dir))>=2;dir=d;if(!inPlace&&inb(u,nx,ny)&&!(st&&st[0]==nx&&st[1]==ny)){if(st)st=[x,y];x=nx;y=ny}}
  return{x,y,dir,ok,n}}
 // aiNoise: az U-boat zajából adódó lebukási veszély a végállásban: hány ismert szonáros kísérő hallhatja (a mélység > 0, lépett vagy kétszintet váltott);
 // a hallótáv = tábla (a kísérő saját lépése, az U mélysége) + a várható zaj − időjárás. Álló / egyszintes váltású U-boat: csendes, 0
@@ -4010,7 +4012,7 @@ applyLogPos();renderCfg();try{qbRender()}catch(e){}   // a pálya felállítás�
 //   v1.14.418 (2026-11-09) – kézi kísérő iránya (manDir: 0 ki / 1 minden kézi kísérő / 2 csak a kijelölt): narancs szaggatott vonal a legközelebbi látható U-boat felé (az AI-vonal mintájára, az AI érzékelési sugarán belül)
 //   v1.14.417 (2026-11-09) – a napfény és a csillogás (W0–W1) a TELJES taktikai pályán (korábban csak a keretben); az időjárás-effektek (felhő, eső, villám, napfény, csillogás) mind az egész pályán
 //   v1.14.416 (2026-11-09) – a belső felhők kisebbek (3–6 cella) és szintenként sötétednek / szaporodnak: W2 fehér, W3 szürke, W4 sötét, összefüggő tömbökben (csoportok); a pályát nem borítják el
-//   v1.14.421 (2026-11-10) – kanyar-kockás mód: a 90°-os lap csak az első lépés lehet, utána nincs több lépés (diceNo90, kézi kísérő + U-boat); a kockák a kártya grafikájának tetején is megjelennek (diceCard)
+//   v1.14.421 (2026-11-10) – (AI is: aiSim / ch tiltja a 90° utáni lépést) kanyar-kockás mód: a 90°-os lap csak az első lépés lehet, utána nincs több lépés (diceNo90, kézi kísérő + U-boat); a kockák a kártya grafikájának tetején is megjelennek (diceCard)
 //   v1.14.420 (2026-11-10) – a taktikai felhők darabszáma (wxCloudN %) és mérete (wxCloudS %) beállítható
 //   v1.14.415 (2026-11-09) – kevés hullámjel a tengeren (wxWave: 1 = W2-től végig ugyanannyi, 0 = nincs, 2 = régi); a konvoj fölötti felhő halványabb, de a konvoj látszik (wxCloudM, alap 0,55)
 //   v1.14.414 (2026-11-09) – a konvoj (teherhajók) fölött is lehet felhő (csak a kíséret / U-boat / repülő kap lyukat); a keret animált hullámai kikapcsolva (wxCloud bekapcsolva)
