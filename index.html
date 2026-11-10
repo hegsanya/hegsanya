@@ -1,6 +1,6 @@
 <!doctype html><html lang="hu" data-theme="light"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>CEG – Konvoj kísérő kampány v1.14.422</title>
+<title>CEG – Konvoj kísérő kampány v1.14.423</title>
 <style>
 /* Színek: világos/sötét téma változókkal; a gombok és táblázatok stílusa */
 :root{--bg:#f4f1ea;--fg:#1d2733;--pn:#fff;--ln:#c9c2b3;--ac:#b3261e;--sea:#d6ecf4;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -1044,11 +1044,12 @@ function turnFor(s){s.tn=turn;s.bl=false;s.det=null;s.detZ=false;   // s.tn: a k
  // lépésenként egy irány-csoport: az 1. lépésnél ±1, a 2.-nál ±2, a 3.-nál ±3; Medal: +1 irány az 1–2. lépésnél; az U-boatnál a mélység szűkíti
  s.groups=Array.from({length:s.spd},(_,i)=>{const k=i+1,n=(U?w:3)+((k<3&&s.med>=k)?1:0);return Array.from({length:n},()=>rudder?s.dir:nd(R(s.dir-k,s.dir+k,null,'irány a '+k+'. lépéshez: ±'+k+' az irányból',null,null,s.id+': irány-kocka ('+k+'. lépés, irány '+s.dir+')')))});
  // szenzorok (radar, szonár): Quality + időjárás kockával néha plusz véletlen irány az 1. lépéshez
- s.sens=[];s.jokers=[];if(!U&&CFG.jokerOn){const Wx=+$('wx').value||0;
+ s.sens=[];s.jokers=[];s.jokD=[];if(!U&&CFG.jokerOn){const Wx=+$('wx').value||0;
  D[s.c].mod.forEach((m,j)=>{const nm=m[0],hf=nm.startsWith('HF/DF'),ra=nm.startsWith('Radar'),so=nm.startsWith('Sonar');if(!hf&&!ra&&!so)return;if(hf&&!hfOn(s))return;   // HF/DF csak felszerelve ad irányt
   const q=hf?(s.hq!=null?s.hq:ECO.hfStart):ra?(s.rq!=null?s.rq:D[s.c].rad):(s.sq!=null?s.sq:D[s.c].son);if(!q)return;
   const W=hf?(+CFG.hfWx?Wx:0):Wx,n=Math.max(1,q+W);let roll='–',jk='–';
-  if(s.st[j]!=0)jk='modul kiesett';else if(rudder)jk='kormány sérült';else{const r=R(1,n,null,'★ szenzor-joker, ha = 1',null,null,s.id+': '+nm+' joker-kocka (d'+n+')');roll=r+' (d'+n+')';if(r==1){const d=ra?R(1,8):jokerDir(s);s.jokers.push({src:nm,d,used:false});jk='★ '+AR[d]+d}else jk='nincs'}
+  if(s.st[j]!=0)jk='modul kiesett';else if(rudder)jk='kormány sérült';else{const r=R(1,n,null,'★ szenzor-joker, ha = 1',null,null,s.id+': '+nm+' joker-kocka (d'+n+')');roll=r+' (d'+n+')';if(r==1){if(CFG.diceMode){const f=ra?rollDie():jokerFace(s,jokerDir(s));s.jokD.push({f,src:nm});jk='★ kocka: '+f[2]}   /* v1.14.423: kanyar-módban a Joker is kanyar-lap (plusz kocka): radar = véletlen lap, szonár / HF-DF = a legközelebbi U-boat felé forduló lap (max 90°) */
+   else{const d=ra?R(1,8):jokerDir(s);s.jokers.push({src:nm,d,used:false});jk='★ '+AR[d]+d}}else jk='nincs'}
   s.sens.push([nm,q+(W?' +'+W+' idő':''),s.st[j],roll,jk])})}
  else if(!U)[['Radar',s.rq!=null?s.rq:D[s.c].rad],['Sonar',s.sq!=null?s.sq:D[s.c].son]].forEach(([nm,q])=>{const j=mi(s,nm);let ex='–';if(j>=0&&s.st[j]==0&&q&&!rudder&&R(1,q+(+$('wx').value||0),null,'extra irány, ha = 1',null,null,s.id+': '+nm+' extra-irány kocka (d'+(q+(+$('wx').value||0))+')')==1){ex=R(1,8);if(s.groups[0])s.groups[0].push(ex);s.xs++;s.xsN.push(nm)}s.sens.push([nm,q,j>=0?s.st[j]:'–',ex])});
  // U-boat: mélység-lehetőségek (aktuális ±3, sérült Merülés/Emelkedés korlátoz), torpedócsövek véletlenül
@@ -1058,7 +1059,10 @@ function turnFor(s){s.tn=turn;s.bl=false;s.det=null;s.detZ=false;   // s.tn: a k
   const pen=(U?(s.dep<=(+CFG.uDir3)?0:s.dep<=(+CFG.uDir2)?1:2):0)+(+CFG.diceEng?(s.ef|0):0),   /* v1.14.274: a mélység-levonás az uDir3 / uDir2 küszöböt követi (0–6: 0, 7: −1, 8: −2) */
    nm_=Math.min(2,s.med||0),nx=s.xs|0;let nb=Math.max(0,CFG.diceN-pen);if(nb+nm_+nx<1)nb=1;   // legalább 1 kocka marad
   const cnt=nb+nm_+nx;
-  s.dice=Array.from({length:cnt},(_,i)=>{const f=rollDie(),src=i<nb?'b':i<nb+nm_?'m':'x';return{k:f[0],v:rudder?0:f[1],stop:f[0]=='S',used:false,lab:f[2],src,sn:src=='x'?((s.xsN||[])[i-nb-nm_]||''):''}})}else s.dice=null;
+  s.dice=Array.from({length:cnt},(_,i)=>{const f=rollDie(),src=i<nb?'b':i<nb+nm_?'m':'x';return{k:f[0],v:rudder?0:f[1],stop:f[0]=='S',used:false,lab:f[2],src,sn:src=='x'?((s.xsN||[])[i-nb-nm_]||''):''}});
+  (s.jokD||[]).forEach(j=>s.dice.push({k:j.f[0],v:rudder?0:j.f[1],stop:j.f[0]=='S',used:false,lab:j.f[2],src:'x',sn:j.src}));   // a szenzor-Joker plusz kocka (a Radar / Szonár / HF-DF színével)
+  if(needMax(s)<1)s.dice=[]}   /* v1.14.423: mozgásképtelen hajónak (motor- / üzemanyag- / akku-kiesés) nincs kockája */
+ else s.dice=null;
  if(U){const dv=s.st[mi(s,'Merül')]>=1,rs=s.st[mi(s,'Emel')]>=1,lo=rs?s.dep:Math.max(0,s.dep-3),hi=dv?s.dep:Math.min(dMax(),s.dep+3);
   s.dopts=Array.from({length:3+(s.med>0?1:0)},()=>R(lo,hi,null,'mozgás-kocka (az irány-lehetőségek)',null,null,s.id+': mozgás-kocka ('+lo+'..'+hi+')'));const ti=mi(s,'Torp');s.tub=[0,1,2,3,4].map((_,ix)=>ix<tubCap(s)&&s.tp>0&&!tpKO(s)&&R(-(s.st[ti]||0),1,null,'betöltött cső, ha = 1',null,null,s.id+': torpedócső töltés')==1?1:0)}}
 // uEnter: U-boat belépése a pályára (új, vagy korábban kilépett, sérüléseit megtartva).
@@ -1145,6 +1149,12 @@ function buildVar(key,b,rf){const B=D[b],V=JSON.parse(JSON.stringify(B));V.base=
 // uEnterDie: az U-boat belépő kockája (a kampány napról napra változtatja: követés d20, elsüllyesztés után d35 / d45); a kilépő kocka változatlan
 function uEnterDie(id){try{return CAMP.thrDie(id)||CFG.uDie}catch(e){return CFG.uDie}}
 // jokerDir: a legközelebbi U-boat felé mutató irány (1–8); ha nincs U-boat a pályán, véletlen 1–8
+// jokerFace (v1.14.423): a megadott abszolút irányhoz (d) a hajó jelenlegi irányából a legjobb kanyar-lap (előre / 45° / 90°; a STOP soha), 90°-nál nagyobb eltérésnél 90° a cél felé
+function jokerFace(s,d){
+ let t=((d-s.dir)%8+8)%8;if(t>4)t-=8;               // az eltérés 45°-os egységben: −3..4
+ t=Math.max(-2,Math.min(2,t));                      // legfeljebb 90°
+ const code={'0':'F','1':'R1','2':'R2','-1':'L1','-2':'L2'}[String(t)];
+ return FACES.find(f=>f[0]==code)||FACES[0]}
 function jokerDir(s){let b=null,bd=1e9;ships.forEach(q=>{if(q.t=='U'){const d=cheb(s,q);if(d<bd){bd=d;b=q}}});if(!b)return R(1,8);const dx=b.x-s.x,dy=b.y-s.y;if(!dx&&!dy)return R(1,8);let bs=-9,bo=1;for(let d=1;d<=8;d++){const v=DV[d],c=(dx*v[0]+dy*v[1])/(Math.hypot(v[0],v[1])*Math.hypot(dx,dy));if(c>bs){bs=c;bo=d}}return bo}
 // jokerRow / useJoker: a Joker-irányok gombjai a hajókártyán; egy joker egyszer használható, bármelyik lépés hagyományos iránya helyett
 // hlp: magyarázó szöveg a hajókártyán – a CFG.cardHelp=0 (body.noHlp) elrejti
@@ -4029,6 +4039,7 @@ applyLogPos();renderCfg();try{qbRender()}catch(e){}   // a pálya felállítás�
 //   v1.14.418 (2026-11-09) – kézi kísérő iránya (manDir: 0 ki / 1 minden kézi kísérő / 2 csak a kijelölt): narancs szaggatott vonal a legközelebbi látható U-boat felé (az AI-vonal mintájára, az AI érzékelési sugarán belül)
 //   v1.14.417 (2026-11-09) – a napfény és a csillogás (W0–W1) a TELJES taktikai pályán (korábban csak a keretben); az időjárás-effektek (felhő, eső, villám, napfény, csillogás) mind az egész pályán
 //   v1.14.416 (2026-11-09) – a belső felhők kisebbek (3–6 cella) és szintenként sötétednek / szaporodnak: W2 fehér, W3 szürke, W4 sötét, összefüggő tömbökben (csoportok); a pályát nem borítják el
+//   v1.14.423 (2026-11-10) – kanyar-kockás mód: a szenzor-Joker is kanyar-lap (plusz kocka; radar: véletlen, szonár / HF-DF: a legközelebbi U-boat felé, max 90°); a mozgásképtelen hajónak nincs kockája. Az irány-kockás mód változatlan
 //   v1.14.422 (2026-11-10) – kanyar-kockák: szín a forrás szerint + Joker-irányok kockaként a kártyán (diceCol); lépésszám-kijelzés (megtett / mai max); kiesett motoronként −1 az alap kockából (diceEng)
 //   v1.14.421 (2026-11-10) – (AI is: aiSim / ch tiltja a 90° utáni lépést) kanyar-kockás mód: a 90°-os lap csak az első lépés lehet, utána nincs több lépés (diceNo90, kézi kísérő + U-boat); a kockák a kártya grafikájának tetején is megjelennek (diceCard)
 //   v1.14.420 (2026-11-10) – a taktikai felhők darabszáma (wxCloudN %) és mérete (wxCloudS %) beállítható
@@ -4212,7 +4223,7 @@ applyLogPos();renderCfg();try{qbRender()}catch(e){}   // a pálya felállítás�
 //   v1.14.239 (2026-10-26) – ÚJ: (1) LUT torpedó (lutOn, alap 1; 1944. januártól): az U-boat kártyán „LUT” jelölőnégyzet (az AI lutAiP %); a FAT utóda: lutLen 18 cella, lutRun 6 egyenes, lutLeg 3 fél-szélesség, találat teherhajón d6 ≤ lutHit (3), hadihajón ≤ lutHitE (1); ha FAT is be van jelölve, a LUT számít. (2) LÉGPERISZKÓP / SCHNORCHEL (schOn, alap 1; 1944. júniustól; csak szabad mozgásnál): 1/8-as mélységen a kártya „Légperiszkóp” jelölőnégyzetével a dízel hajt: az akku nem fogy, hanem schRech (2) cellát tölt körönként, max schSpd (2) lépés, kimerült akkuval is halad; kiesett dízelnél nem működik; az AI az akku fele alatt automatikusan használja.
 //   v1.14.238 (2026-10-26) – SZABAD MOZGÁS: az U-boat a belső játékterületen (pl. 80-as táblán az 50×50-esen) bárhol léphet be, nem csak a szélén (uInner, alapból BE; KI = a régi szél-belépés uEdge szerint).
 //   v1.14.237 (2026-10-26) – HEDGEHOG / SQUID ELLENŐRZÉS: az U-boat lépés utáni kiértékelésében a hedgehog / Squid „nincs találat” eredmény akkor is kiíródik, ha a vízibombák is hatottak (eddig ilyenkor csak a vízibomba-sor látszott, a hedgehog-ellenőrzés nem)
-const VER = 'v1.14.422';
+const VER = 'v1.14.423';
 // ===== MEGFIGYELŐ / TESZT MÓD (obsMode, v1.14.195) =====
 // Megfigyelő módban mindkét oldalt az AI vezérli (a kísérők is: NPC-logikával), a pálya mindent mutat (nincs köd), és a körök maguktól léptetődnek;
 // a lezárt csatákból statisztika készül (konvoj-, U-boat-, kísérő-veszteség, kimenetel), hogy látszódjon: sokféle csata születik-e, vagy egyoldalú lett a hangolás.
