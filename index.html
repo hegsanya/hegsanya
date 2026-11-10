@@ -1,6 +1,6 @@
 <!doctype html><html lang="hu" data-theme="light"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>CEG – Konvoj kísérő kampány v1.14.425</title>
+<title>CEG – Konvoj kísérő kampány v1.14.426</title>
 <style>
 /* Színek: világos/sötét téma változókkal; a gombok és táblázatok stílusa */
 :root{--bg:#f4f1ea;--fg:#1d2733;--pn:#fff;--ln:#c9c2b3;--ac:#b3261e;--sea:#d6ecf4;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -1364,6 +1364,12 @@ function diceBlk(s,d){
 // roseOv (v1.14.424, dirRose): IRÁNYTŰ az irány-kockás módhoz: a kártya grafikájának tetején 8 szelet (irányok 1–8, 1 = fel) × 3 gyűrű (belül az 1. lépés: sárga, 2.: kék, 3.: piros).
 //  Egy szelet ki van töltve, ha az az irány az adott lépésnél elérhető (ismétlődő irány: ×n); a soron lévő lépés gyűrűje kattintható (ch), a megtett lépés választott iránya sötét.
 //  A kapott ★ Joker-irány arany jelként a peremen. A kör a lépések után (kész / nincs több lépés) összezár egy kis 🧭 ikonra; az ikonra kattintva kinyílik (s.roseMan: true / false = kézi, undefined = automata).
+/* DIRTAB (v1.14.426): az irány-gombsor (Lépés / Irányok táblázat) kinyitott állapota; az iránytű mellett alapból zárt (a card() újrarajzolásakor is megmarad) */
+let DIRTAB=false;
+// dirTabWrap: ha az iránytű látszik a kártyán (dirRose), a gombsor kinyitható / összecsukható (<details>); különben változatlan
+function dirTabWrap(s,html){
+ if(!+CFG.dirRose||!roseOv(s))return html;
+ return '<details'+(DIRTAB?' open':'')+' ontoggle="DIRTAB=this.open" style="margin:4px 0"><summary style="cursor:pointer">Irány-gombok (lépés '+s.idx+'/'+needMax(s)+')</summary>'+html+'</details>'}
 const ROSE_COL=['#ffd54f','#4fa3e8','#ef5350'];   /* v1.14.425: legfeljebb 3 lépés (max sebesség 3) → 3 gyűrű */
 function roseOv(s){
  if(!+CFG.dirRose||CFG.diceMode||s.dice||!s||(s.t!='E'&&s.t!='U')||!s.groups||!s.groups.length)return '';
@@ -3071,7 +3077,7 @@ if(s.t=='A')info.push(['Mai sebesség / lépés',s.spd+' / '+Math.min(s.idx,s.sp
  const infoH=TB(['Mező','Érték'],info)+fogEmitUI(s)+detUI(s);   /* cardWrap: az alapadatok lent, a „Részletek” alatt (kinyitható) */
  if(!+CFG.cardWrap)h+=infoH;
  if(man){
-  h+=(CFG.diceMode&&s.dice&&s.t!='A')?diceUI(s):TB(['Lépés','Irányok'],s.groups.map((g,i)=>[i+1,g.map((d,j)=>'<button '+(s.ch[i]===d?'class="go" ':'')+(s.done||i!==s.idx||(s.t=='U'&&s.dep>0&&i>=1)?'disabled ':'')+'onclick="ch('+i+','+d+')">'+AR[d]+d+(i==0&&j>=g.length-s.xs?'*':'')+'</button>').join(' ')]));
+  h+=(CFG.diceMode&&s.dice&&s.t!='A')?diceUI(s):dirTabWrap(s,TB(['Lépés','Irányok'],s.groups.map((g,i)=>[i+1,g.map((d,j)=>'<button '+(s.ch[i]===d?'class="go" ':'')+(s.done||i!==s.idx||(s.t=='U'&&s.dep>0&&i>=1)?'disabled ':'')+'onclick="ch('+i+','+d+')">'+AR[d]+d+(i==0&&j>=g.length-s.xs?'*':'')+'</button>').join(' ')])));
   h+=jokerRow(s);h+=trUI(s);
   if(E){if(s.sens&&s.sens.length)h+=sensWrap(s,(CFG.jokerOn?TB(['Szenzor','Minőség','Stand','Dobás',CFG.fog?'Eredmény':'Joker-irány'],s.sens)+''+ex('Sikeres dobás (1) = egy Joker-irány: radar → véletlen 1–8; szonár / HF-DF → a legközelebbi U-boat felé (ha nincs a pályán, véletlen). Minden szenzor külön dob; a Joker-irány egyszer használható, bármelyik lépés hagyományos iránya helyett.','Joker-irány','div')+'':TB(['Szenzor','Minőség','Stand','Extra irány (*)'],s.sens)));
    const twin=!!+CFG.cardDcGrid;   /* v1.14.357: vízibomba- és torpedó-iránytű egymás mellett */
@@ -4071,6 +4077,7 @@ applyLogPos();renderCfg();try{qbRender()}catch(e){}   // a pálya felállítás�
 //   v1.14.418 (2026-11-09) – kézi kísérő iránya (manDir: 0 ki / 1 minden kézi kísérő / 2 csak a kijelölt): narancs szaggatott vonal a legközelebbi látható U-boat felé (az AI-vonal mintájára, az AI érzékelési sugarán belül)
 //   v1.14.417 (2026-11-09) – a napfény és a csillogás (W0–W1) a TELJES taktikai pályán (korábban csak a keretben); az időjárás-effektek (felhő, eső, villám, napfény, csillogás) mind az egész pályán
 //   v1.14.416 (2026-11-09) – a belső felhők kisebbek (3–6 cella) és szintenként sötétednek / szaporodnak: W2 fehér, W3 szürke, W4 sötét, összefüggő tömbökben (csoportok); a pályát nem borítják el
+//   v1.14.426 (2026-11-10) – az irány-gombsor kinyitható / összecsukható (iránytű mellett alapból zárt; DIRTAB)
 //   v1.14.425 (2026-11-10) – az iránytű 3 gyűrűs (a max sebesség 3), kompaktabb, vastagabb gyűrűkkel
 //   v1.14.424 (2026-11-10) – IRÁNYTŰ az irány-kockás módhoz a kártya grafikáján (dirRose, dirRoseSz): lépésenként színes gyűrű, a soron lévő kattintható, ★ Joker a peremen; a lépések után 🧭 ikonra zár, kattintásra kinyílik
 //   v1.14.423 (2026-11-10) – kanyar-kockás mód: a szenzor-Joker is kanyar-lap (plusz kocka; radar: véletlen, szonár / HF-DF: a legközelebbi U-boat felé, max 90°); a mozgásképtelen hajónak nincs kockája. Az irány-kockás mód változatlan
@@ -4257,7 +4264,7 @@ applyLogPos();renderCfg();try{qbRender()}catch(e){}   // a pálya felállítás�
 //   v1.14.239 (2026-10-26) – ÚJ: (1) LUT torpedó (lutOn, alap 1; 1944. januártól): az U-boat kártyán „LUT” jelölőnégyzet (az AI lutAiP %); a FAT utóda: lutLen 18 cella, lutRun 6 egyenes, lutLeg 3 fél-szélesség, találat teherhajón d6 ≤ lutHit (3), hadihajón ≤ lutHitE (1); ha FAT is be van jelölve, a LUT számít. (2) LÉGPERISZKÓP / SCHNORCHEL (schOn, alap 1; 1944. júniustól; csak szabad mozgásnál): 1/8-as mélységen a kártya „Légperiszkóp” jelölőnégyzetével a dízel hajt: az akku nem fogy, hanem schRech (2) cellát tölt körönként, max schSpd (2) lépés, kimerült akkuval is halad; kiesett dízelnél nem működik; az AI az akku fele alatt automatikusan használja.
 //   v1.14.238 (2026-10-26) – SZABAD MOZGÁS: az U-boat a belső játékterületen (pl. 80-as táblán az 50×50-esen) bárhol léphet be, nem csak a szélén (uInner, alapból BE; KI = a régi szél-belépés uEdge szerint).
 //   v1.14.237 (2026-10-26) – HEDGEHOG / SQUID ELLENŐRZÉS: az U-boat lépés utáni kiértékelésében a hedgehog / Squid „nincs találat” eredmény akkor is kiíródik, ha a vízibombák is hatottak (eddig ilyenkor csak a vízibomba-sor látszott, a hedgehog-ellenőrzés nem)
-const VER = 'v1.14.425';
+const VER = 'v1.14.426';
 // ===== MEGFIGYELŐ / TESZT MÓD (obsMode, v1.14.195) =====
 // Megfigyelő módban mindkét oldalt az AI vezérli (a kísérők is: NPC-logikával), a pálya mindent mutat (nincs köd), és a körök maguktól léptetődnek;
 // a lezárt csatákból statisztika készül (konvoj-, U-boat-, kísérő-veszteség, kimenetel), hogy látszódjon: sokféle csata születik-e, vagy egyoldalú lett a hangolás.
