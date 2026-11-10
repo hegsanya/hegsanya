@@ -100,9 +100,12 @@ await T(b,'Jelentés: eseménytár (EVL) = napló-elemzés',()=>{CFG.allEnemies=
  const airOk=E.airB.length===X.airB.length&&E.airIn.length===X.airIn.length;
  /* v1.14.432: torpedók – kilövés, felszíni sorozat, kitérés (a találatnál az eseménytár a pontosabb: egy körben két találat is megmarad) */
  const shN=S=>Object.keys(S).reduce((n,u)=>n+S[u].length,0),zk=L=>L.map(z=>z.k+'|'+z.id+'|'+z.n).sort().join(','),ek=L=>L.map(z=>z.k+'|'+z.id).sort().join(',');
+ /* v1.14.433: vízibomba, sortűz, U-boat-találat, közeli bombák (az eseménytárban a már lépett U-boatot azonnal érő találat is benne van, ezért ott ≥) */
+ const bN=B=>Object.keys(B).reduce((n,id)=>n+Object.keys(B[id]).reduce((m,k)=>m+B[id][k],0),0);
+ const asOk=bN(E.bombs)===bN(X.bombs)&&E.salv.length>=X.salv.length&&E.uHits.length>=X.uHits.length&&E.bNear===X.bNear&&E.bNearHit===X.bNearHit;
  const tpOk=shN(E.shots)===shN(X.shots)&&zk(E.zTorp)===zk(X.zTorp)&&ek(E.evade)===ek(X.evade)&&E.tHits.length>=X.tHits.length;
  let rep=0;try{rep=rptText(rptBlocks(true),'T').length}catch(e){return{ok:false,info:'jelentés: '+e.message}}
- return{ok:gunOk&&sunkOk&&airOk&&tpOk&&rep>500,info:'kör='+turn+', ágyú '+E.gun.length+'/'+X.gun.length+', süllyedés '+E.sunk.length+'/'+X.sunk.length+', légi '+E.airB.length+'/'+X.airB.length+', torpedó-találat '+E.tHits.length+'/'+X.tHits.length+', esemény='+EVL.length}});
+ return{ok:gunOk&&sunkOk&&airOk&&tpOk&&asOk&&rep>500,info:'kör='+turn+', ágyú '+E.gun.length+'/'+X.gun.length+', süllyedés '+E.sunk.length+'/'+X.sunk.length+', légi '+E.airB.length+'/'+X.airB.length+', torpedó-találat '+E.tHits.length+'/'+X.tHits.length+', bomba '+bN(E.bombs)+'/'+bN(X.bombs)+', U-találat '+E.uHits.length+'/'+X.uHits.length+', esemény='+EVL.length}});
 // 16) v1.14.421: kanyar-kocka – a 90°-os lap csak az első lépés lehet, utána nincs több lépés (diceNo90)
 await T(b,'Kanyar-kocka: 90° csak első lépés (diceNo90)',()=>{CFG.diceMode=1;CFG.turnRule=0;CFG.diceNo90=1;CFG.diceCap=0;$('n').value=12;reset();$('fo').checked=false;
  const s=mkE({id:'X0',cls:'T'},SLOT_ORDER[0],cmd());ships.push(s);newTurn();sel=s;
