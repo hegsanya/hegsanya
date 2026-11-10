@@ -1,6 +1,6 @@
 <!doctype html><html lang="hu" data-theme="light"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>CEG – Konvoj kísérő kampány v1.14.431</title>
+<title>CEG – Konvoj kísérő kampány v1.14.432</title>
 <style>
 /* Színek: világos/sötét téma változókkal; a gombok és táblázatok stílusa */
 :root{--bg:#f4f1ea;--fg:#1d2733;--pn:#fff;--ln:#c9c2b3;--ac:#b3261e;--sea:#d6ecf4;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -1303,9 +1303,12 @@ function seg(tp,k0){
    const df=Math.abs(dd-(t.t=='M'?+dr.value:t.dir)),par=(df==0||df==4),fh=tp.lut?(t.t=='M'?(+CFG.lutHit||0):(+CFG.lutHitE||0)):(t.t=='M'?(+CFG.fatHit||0):(+CFG.fatHitE||0));   /* a LUT-nak saját találati esélye van */
    const ok=ser?R(1,6,(tp.lut?'LUT ':'FAT ')+addr(x,y)+' → '+t.id+' (cikkcakk)','találat, ha ≤ '+fh,tp.o,v=>v<=fh?'TALÁLAT':'mellé')<=fh:still(t)?R(1,100,'Torpedó '+addr(x,y)+' → '+t.id+' (mozdulatlan hajó)','találat, ha ≤ '+CFG.stillHit,tp.o,v=>v<=CFG.stillHit?'TALÁLAT':'mellé')<=CFG.stillHit:t.t=='M'?R(1,CFG.tmBase+(par?3:df%2+1),'Torpedó '+addr(x,y)+' → '+t.id+' (TDC)','találat, ha < '+CFG.tmHit,tp.o,v=>v<CFG.tmHit?'TALÁLAT':'mellé')<CFG.tmHit:R(1,CFG.twBase*Math.max(1,t.spd||1)+(par?CFG.twPar:df%2),'Torpedó '+addr(x,y)+' → '+t.id+' (TDC, sebesség '+(t.spd||0)+')','találat, ha = 1',tp.o,v=>v==1?'TALÁLAT':'mellé')==1;
    if(ok){bst(tp.o.id).tph++;if(t.t=='M')bst(tp.o.id).tphM++;else bst(tp.o.id).tphE++;let m='TORPEDÓ TALÁLAT: '+t.id+' ('+addr(x,y)+')';
+    const d0=evTot(t);                                                   // v1.14.432: a sebzés a cél sérülésének változásából (esemény a jelentéshez)
     if(t.t=='M')m+=' –'+merchHit(t,R(CFG.tdLo,CFG.tdHi,'Torpedó-sebzés → '+t.id+' (rakomány)',CFG.tdLo+'–'+CFG.tdHi,tp.o,v=>'sebzés '+v),tp.o,tp.o.id);
     else m+=torpHitShip(t);
+    evAdd({t:'tpHit',o:tp.o.id,ot:tp.o.t,ship:t.id,m:t.t=='M',dmg:evTot(t)-d0,res:t.t=='M'?evMRes(t):(t.sink?'elsüllyed':''),tons:(t.t=='M'&&t.sink)?(+t.tons||0):0});
     return m}
+   evAdd({t:'tpMiss',o:tp.o.id,ot:tp.o.t,ship:t.id,esc:t.t=='E'&&!t.en,nk1:1});   // v1.14.432: mellé – ha a cél saját kísérő volt, az „kitérés" a jelentésben
    }}
  return null}
 // torpOk: indítható-e torpedó (0–1 mélység, van betöltött cső és torpedó).
@@ -1319,6 +1322,7 @@ function fire(b){const s=sel;if((s&&s.done)||uLock(s)||uGate(s))return;if(s&&s.t
  const d=b?nd(s.dir+4):s.dir,tp={x:s.x,y:s.y,d,o:s};const wl=lutUse(s),wf=!wl&&fatUse(s),kind=tpTake(s,b,wl||wf);   /* v1.14.304 (uTpMix): a fajtát a készlet is korlátozza; hátra csak G7e */
  if(kind==='F'){tp.fat=1;tp.k0=4;if(wl&&(s.tpS==null||!b))tp.lut=1}   /* LUT és FAT közös útvonal-logika; a LUT az erősebb */
  const tpNote=s.tpS!=null&&(wl||wf)!==(kind==='F')&&!b?(kind==='F'?' [nincs több G7e, FAT indult]':' [nincs több FAT, G7e indult]'):''
+ evAdd({t:'tpShot',id:s.id,ut:s.t,back:!!b,kind:tp.lut?'LUT':tp.fat?'FAT':'G7e'});   // v1.14.432: kilövés-esemény
  let m=s.id+': '+(tp.lut?'LUT ':tp.fat?'FAT ':'')+'torpedó '+(b?'hátra ':'előre ')+AR[d]+tpNote;const r=seg(tp,1);fatFx(tp,1);
  if(r){m+=' – '+r;tpEnd(tp)}else{torps.push(tp);m+=' – az első 3 mezőn nem talált, a következő körben tovább halad.'}say(m);draw();card()}
 // dep: az U-boat mélységének választása (az adott körben érvényes, körönként egyszer).
@@ -2180,6 +2184,7 @@ function volley(d,cnt){const s=sel;if(!s||s.done||s.t!='E'||s.tp==null)return;d=
  if(!tpDirs(s).includes(d)){say(s.id+': ebbe az irányba ('+AR[d]+') nem torpedózhat (a hajó iránya: '+AR[s.dir]+').');return}
  const loaded=(s.tub||[]).filter(Boolean).length;if(!loaded||s.tp<1)return;
  const n=Math.min(loaded,s.tp,5,(cnt>0?cnt:(TPN>0?TPN:99)));let left=n;s.tub=s.tub.map(x=>{if(x&&left>0){left--;return 0}return x});s.tp-=n;bst(s.id).tp+=n;
+ evAdd({t:'tpVolley',id:s.id,en:!!s.en,n:n});   // v1.14.432: sorozat-esemény
  const res=[];for(let i=0;i<n;i++){const tp={x:s.x,y:s.y,d,o:s},r=seg(tp,1);fxAdd('torp',tp.x,tp.y,tp.d);if(r)res.push(r);else torps.push(tp)}
  say(s.id+': torpedó-sorozat '+n+' db '+AR[d]+' irányba'+(res.length?' – '+res.join(' | ')+(res.length<n?'; a többi az első 3 mezőn nem talált, a következő körben tovább halad.':''):' – az első 3 mezőn nem talált, a következő körben tovább halad.'));draw();card()}
 // torpUI: a torpedó-állapot és a sorozat gombja a kártyán (a hajó irányába)
@@ -2511,12 +2516,16 @@ let ALOG=[];
             t = 'stop' : a teherhajó megállt {id}
             t = 'enter': belépés a pályára (U-boat, ellenséges hadihajó) {id, ut (U / Z), n (az osztály neve)}
             t = 'exit' : kilépés a pályáról {id}
+            t = 'tpShot'  : U-boat torpedó-kilövése {id, ut, back, kind}                     (v1.14.432)
+            t = 'tpVolley': felszíni hajó torpedó-sorozata {id, en, n}
+            t = 'tpHit'   : torpedótalálat {o (ki lőtte), ot (típusa), ship, m, dmg, res, tons}
+            t = 'tpMiss'  : a torpedó a cél mellé ment {o, ot, ship, esc (a cél saját kísérő)}
    EVFULL : igaz, ha az eseménytár a csata ELEJÉTŐL teljes (új pályánál áll be) – a jelentés csak ekkor használja.
    Új pályánál (reset) törlődik; a kézi kockadobás visszajátszásakor a többi állapottal együtt visszaáll (dxSnap / dxRestore). */
-let EVL=[],EVFULL=false;
+let EVL=[],EVFULL=false,EVK1=0;   /* EVK1: a step() torpedó-2. szakaszában 1 → az esemény a következő kör számát kapja */
 function evAdd(o){
  if(!+CFG.evLog)return;
- o.k=(typeof turn!=='undefined'?turn:0);
+ o.k=(typeof turn!=='undefined'?turn:0)+((EVK1&&!o.nk1)?1:0);delete o.nk1;   /* nk1: azonnal (say) naplózott esemény – marad a mostani kör */
  EVL.push(o)}
 // evTot: egy hajó eddigi összes sérülése (teherhajó: rakomány-pont; hadihajó / U-boat: a modulok sérülésének összege)
 function evTot(q){return q.t=='M'?(q.cd||0):(q.dmg?q.dmg.reduce((a,b)=>a+b,0):0)}
@@ -2645,8 +2654,9 @@ function rptParse(){
    kilépés a pályáról (E.uExit) és az ellenséges hadihajó belépése (E.zIn).
    A szöveges elemzés eredménye megmarad az E._rx-ben (összehasonlításhoz, hibakereséshez). */
 function rptFromEv(E){
- E._rx={gun:E.gun,airIn:E.airIn,airB:E.airB,sunk:E.sunk,uDead:E.uDead,zDead:E.zDead,uExit:E.uExit,zIn:E.zIn};
+ E._rx={gun:E.gun,airIn:E.airIn,airB:E.airB,sunk:E.sunk,uDead:E.uDead,zDead:E.zDead,uExit:E.uExit,zIn:E.zIn,shots:E.shots,tHits:E.tHits,evade:E.evade,zTorp:E.zTorp};
  E.gun=[];E.airIn=[];E.airB=[];E.sunk=[];E.uDead={};E.zDead={};E.uExit={};E.zIn={};
+ E.shots={};E.tHits=[];E.evade=[];E.zTorp=[];   /* v1.14.432 (2. szakasz, 1. lépés): torpedók */
  EVL.forEach(e=>{
   if(e.t=='gun'){
    E.gun.push({k:e.k,by:e.by,tg:e.tg,hit:e.hit,dmg:e.m?e.dmg:0,res:e.res||'',tons:e.tons||0})}
@@ -2655,6 +2665,14 @@ function rptFromEv(E){
   else if(e.t=='air'){
    const h=(e.hits||[])[0];                      // a találat (a légi torpedó más hajót is eltalálhat, mint a célpont)
    E.airB.push({k:e.k,air:e.air,ship:h?h.id:e.ship,dmg:h?h.dmg:0,res:h?h.res:'',tons:h?h.tons:0,down:e.down?{by:e.down.by,w:''}:null,torp:!!e.torp&&!e.fly})}   // a konvojba érve lelőtt gép nem indított torpedót
+  else if(e.t=='tpShot'){                           // U-boat torpedó-kilövése
+   if(e.ut=='U')(E.shots[e.id]=E.shots[e.id]||[]).push(e.k)}
+  else if(e.t=='tpHit'){                            // torpedótalálat hajón (a légi torpedó a légi támadásnál szerepel)
+   if(e.ot!='A')E.tHits.push({k:e.k,u:e.o,ship:e.ship,dmg:e.dmg||0,res:e.res||'',tons:e.tons||0})}
+  else if(e.t=='tpMiss'){                           // a saját kísérő elől mellé ment torpedó = kitérés
+   if(e.esc)E.evade.push({k:e.k,id:e.ship})}       // a légi torpedó elől is kitérhet
+  else if(e.t=='tpVolley'){                         // ellenséges felszíni hajó torpedó-sorozata
+   if(e.en)E.zTorp.push({k:e.k,id:e.id,n:e.n})}
   else if(e.t=='stop'){
    E.sunk.push({k:e.k,id:e.id,kind:'megállt',why:''})}
   else if(e.t=='exit'){
@@ -3129,7 +3147,9 @@ function step(){
   })}finally{stepAuto=false}   // stepAuto vége: az automata fázis után az U-boatok „kész” jelzése már a következő körre vonatkozik
  // a torpedók 2. szakasza (4–6. mező) a konvoj lépése után
  torps.forEach(tp=>{if(tp.fat){fatFx(tp,tp.k0);return}const v=DV[tp.d];if(v)fxAdd('torp',tp.x+v[0]*3,tp.y+v[1]*3,tp.d)});   // a torpedó 2. szakasza is látszik, ahogy halad (4–6. mező)
+ EVK1=1;   /* v1.14.432: a 2. szakasz találatai a jelentésben a következő körhöz tartoznak (a szöveg is a turn++ után kerül a naplóba) */
  {const keep=[];torps.forEach(tp=>{if(tp.fat){const r=seg(tp,tp.k0);tp.k0+=3;if(r){tm+=' '+r;tpEnd(tp)}else if(tCell(tp,tp.k0))keep.push(tp);else tpEnd(tp);return}const r=seg(tp,4);if(r)tm+=' '+r;tpEnd(tp)});torps=keep}   // a FAT körönként 3 cellát halad, amíg el nem fogy az útja
+ EVK1=0;
  tm+=wreckTick();   /* wreckOn: a roncs legénységét kimentheti egy szomszédos hajó */
  turn++;$('tn').textContent=turn;tacClk();alogTurn();   /* v1.14.301: köri fejléc + U-boat állapot az elemzési naplóba */
  // időjárás-függő STOP: a kocka maximuma lezárja a csatát
@@ -4275,6 +4295,7 @@ applyLogPos();renderCfg();try{qbRender()}catch(e){}   // a pálya felállítás�
 //   v1.14.418 (2026-11-09) – kézi kísérő iránya (manDir: 0 ki / 1 minden kézi kísérő / 2 csak a kijelölt): narancs szaggatott vonal a legközelebbi látható U-boat felé (az AI-vonal mintájára, az AI érzékelési sugarán belül)
 //   v1.14.417 (2026-11-09) – a napfény és a csillogás (W0–W1) a TELJES taktikai pályán (korábban csak a keretben); az időjárás-effektek (felhő, eső, villám, napfény, csillogás) mind az egész pályán
 //   v1.14.416 (2026-11-09) – a belső felhők kisebbek (3–6 cella) és szintenként sötétednek / szaporodnak: W2 fehér, W3 szürke, W4 sötét, összefüggő tömbökben (csoportok); a pályát nem borítják el
+//   v1.14.432 (2026-11-10) – JELENTÉS, 2. szakasz 1. lépés: a TORPEDÓK is az eseménytárból (kilövés, találat, a kísérő kitérése, felszíni hajó sorozata); a találatnál mindig megvan, ki lőtte (a később beérkező torpedónál is)
 //   v1.14.431 (2026-11-10) – JELENTÉS, 1. szakasz: ESEMÉNYTÁR (evLog): az ágyúlövések (a célzó lövés is), a légi támadások és a süllyedés / megállás / megsemmisülés adatként rögzülnek, a jelentés ezekből számol (a napló-szöveg elemzése tartalék); a légi torpedó találata a ténylegesen eltalált hajóhoz kerül, a kísérőt ért bomba is találatnak számít; egy sorban egy hajó csak egyszer szerepel a legsúlyosabb sorsával (rptFates)
 //   v1.14.430 (2026-11-10) – irány-kockás mód: VÁLTÓ a kártya grafikáján az iránytű és a hagyományos irány-gombok között (dirView 1 / 2, dirBtnSz); a választás mentődik
 //   v1.14.429 (2026-11-10) – BEÁLLÍTÁS-KERESŐ: keresőmező a Beállítások lap tetején, a lap minden táblázatára (gazdaság, osztályok, kikötők, taktikai, OP; név / leírás / csoportcím szerint, ékezet nélkül is); a beállítás neve a leírás után látszik (cfgKeys)
@@ -4467,7 +4488,7 @@ applyLogPos();renderCfg();try{qbRender()}catch(e){}   // a pálya felállítás�
 //   v1.14.239 (2026-10-26) – ÚJ: (1) LUT torpedó (lutOn, alap 1; 1944. januártól): az U-boat kártyán „LUT” jelölőnégyzet (az AI lutAiP %); a FAT utóda: lutLen 18 cella, lutRun 6 egyenes, lutLeg 3 fél-szélesség, találat teherhajón d6 ≤ lutHit (3), hadihajón ≤ lutHitE (1); ha FAT is be van jelölve, a LUT számít. (2) LÉGPERISZKÓP / SCHNORCHEL (schOn, alap 1; 1944. júniustól; csak szabad mozgásnál): 1/8-as mélységen a kártya „Légperiszkóp” jelölőnégyzetével a dízel hajt: az akku nem fogy, hanem schRech (2) cellát tölt körönként, max schSpd (2) lépés, kimerült akkuval is halad; kiesett dízelnél nem működik; az AI az akku fele alatt automatikusan használja.
 //   v1.14.238 (2026-10-26) – SZABAD MOZGÁS: az U-boat a belső játékterületen (pl. 80-as táblán az 50×50-esen) bárhol léphet be, nem csak a szélén (uInner, alapból BE; KI = a régi szél-belépés uEdge szerint).
 //   v1.14.237 (2026-10-26) – HEDGEHOG / SQUID ELLENŐRZÉS: az U-boat lépés utáni kiértékelésében a hedgehog / Squid „nincs találat” eredmény akkor is kiíródik, ha a vízibombák is hatottak (eddig ilyenkor csak a vízibomba-sor látszott, a hedgehog-ellenőrzés nem)
-const VER = 'v1.14.431';
+const VER = 'v1.14.432';
 // ===== MEGFIGYELŐ / TESZT MÓD (obsMode, v1.14.195) =====
 // Megfigyelő módban mindkét oldalt az AI vezérli (a kísérők is: NPC-logikával), a pálya mindent mutat (nincs köd), és a körök maguktól léptetődnek;
 // a lezárt csatákból statisztika készül (konvoj-, U-boat-, kísérő-veszteség, kimenetel), hogy látszódjon: sokféle csata születik-e, vagy egyoldalú lett a hangolás.
