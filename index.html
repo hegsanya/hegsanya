@@ -1,6 +1,6 @@
 <!doctype html><html lang="hu" data-theme="light"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>CEG – Konvoj kísérő kampány v1.14.444</title>
+<title>CEG – Konvoj kísérő kampány v1.14.445</title>
 <style>
 /* Színek: világos/sötét téma változókkal; a gombok és táblázatok stílusa */
 :root{--bg:#f4f1ea;--fg:#1d2733;--pn:#fff;--ln:#c9c2b3;--ac:#b3261e;--sea:#d6ecf4;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -4248,10 +4248,12 @@ applyLogPos();renderCfg();try{qbRender()}catch(e){}   // a pálya felállítás�
 function idbOpen() {
  return new Promise((ok, no) => { try { const r = indexedDB.open('ceg', 1);
   r.onupgradeneeded = () => r.result.createObjectStore('kv'); r.onsuccess = () => ok(r.result); r.onerror = () => no(r.error); } catch (e) { no(e); } })}
-function idbPut(k, v) {
- idbOpen().then(db => { const t = db.transaction('kv', 'readwrite'); t.objectStore('kv').put(v, k); t.oncomplete = () => db.close(); t.onerror = () => { console.error('[CEG IndexedDB] ' + t.error); db.close(); }; })
-  .catch(e => console.error('[CEG IndexedDB] ' + e));
+function idbPut(k, v) {   /* Promise: teljesül, ha a mentés megtörtént (v1.14.445) */
+ return idbOpen().then(db => new Promise((ok, no) => { const t = db.transaction('kv', 'readwrite'); t.objectStore('kv').put(v, k);
+  t.oncomplete = () => { db.close(); ok(); }; t.onerror = () => { console.error('[CEG IndexedDB] ' + t.error); db.close(); no(t.error); }; }));
 }
+/* storageTop: a localStorage legnagyobb kulcsa röviden („lastOpenedFileContent ~10 MB”) */
+function storageTop() { try { let bk = '', bn = 0; for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i), n = (localStorage.getItem(k) || '').length; if (n > bn) { bn = n; bk = k; } } return bk + ' ~' + (bn * 2 / 1048576).toFixed(1) + ' MB'; } catch (e) { return '?'; } }
 function idbGet(k) {
  return idbOpen().then(db => new Promise((ok, no) => { const t = db.transaction('kv', 'readonly'), q = t.objectStore('kv').get(k);
   q.onsuccess = () => { ok(q.result == null ? null : q.result); db.close(); }; q.onerror = () => { no(q.error); db.close(); }; }));
@@ -4554,6 +4556,7 @@ function storageReport() {
 //   v1.14.418 (2026-11-09) – kézi kísérő iránya (manDir: 0 ki / 1 minden kézi kísérő / 2 csak a kijelölt): narancs szaggatott vonal a legközelebbi látható U-boat felé (az AI-vonal mintájára, az AI érzékelési sugarán belül)
 //   v1.14.417 (2026-11-09) – a napfény és a csillogás (W0–W1) a TELJES taktikai pályán (korábban csak a keretben); az időjárás-effektek (felhő, eső, villám, napfény, csillogás) mind az egész pályán
 //   v1.14.416 (2026-11-09) – a belső felhők kisebbek (3–6 cella) és szintenként sötétednek / szaporodnak: W2 fehér, W3 szürke, W4 sötét, összefüggő tömbökben (csoportok); a pályát nem borítják el
+//   v1.14.445 (2026-11-11) – MENTÉS: ha a localStorage tele, de az IndexedDB-be sikerült menteni, nincs felugró ablak (csak egy sor a naplóban); felugró figyelmeztetés csak akkor, ha a tartalék sem sikerül
 //   v1.14.444 (2026-11-11) – JAVÍTÁS, KAMPÁNYMENTÉS: a mentés hibája eddig csendben elmaradt (pl. megtelt a localStorage, amelyen a hegsanya.github.io összes programja osztozik) → a dátum, a javítás, a vásárlás újratöltéskor elveszett. Most: tartalék mentés IndexedDB-be is (mindig), induláskor a frissebb mentés töltődik be; hiba esetén egyszeri figyelmeztetés a tárhely-összesítővel; ha a mentés nem tölthető be, nem íródik felül (ceg_camp_bad)
 //   v1.14.443 (2026-11-11) – KANYAR-KOCKA: nincs kétszeres büntetés – diceSpd mellett a kiesett motor csak a sebességet csökkenti, és a kisebb sebesség ad kevesebb kockát (a diceEng külön levonása csak a régi, fix diceN szabálynál hat); az U-boat mélység-levonása marad
 //   v1.14.442 (2026-11-11) – KANYAR-KOCKA: az alapkockák száma = a kör sebessége + 1 (diceSpd, alap BE; eddig fix 4): a korvett 2 lépéséhez 3, a romboló 3 lépéséhez 4 kocka jár; a medál- és szenzor-kockák ehhez jönnek; a levonások (motor-kiesés, U-boat mélység) maradnak
@@ -4759,7 +4762,7 @@ function storageReport() {
 //   v1.14.239 (2026-10-26) – ÚJ: (1) LUT torpedó (lutOn, alap 1; 1944. januártól): az U-boat kártyán „LUT” jelölőnégyzet (az AI lutAiP %); a FAT utóda: lutLen 18 cella, lutRun 6 egyenes, lutLeg 3 fél-szélesség, találat teherhajón d6 ≤ lutHit (3), hadihajón ≤ lutHitE (1); ha FAT is be van jelölve, a LUT számít. (2) LÉGPERISZKÓP / SCHNORCHEL (schOn, alap 1; 1944. júniustól; csak szabad mozgásnál): 1/8-as mélységen a kártya „Légperiszkóp” jelölőnégyzetével a dízel hajt: az akku nem fogy, hanem schRech (2) cellát tölt körönként, max schSpd (2) lépés, kimerült akkuval is halad; kiesett dízelnél nem működik; az AI az akku fele alatt automatikusan használja.
 //   v1.14.238 (2026-10-26) – SZABAD MOZGÁS: az U-boat a belső játékterületen (pl. 80-as táblán az 50×50-esen) bárhol léphet be, nem csak a szélén (uInner, alapból BE; KI = a régi szél-belépés uEdge szerint).
 //   v1.14.237 (2026-10-26) – HEDGEHOG / SQUID ELLENŐRZÉS: az U-boat lépés utáni kiértékelésében a hedgehog / Squid „nincs találat” eredmény akkor is kiíródik, ha a vízibombák is hatottak (eddig ilyenkor csak a vízibomba-sor látszott, a hedgehog-ellenőrzés nem)
-const VER = 'v1.14.444';
+const VER = 'v1.14.445';
 // ===== MEGFIGYELŐ / TESZT MÓD (obsMode, v1.14.195) =====
 // Megfigyelő módban mindkét oldalt az AI vezérli (a kísérők is: NPC-logikával), a pálya mindent mutat (nincs köd), és a körök maguktól léptetődnek;
 // a lezárt csatákból statisztika készül (konvoj-, U-boat-, kísérő-veszteség, kimenetel), hogy látszódjon: sokféle csata születik-e, vagy egyoldalú lett a hangolás.
@@ -6005,9 +6008,13 @@ const CAMP = {
     let js = '';
     try { js = JSON.stringify(this.pack()); }
     catch (e) { this.savWarn('A kampány nem alakítható mentéssé: ' + e.message); return; }
-    try { localStorage.setItem('ceg_camp', js); this._lsFail = false; }
-    catch (e) { this._lsFail = true; this.savWarn('A böngésző tárhelye (localStorage) nem fogadta a mentést: ' + (e.name || '') + ' ' + (e.message || '')); }
-    idbPut('ceg_camp', js);   // tartalék (aszinkron; hiba esetén csak a konzolba ír)
+    let lsErr = null;
+    try { localStorage.setItem('ceg_camp', js); this._lsFail = false; } catch (e) { this._lsFail = true; lsErr = e; }
+    /* tartalék (aszinkron). v1.14.445: ha a localStorage tele, de az IndexedDB-be sikerült menteni, csak egy rövid sor a naplóban (nincs felugró ablak minden indításkor);
+       ha az IndexedDB sem fogadja, felugró figyelmeztetés */
+    idbPut('ceg_camp', js).then(() => {
+      if (lsErr && !this._idbNote) { this._idbNote = true; say('ℹ A kampány az IndexedDB-be mentve (a localStorage tele: ' + storageTop() + ').'); }
+    }).catch(e => this.savWarn((lsErr ? 'A localStorage nem fogadta a mentést (' + (lsErr.name || '') + '), ' : '') + 'és a tartalék (IndexedDB) sem: ' + e));
   },
   /* savWarn: egyszeri figyelmeztetés a mentés hibájáról (munkamenetenként egyszer), a tárhely-összesítővel */
   savWarn(msg) {
@@ -6040,7 +6047,7 @@ const CAMP = {
     if (!raw) return false;
     try { const o = JSON.parse(raw); if (!o) return false; this.restore(o); return true; }
     catch (e) {
-      try { localStorage.setItem('ceg_camp_bad', raw); } catch (x) { } idbPut('ceg_camp_bad', raw);
+      try { localStorage.setItem('ceg_camp_bad', raw); } catch (x) { } idbPut('ceg_camp_bad', raw).catch(() => { });
       console.error('[CEG betöltés] ' + e.message);
       setTimeout(() => { try { alert('⚠ A mentett kampány nem tölthető be: ' + e.message + '\n\nA mentés megmaradt (ceg_camp_bad); szólj, és visszahozzuk.'); } catch (x) { } }, 50);
       return false;
