@@ -1,6 +1,6 @@
 <!doctype html><html lang="hu" data-theme="light"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>CEG – Konvoj kísérő kampány v1.14.443</title>
+<title>CEG – Konvoj kísérő kampány v1.14.444</title>
 <style>
 /* Színek: világos/sötét téma változókkal; a gombok és táblázatok stílusa */
 :root{--bg:#f4f1ea;--fg:#1d2733;--pn:#fff;--ln:#c9c2b3;--ac:#b3261e;--sea:#d6ecf4;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -4242,7 +4242,28 @@ $('bs').onclick=step;$('bff').onclick=ffRun;$('br').onclick=reset;$('bu').onclic
 applyLogPos();renderCfg();try{qbRender()}catch(e){}   // a pálya felállítását a kampány-réteg végzi (CAMP.event → reset())
 
 </script>
-<script>// ===== KAMPÁNY-RÉTEG – flotta, gazdaság, kikötők, az OP térkép és a taktikai csata összekötése =====
+<script>/* ===== TARTALÉK MENTÉS: IndexedDB (v1.14.444) =====
+   idbPut(k, v) / idbGet(k): egyszerű kulcs–érték tár ('ceg' adatbázis, 'kv' tábla). Az IndexedDB kerete sokkal nagyobb a localStorage ~5 MB-jánál,
+   és nem osztozik rajta a webhely többi programja ugyanúgy (a localStorage a hegsanya.github.io összes oldalán közös). */
+function idbOpen() {
+ return new Promise((ok, no) => { try { const r = indexedDB.open('ceg', 1);
+  r.onupgradeneeded = () => r.result.createObjectStore('kv'); r.onsuccess = () => ok(r.result); r.onerror = () => no(r.error); } catch (e) { no(e); } })}
+function idbPut(k, v) {
+ idbOpen().then(db => { const t = db.transaction('kv', 'readwrite'); t.objectStore('kv').put(v, k); t.oncomplete = () => db.close(); t.onerror = () => { console.error('[CEG IndexedDB] ' + t.error); db.close(); }; })
+  .catch(e => console.error('[CEG IndexedDB] ' + e));
+}
+function idbGet(k) {
+ return idbOpen().then(db => new Promise((ok, no) => { const t = db.transaction('kv', 'readonly'), q = t.objectStore('kv').get(k);
+  q.onsuccess = () => { ok(q.result == null ? null : q.result); db.close(); }; q.onerror = () => { no(q.error); db.close(); }; }));
+}
+/* storageReport: a localStorage tartalma kulcsonként (a legnagyobbak elöl) – látszik, ha a webhely más programja foglalja a helyet */
+function storageReport() {
+ try { const L = []; let tot = 0;
+  for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i), n = (localStorage.getItem(k) || '').length + k.length; tot += n; L.push([k, n]); }
+  L.sort((a, b) => b[1] - a[1]);
+  return 'A localStorage tartalma (a webhely összes programjáé): ' + (tot / 1048576 * 2).toFixed(2) + ' MB (~5 MB a keret)\n' + L.slice(0, 10).map(x => '  ' + x[0] + ': ' + (x[1] * 2 / 1024).toFixed(0) + ' kB').join('\n');
+ } catch (e) { return 'A tárhely nem olvasható: ' + e.message; } }
+// ===== KAMPÁNY-RÉTEG – flotta, gazdaság, kikötők, az OP térkép és a taktikai csata összekötése =====
 // Verzió: minden módosításnál növeljük, és a VERZIÓTÖRTÉNETBE felírjuk, mi változott.
 // VERZIÓTÖRTÉNET:
 //   v1.0.0 (2026-10-04) – Első összekötött változat: OP → taktikai csata → vissza az OP-ra, eredmények mentése, kampány-összegzés.
@@ -4533,6 +4554,7 @@ applyLogPos();renderCfg();try{qbRender()}catch(e){}   // a pálya felállítás�
 //   v1.14.418 (2026-11-09) – kézi kísérő iránya (manDir: 0 ki / 1 minden kézi kísérő / 2 csak a kijelölt): narancs szaggatott vonal a legközelebbi látható U-boat felé (az AI-vonal mintájára, az AI érzékelési sugarán belül)
 //   v1.14.417 (2026-11-09) – a napfény és a csillogás (W0–W1) a TELJES taktikai pályán (korábban csak a keretben); az időjárás-effektek (felhő, eső, villám, napfény, csillogás) mind az egész pályán
 //   v1.14.416 (2026-11-09) – a belső felhők kisebbek (3–6 cella) és szintenként sötétednek / szaporodnak: W2 fehér, W3 szürke, W4 sötét, összefüggő tömbökben (csoportok); a pályát nem borítják el
+//   v1.14.444 (2026-11-11) – JAVÍTÁS, KAMPÁNYMENTÉS: a mentés hibája eddig csendben elmaradt (pl. megtelt a localStorage, amelyen a hegsanya.github.io összes programja osztozik) → a dátum, a javítás, a vásárlás újratöltéskor elveszett. Most: tartalék mentés IndexedDB-be is (mindig), induláskor a frissebb mentés töltődik be; hiba esetén egyszeri figyelmeztetés a tárhely-összesítővel; ha a mentés nem tölthető be, nem íródik felül (ceg_camp_bad)
 //   v1.14.443 (2026-11-11) – KANYAR-KOCKA: nincs kétszeres büntetés – diceSpd mellett a kiesett motor csak a sebességet csökkenti, és a kisebb sebesség ad kevesebb kockát (a diceEng külön levonása csak a régi, fix diceN szabálynál hat); az U-boat mélység-levonása marad
 //   v1.14.442 (2026-11-11) – KANYAR-KOCKA: az alapkockák száma = a kör sebessége + 1 (diceSpd, alap BE; eddig fix 4): a korvett 2 lépéséhez 3, a romboló 3 lépéséhez 4 kocka jár; a medál- és szenzor-kockák ehhez jönnek; a levonások (motor-kiesés, U-boat mélység) maradnak
 //   v1.14.441 (2026-11-11) – JAVÍTÁS, kanyar-kocka: ha az első lépés után csak 90°-os kocka maradt (vagy a kanyar-korlát miatt egyik sem választható), a hajó „beragadt” egy hátralévő lépéssel; most a mozgás véget ér (need = a megtett lépés), a kártyán „lépés 2/3 · kész (nincs kocka)”; a felhasznált kocka szürke és áthúzott, a tiltott szaggatott keretű (eddig alig különbözött)
@@ -4737,7 +4759,7 @@ applyLogPos();renderCfg();try{qbRender()}catch(e){}   // a pálya felállítás�
 //   v1.14.239 (2026-10-26) – ÚJ: (1) LUT torpedó (lutOn, alap 1; 1944. januártól): az U-boat kártyán „LUT” jelölőnégyzet (az AI lutAiP %); a FAT utóda: lutLen 18 cella, lutRun 6 egyenes, lutLeg 3 fél-szélesség, találat teherhajón d6 ≤ lutHit (3), hadihajón ≤ lutHitE (1); ha FAT is be van jelölve, a LUT számít. (2) LÉGPERISZKÓP / SCHNORCHEL (schOn, alap 1; 1944. júniustól; csak szabad mozgásnál): 1/8-as mélységen a kártya „Légperiszkóp” jelölőnégyzetével a dízel hajt: az akku nem fogy, hanem schRech (2) cellát tölt körönként, max schSpd (2) lépés, kimerült akkuval is halad; kiesett dízelnél nem működik; az AI az akku fele alatt automatikusan használja.
 //   v1.14.238 (2026-10-26) – SZABAD MOZGÁS: az U-boat a belső játékterületen (pl. 80-as táblán az 50×50-esen) bárhol léphet be, nem csak a szélén (uInner, alapból BE; KI = a régi szél-belépés uEdge szerint).
 //   v1.14.237 (2026-10-26) – HEDGEHOG / SQUID ELLENŐRZÉS: az U-boat lépés utáni kiértékelésében a hedgehog / Squid „nincs találat” eredmény akkor is kiíródik, ha a vízibombák is hatottak (eddig ilyenkor csak a vízibomba-sor látszott, a hedgehog-ellenőrzés nem)
-const VER = 'v1.14.443';
+const VER = 'v1.14.444';
 // ===== MEGFIGYELŐ / TESZT MÓD (obsMode, v1.14.195) =====
 // Megfigyelő módban mindkét oldalt az AI vezérli (a kísérők is: NPC-logikával), a pálya mindent mutat (nincs köd), és a körök maguktól léptetődnek;
 // a lezárt csatákból statisztika készül (konvoj-, U-boat-, kísérő-veszteség, kimenetel), hogy látszódjon: sokféle csata születik-e, vagy egyoldalú lett a hangolás.
@@ -5965,7 +5987,7 @@ const CAMP = {
   },
 
   // pack/save/load: a mentés a böngészőbe (localStorage) és fájlba is megy; az OP állapotát, a zónákat és a beállításokat is tartalmazza
-  pack() { return { v: VER, c: { endShown: this.endShown | 0, egp: this.egp, earned: this.earned, t: this.t, voy: this.voy, voys: this.voys, tfs: this.tfs || {}, tfRetro: this.tfRetro, log: this.log, fleet: this.fleet, lostShips: this.lostShips, reps: this.reps || [], ub: this.ub, thr: this.thr, medQ: this.medQ, crewQ: this.crewQ || [], wrecks: this.wrecks || [], raid: this.raid, cnt: this.cnt, shop: this.shop, paidSup: this.paidSup || null, mis: this.mis || [], misN: this.misN || 0, bt: this.battle && this.ev ? { ev: this.ev } : (this.bt || null) },
+  pack() { return { v: VER, ts: Date.now(), c: { endShown: this.endShown | 0, egp: this.egp, earned: this.earned, t: this.t, voy: this.voy, voys: this.voys, tfs: this.tfs || {}, tfRetro: this.tfRetro, log: this.log, fleet: this.fleet, lostShips: this.lostShips, reps: this.reps || [], ub: this.ub, thr: this.thr, medQ: this.medQ, crewQ: this.crewQ || [], wrecks: this.wrecks || [], raid: this.raid, cnt: this.cnt, shop: this.shop, paidSup: this.paidSup || null, mis: this.mis || [], misN: this.misN || 0, bt: this.battle && this.ev ? { ev: this.ev } : (this.bt || null) },
     eco: ECO, ports: PORTS_T, cls: clsSnap(), op: OPG.save(), zone: ZONE }; },
   // supKey: a mostani taktikai csata azonosítója (nap + cella + kötelék) a kifizetett támogatás megjegyzéséhez
   supKey() { return (() => { try { return OPG.day(); } catch (e) { return '?'; } })() + '|' + (this.ev ? this.ev.cell : '') + '|' + (this.ev && this.ev.unit || ''); },
@@ -5975,7 +5997,24 @@ const CAMP = {
   memoFree(slot) { if (!CFG.supMemo || !this.ev || !this.paidSup || this.paidSup.key !== this.supKey()) return false; const c = slot.cls || 'rent', n = this.paidSup.list.filter(x => x === c).length, u = this._memoUsed = this._memoUsed || {}; if ((u[c] || 0) >= n) return false; u[c] = (u[c] || 0) + 1; return true; },
   // setEgp: az EGp kézi módosítása (a napló rögzíti)
   setEgp(v) { const n = Math.round(+v); if (!isFinite(n)) { this.refresh(); return; } const o = this.egp; this.egp = n; if (o !== n) this.log.push('[EGp] kézi módosítás: ' + o + ' → ' + n + '.'); this.save(); this.refresh(); },
-  save() { if (this.mission) return; try { localStorage.setItem('ceg_camp', JSON.stringify(this.pack())); } catch (e) { } },   // a tutorial alatt nem írjuk felül a valódi kampány mentését
+  /* save (v1.14.444): a kampány mentése KÉT helyre – localStorage (gyors, ~5 MB / webhely) és IndexedDB (tartalék, sokkal nagyobb).
+     A localStorage-t a hegsanya.github.io összes programja közösen használja: ha megtelik, a mentés eddig CSENDBEN elmaradt (a dátum, a javítások, a vásárlások elvesztek).
+     Most: ha a localStorage nem fogadja, az IndexedDB-be mentett állapot marad meg, és a játék egyszer figyelmeztet (savWarn). A tutorial alatt nem mentünk. */
+  save() {
+    if (this.mission) return;
+    let js = '';
+    try { js = JSON.stringify(this.pack()); }
+    catch (e) { this.savWarn('A kampány nem alakítható mentéssé: ' + e.message); return; }
+    try { localStorage.setItem('ceg_camp', js); this._lsFail = false; }
+    catch (e) { this._lsFail = true; this.savWarn('A böngésző tárhelye (localStorage) nem fogadta a mentést: ' + (e.name || '') + ' ' + (e.message || '')); }
+    idbPut('ceg_camp', js);   // tartalék (aszinkron; hiba esetén csak a konzolba ír)
+  },
+  /* savWarn: egyszeri figyelmeztetés a mentés hibájáról (munkamenetenként egyszer), a tárhely-összesítővel */
+  savWarn(msg) {
+    console.error('[CEG mentés] ' + msg);
+    if (this._savWarned) return; this._savWarned = true;
+    setTimeout(() => { try { alert('⚠ Mentési hiba\n\n' + msg + '\n\nA kampány a tartalék tárolóba (IndexedDB) kerül, így nem vész el.\n\n' + storageReport()); } catch (e) { } }, 50);
+  },
   // resumeBt: a megszakított (be nem fejezett) taktikai csata újraindítása: az OP-n már lezajlott esemény nem veszhet el (a csata állása nem menthető, ezért az esemény elölről indul, ugyanazon a cellán és időjárással)
   resumeBt() {
     const b = this.bt; if (!b || !b.ev || !this.voy || this.battle || this.mission) return;
@@ -5993,7 +6032,20 @@ const CAMP = {
     this.battle = false; this.ev = null; if (o.c.bt && !this.mission) setTimeout(() => { try { CAMP.resumeBt(); } catch (e) { } }, 500); else this.bt = null;
     if (o.cls) FLEET_CLS.forEach(c => Object.assign(D[c], o.cls[c] || {})); if (o.zone) Object.assign(ZONE, o.zone); if (o.op) OPG.load(o.op); this.refresh();
   },
-  load() { try { const o = JSON.parse(localStorage.getItem('ceg_camp') || 'null'); if (!o) return false; this.restore(o); return true; } catch (e) { return false; } },
+  /* load (v1.14.444): a betöltendő mentés szövege (js) – ha nem adod meg, a localStorage-ból. Ha a visszaállítás hibát dob, a mentés NEM vész el:
+     megmarad 'ceg_camp_bad' néven (localStorage, ha belefér; IndexedDB), és a játék szól; eddig ilyenkor csendben új kampány indult, és az felülírta a régit. */
+  load(js) {
+    let raw = js;
+    try { if (raw == null) raw = localStorage.getItem('ceg_camp'); } catch (e) { raw = null; }
+    if (!raw) return false;
+    try { const o = JSON.parse(raw); if (!o) return false; this.restore(o); return true; }
+    catch (e) {
+      try { localStorage.setItem('ceg_camp_bad', raw); } catch (x) { } idbPut('ceg_camp_bad', raw);
+      console.error('[CEG betöltés] ' + e.message);
+      setTimeout(() => { try { alert('⚠ A mentett kampány nem tölthető be: ' + e.message + '\n\nA mentés megmaradt (ceg_camp_bad); szólj, és visszahozzuk.'); } catch (x) { } }, 50);
+      return false;
+    }
+  },
   exportFile() {   // a kampány letöltése .json fájlba
     const b = new Blob([JSON.stringify(this.pack())], { type: 'application/json' }), a = document.createElement('a');
     a.href = URL.createObjectURL(b); a.download = 'ceg_kampany_' + VER + '.json'; a.click();
@@ -6028,7 +6080,18 @@ const CAMP = {
   },
 
   // start: indításkor: mentett kampány betöltése, különben új kampány
-  start() { this.loadTut(); if (!this.load()) { this.fresh(); OPG.init(); } this.refresh(); showView(CFG.homePage ? 'HOME' : 'OP'); }
+  /* start (v1.14.444): a localStorage és az IndexedDB mentése közül a frissebb (ts) töltődik be; ha egyik sincs, új kampány */
+  async start() {
+    this.loadTut();
+    let ls = null, idb = null;
+    try { ls = localStorage.getItem('ceg_camp'); } catch (e) { }
+    try { idb = await idbGet('ceg_camp'); } catch (e) { }
+    const ts = j => { try { return (JSON.parse(j) || {}).ts || 0; } catch (e) { return -1; } };
+    const pick = (idb && (!ls || ts(idb) > ts(ls))) ? idb : ls;
+    if (!(pick && this.load(pick))) { this.fresh(); OPG.init(); }
+    if (pick && pick === idb && ls !== idb) say('A kampány a tartalék mentésből (IndexedDB) töltődött be – a böngésző fő tárhelye (localStorage) tele lehet.');
+    this.refresh(); showView(CFG.homePage ? 'HOME' : 'OP');
+  }
 };
 
 // tacLblTog (v1.14.368, tacNoLbl): a Taktikai lap műveleti sávjának feliratai ki / be (az ⓘ gomb); az állapot megmarad
@@ -6248,6 +6311,7 @@ function zImport(file){
 function zReset(){if(!confirm('Visszaállítod az összes zóna-időszakot az alapértékekre?'))return;ZP=JSON.parse(JSON.stringify(ZP0));zi=-1;zPin=null;zAuto();genEv();draw();CAMP.save()}   // a zóna-térkép (módosítható): n, u, H, T vagy . (kikötő) minden cellára; az alap az Excel A31:AQ50 képleteiből
 const W=GRID.map(s=>[...s].map(Number));
 let step=0,day=244,year=1939,wind=0,heading=5,sel=[0,0],total=0,today=0,route=[],conv,done=0;
+let evmap=null;   /* v1.14.444: a napi esemény-térkép – eddig nem volt deklarálva: a genEv előtt (új kampány / betöltés nélkül) a mentés „evmap is not defined” hibával csendben elmaradt */
 let units=[],act='C',tfN=0,tut=null;   // külön haladó egységek (kötelékek: TF1, TF2…); act: az aktív egység (C = a konvoj)
 const PORTS={'Halifax':'D15','Liverpool':'W12','Gibraltár':'W18','Murmanszk':'AH4','Reykjavík':'R7','Methil':'W11','Southend':'Y13'},OLDP={'Halifax':'E17','Liverpool':'W13','Gibraltár':'V19','Murmanszk':'AG5','Reykjavík':'R8'},XM=[];
 const ROUTES={OG:['Liverpool','Gibraltár'],HG:['Gibraltár','Liverpool'],ON:['Liverpool','Halifax'],HX:['Halifax','Liverpool'],PQ:['Reykjavík','Murmanszk'],QP:['Murmanszk','Reykjavík'],LR:['Liverpool','Reykjavík'],RL:['Reykjavík','Liverpool'],LM:['Liverpool','Methil'],ML:['Methil','Liverpool'],LS:['Liverpool','Southend'],SL:['Southend','Liverpool']};const RFROM={PQ:'1941-09-01',QP:'1941-09-01',LR:'1941-09-01',RL:'1941-09-01'},cnt={};   // a Liverpool–Reykjavík–Murmanszk konvojok csak 1941 szeptemberétől közlekednek
