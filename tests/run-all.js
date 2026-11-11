@@ -116,7 +116,9 @@ await T(b,'Kanyar-kocka: 90° csak első lépés (diceNo90)',()=>{CFG.diceMode=1
  const set=()=>{s.spd=3;s.done=false;s.idx=0;s.cum=0;s.d90=false;s.ch=[];s.dice=[mk('F',0),mk('R2',2),mk('S',0),mk('L1',-1)]};
  set();chd(0);const a=diceBlk(s,s.dice[1]);                                   // előre lépés után a 90° tiltott
  set();chd(1);const b1=s.idx,b2=need(s),b3=s.dice.filter((d,i)=>i!=1).every(d=>diceBlk(s,d));chd(3);const b4=s.idx;   // 90° elsőként: utána nincs több lépés
- return{ok:a===true&&b1===1&&b2===1&&b3===true&&b4===1,info:JSON.stringify({a,b1,b2,b3,b4})}});
+ /* v1.14.441: ha az első lépés után csak 90°-os kocka marad, a mozgás véget ér (nem marad „beragadt” lépés) */
+ s.dice=[mk('L1',-1),mk('L2',-2),mk('F',0),mk('L2',-2)];s.spd=3;s.done=false;s.idx=0;s.cum=0;s.d90=false;s.ch=[];chd(2);chd(0);const c1=s.idx,c2=need(s);
+ return{ok:a===true&&b1===1&&b2===1&&b3===true&&b4===1&&c1===2&&c2===2,info:JSON.stringify({a,b1,b2,b3,b4,c1,c2})}});
 // 17) v1.14.429: beállítás-kereső – név szerint 1 találat, ékezet nélkül is talál, törlés után minden sor visszajön
 await T(b,'Beállítás-kereső (cfgFilter)',()=>{CAMP.setupView();
  const vis=()=>[...document.querySelectorAll('#vSET tr')].filter(t=>t.querySelector('td')&&t.style.display!='none'&&t.closest('table').style.display!='none').length;
