@@ -1,6 +1,6 @@
 <!doctype html><html lang="hu" data-theme="light"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>CEG – Konvoj kísérő kampány v1.14.446</title>
+<title>CEG – Konvoj kísérő kampány v1.14.447</title>
 <style>
 /* Színek: világos/sötét téma változókkal; a gombok és táblázatok stílusa */
 :root{--bg:#f4f1ea;--fg:#1d2733;--pn:#fff;--ln:#c9c2b3;--ac:#b3261e;--sea:#d6ecf4;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -2430,6 +2430,14 @@ function aiTurnE(e){if(e.done)return;sel=e;
   /* escBusy: a (nx,ny) mezőn áll-e saját oldali hajó (másik kísérő vagy teherhajó)? Ilyenkor a lépés büntetést kap (escAvoid), hogy az AI kikerülje – de nem tiltott, ha nincs jobb út */
   const escBusy=(nx,ny)=>CFG.escAvoid&&+CFG.escAvoidPen>0&&ships.some(q=>q!==e&&((q.t=='E'&&!q.en)||q.t=='M')&&occ(q,nx,ny))?+CFG.escAvoidPen:0;
   const scf=d=>{const w=DV[d],nx=e.x+w[0],ny=e.y+w[1];if(nx<1||nx>N||ny<1||ny>N||sternAt(e,nx,ny))return null;const av=escBusy(nx,ny);return av+(chase?Math.hypot(nx-tg.x,ny-tg.y)+.15*zd(nx,ny):hunt?Math.hypot(nx-hunt.x,ny-hunt.y)+.05*zd(nx,ny):pt?Math.hypot(nx-pt.x,ny-pt.y)+.02*Math.abs(d-e.dir):zd(nx,ny)+Math.abs(d-cd)*.5)};
+  /* v1.14.447: KANYAR-KOCKA – a saját AI-kísérő (NPC / automata) is a kapott kanyar-kockákból választ (mint az U-boat és a felszíni AI):
+     a még választható kockák közül (diceBlk: felhasznált, 90° csak elsőként, kanyar-korlát) a legjobb pontszámú; ha egyik sem választható, a mozgás véget ér */
+  if(!free&&CFG.diceMode&&Array.isArray(e.dice)){
+   let bk=-1,bs=1e9;
+   e.dice.forEach((d,k)=>{if(d.stop||diceBlk(e,d))return;const sc=scf(nd(e.dir+d.v));if(sc!=null&&sc<bs-1e-9){bs=sc;bk=k}});
+   if(bk<0)break;                                   // nincs használható kocka (vagy mind pályán kívülre vinne): a lépések elvesznek
+   const i0=e.idx;chd(bk);if(e.idx===i0)break;      // a lépés nem történt meg (pl. tiltás): ne ragadjon be
+   aiDrop(e);continue}
   const opts=free?trStepOpts(cdir,n45,i,trRud(e)).map(q=>q.d):(e.groups[i]||[e.dir]);   // szabad mozgás: nincs véletlen irány-csoport
   for(const d of opts){const sc=scf(d);if(sc!=null&&sc<bd){bd=sc;best=d}}
   if(!free)(e.jokers||[]).forEach((j,n)=>{if(j.used)return;const sc=scf(j.d);if(sc!=null&&sc<bd-1e-9){bd=sc;best=j.d;bj=n}});   // a Joker csak akkor kell, ha szigorúan jobb a hagyományos irányoknál
@@ -4557,6 +4565,7 @@ function storageReport() {
 //   v1.14.418 (2026-11-09) – kézi kísérő iránya (manDir: 0 ki / 1 minden kézi kísérő / 2 csak a kijelölt): narancs szaggatott vonal a legközelebbi látható U-boat felé (az AI-vonal mintájára, az AI érzékelési sugarán belül)
 //   v1.14.417 (2026-11-09) – a napfény és a csillogás (W0–W1) a TELJES taktikai pályán (korábban csak a keretben); az időjárás-effektek (felhő, eső, villám, napfény, csillogás) mind az egész pályán
 //   v1.14.416 (2026-11-09) – a belső felhők kisebbek (3–6 cella) és szintenként sötétednek / szaporodnak: W2 fehér, W3 szürke, W4 sötét, összefüggő tömbökben (csoportok); a pályát nem borítják el
+//   v1.14.447 (2026-11-11) – JAVÍTÁS, kanyar-kocka: a saját AI-kísérők (NPC és automata kíséret) eddig az irány-kocka csoportjaiból léptek (vad irányváltás is lehetett); most ők is a kapott kanyar-kockákból választanak, a 90°-szabállyal és a kanyar-korláttal együtt (mint az U-boat és a felszíni ellenség AI)
 //   v1.14.446 (2026-11-11) – FŐOLDAL: tárhely-sor (homeStore, alap BE): a localStorage foglaltsága (a hegsanya.github.io összes programjáé, ~5 MB keret, %), ebből a játék, és a böngésző teljes (IndexedDB-vel együtt) használata; 80% fölött piros, és kiírja a legnagyobb bejegyzést (pl. egy másik program fájlja)
 //   v1.14.445 (2026-11-11) – MENTÉS: ha a localStorage tele, de az IndexedDB-be sikerült menteni, nincs felugró ablak (csak egy sor a naplóban); felugró figyelmeztetés csak akkor, ha a tartalék sem sikerül
 //   v1.14.444 (2026-11-11) – JAVÍTÁS, KAMPÁNYMENTÉS: a mentés hibája eddig csendben elmaradt (pl. megtelt a localStorage, amelyen a hegsanya.github.io összes programja osztozik) → a dátum, a javítás, a vásárlás újratöltéskor elveszett. Most: tartalék mentés IndexedDB-be is (mindig), induláskor a frissebb mentés töltődik be; hiba esetén egyszeri figyelmeztetés a tárhely-összesítővel; ha a mentés nem tölthető be, nem íródik felül (ceg_camp_bad)
@@ -4764,7 +4773,7 @@ function storageReport() {
 //   v1.14.239 (2026-10-26) – ÚJ: (1) LUT torpedó (lutOn, alap 1; 1944. januártól): az U-boat kártyán „LUT” jelölőnégyzet (az AI lutAiP %); a FAT utóda: lutLen 18 cella, lutRun 6 egyenes, lutLeg 3 fél-szélesség, találat teherhajón d6 ≤ lutHit (3), hadihajón ≤ lutHitE (1); ha FAT is be van jelölve, a LUT számít. (2) LÉGPERISZKÓP / SCHNORCHEL (schOn, alap 1; 1944. júniustól; csak szabad mozgásnál): 1/8-as mélységen a kártya „Légperiszkóp” jelölőnégyzetével a dízel hajt: az akku nem fogy, hanem schRech (2) cellát tölt körönként, max schSpd (2) lépés, kimerült akkuval is halad; kiesett dízelnél nem működik; az AI az akku fele alatt automatikusan használja.
 //   v1.14.238 (2026-10-26) – SZABAD MOZGÁS: az U-boat a belső játékterületen (pl. 80-as táblán az 50×50-esen) bárhol léphet be, nem csak a szélén (uInner, alapból BE; KI = a régi szél-belépés uEdge szerint).
 //   v1.14.237 (2026-10-26) – HEDGEHOG / SQUID ELLENŐRZÉS: az U-boat lépés utáni kiértékelésében a hedgehog / Squid „nincs találat” eredmény akkor is kiíródik, ha a vízibombák is hatottak (eddig ilyenkor csak a vízibomba-sor látszott, a hedgehog-ellenőrzés nem)
-const VER = 'v1.14.446';
+const VER = 'v1.14.447';
 // ===== MEGFIGYELŐ / TESZT MÓD (obsMode, v1.14.195) =====
 // Megfigyelő módban mindkét oldalt az AI vezérli (a kísérők is: NPC-logikával), a pálya mindent mutat (nincs köd), és a körök maguktól léptetődnek;
 // a lezárt csatákból statisztika készül (konvoj-, U-boat-, kísérő-veszteség, kimenetel), hogy látszódjon: sokféle csata születik-e, vagy egyoldalú lett a hangolás.
