@@ -1,6 +1,6 @@
 <!doctype html><html lang="hu" data-theme="light"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>CEG – Konvoj kísérő kampány v1.14.450</title>
+<title>CEG – Konvoj kísérő kampány v1.14.451</title>
 <style>
 /* Színek: világos/sötét téma változókkal; a gombok és táblázatok stílusa */
 :root{--bg:#f4f1ea;--fg:#1d2733;--pn:#fff;--ln:#c9c2b3;--ac:#b3261e;--sea:#d6ecf4;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -1027,9 +1027,14 @@ function qsApply(gi,oi){const g=QS[gi],o=g.o[oi];
 function qbRender(){const el=document.getElementById('qb');if(!el)return;
  el.innerHTML=QS.map((g,gi)=>{const act=g.o.findIndex(o=>Object.entries(o[1]).every(([k,v])=>+qsGet(k)===+v));
   return '<span class="qg"><small>'+g.t+':</small>'+g.o.map((o,oi)=>'<button class="'+(oi===act?'on':'')+'" onclick="qsApply('+gi+','+oi+')">'+o[0]+'</button>').join('')+(act<0?'<i>(egyedi)</i>':'')+'</span>'}).join('')}
-function saveCfg(){try{localStorage.setItem('ceg_cfg',JSON.stringify(CFG))}catch(e){}}
+/* saveCfg: a beállítások mentése. v1.14.451: a gyakorló küldetés (tutorial) alatt a CFG ideiglenes értékeket kap (14 hajós konvoj, STOP kikapcsolva stb.);
+   ezek eddig bekerülhettek a mentésbe, ha a gyakorlat közben bármi elmentette a beállításokat → a mentésbe mindig az eredeti (eltett) értékek kerülnek */
+function saveCfg(){try{const m=(typeof CAMP!=='undefined'&&CAMP.mission&&CAMP.stashCfg)?Object.assign({},CFG,CAMP.stashCfg):CFG;localStorage.setItem('ceg_cfg',JSON.stringify(m))}catch(e){}}
 try{Object.assign(CFG,JSON.parse(localStorage.getItem('ceg_cfg')||'{}'))}catch(e){}
 /* v1.14.387: egyszeri átállás – a vihar extra rajz-animációja (wxSmSwirl) alapból ki: a mentett 60 → 0 */
+/* v1.14.451: a tutorial bennragadt ideiglenes beállításai (ismertetőjel: stopBase = 100000 – ezt csak a gyakorlat állítja) → vissza az alapértékre (egyszer):
+   konvoj mérete 14 / 14 → 20 / 50, STOP-alap → 80, támogató hajók → be, AI agresszivitás 7 → 6. Az AI-kapcsolókat és a kézi dobást nem bántjuk (lehet saját döntés). */
+try{if(localStorage.getItem('ceg_mig451')!=='1'){if(+CFG.stopBase===100000){const fx={stopBase:80,supOn:1};if(+CFG.shipsLo===14&&+CFG.shipsHi===14){fx.shipsLo=20;fx.shipsHi=50}if(+CFG.aiAggr===7)fx.aiAggr=6;Object.assign(CFG,fx);localStorage.setItem('ceg_cfg',JSON.stringify(Object.assign(JSON.parse(localStorage.getItem('ceg_cfg')||'{}'),fx)))}localStorage.setItem('ceg_mig451','1')}}catch(e){}
 /* v1.14.450: a kanyar-kocka új alapsúlyai (előre / 45° = 4, 90° = 2, STOP = 1) – ha a mentett beállításban még a régi, egyforma 1-esek vannak, átállítjuk (egyszer) */
 try{if(localStorage.getItem('ceg_mig450')!=='1'){if(['dF','dR1','dR2','dL1','dL2','dS'].every(k=>+CFG[k]===1)){Object.assign(CFG,{dF:4,dR1:4,dR2:2,dL1:4,dL2:2,dS:1});localStorage.setItem('ceg_cfg',JSON.stringify(Object.assign(JSON.parse(localStorage.getItem('ceg_cfg')||'{}'),{dF:4,dR1:4,dR2:2,dL1:4,dL2:2,dS:1})))}localStorage.setItem('ceg_mig450','1')}}catch(e){}
 try{if(localStorage.getItem('ceg_mig387')!=='1'){if(+CFG.wxSmSwirl==60){CFG.wxSmSwirl=0;localStorage.setItem('ceg_cfg',JSON.stringify(Object.assign(JSON.parse(localStorage.getItem('ceg_cfg')||'{}'),{wxSmSwirl:0})))}localStorage.setItem('ceg_mig387','1')}}catch(e){}
@@ -4567,6 +4572,7 @@ function storageReport() {
 //   v1.14.418 (2026-11-09) – kézi kísérő iránya (manDir: 0 ki / 1 minden kézi kísérő / 2 csak a kijelölt): narancs szaggatott vonal a legközelebbi látható U-boat felé (az AI-vonal mintájára, az AI érzékelési sugarán belül)
 //   v1.14.417 (2026-11-09) – a napfény és a csillogás (W0–W1) a TELJES taktikai pályán (korábban csak a keretben); az időjárás-effektek (felhő, eső, villám, napfény, csillogás) mind az egész pályán
 //   v1.14.416 (2026-11-09) – a belső felhők kisebbek (3–6 cella) és szintenként sötétednek / szaporodnak: W2 fehér, W3 szürke, W4 sötét, összefüggő tömbökben (csoportok); a pályát nem borítják el
+//   v1.14.451 (2026-11-12) – JAVÍTÁS: a gyakorló küldetés ideiglenes beállításai (14 hajós konvoj, STOP kikapcsolva = stopBase 100000, támogatás ki, AI-agresszivitás 7) bekerülhettek a mentett beállításokba; most a mentésbe mindig az eredeti értékek kerülnek, és a bennragadt értékek egyszer visszaállnak
 //   v1.14.450 (2026-11-12) – KANYAR-KOCKA új alapsúlyok: előre és 45° = 4, 90° = 2, STOP = 1 (STOP ~6%, 90° ~24%, előre / 45° ~71%; a régi egyforma 1-esek egyszer átállnak); OP térkép: a zászló talpa a cella közepén
 //   v1.14.449 (2026-11-12) – OP TÉRKÉP: a konvoj és a TF-ek kis talpas zászlóval jelölve (opFlags, alap BE): talp, rúd, fecskefarkú lobogó a névvel; a konvoj zöld (opFlagC), a TF-ek kékek (opFlagT) – az útvonaluk is ilyen színű; az aktív egység lobogója fekete keretű
 //   v1.14.448 (2026-11-11) – KANYAR-KOCKA: a sebesség fölötti alapkockák száma állítható (diceSpdPlus, alap 1; 2 = sebesség + 2); a diceCap leírása pontosítva
@@ -4778,7 +4784,7 @@ function storageReport() {
 //   v1.14.239 (2026-10-26) – ÚJ: (1) LUT torpedó (lutOn, alap 1; 1944. januártól): az U-boat kártyán „LUT” jelölőnégyzet (az AI lutAiP %); a FAT utóda: lutLen 18 cella, lutRun 6 egyenes, lutLeg 3 fél-szélesség, találat teherhajón d6 ≤ lutHit (3), hadihajón ≤ lutHitE (1); ha FAT is be van jelölve, a LUT számít. (2) LÉGPERISZKÓP / SCHNORCHEL (schOn, alap 1; 1944. júniustól; csak szabad mozgásnál): 1/8-as mélységen a kártya „Légperiszkóp” jelölőnégyzetével a dízel hajt: az akku nem fogy, hanem schRech (2) cellát tölt körönként, max schSpd (2) lépés, kimerült akkuval is halad; kiesett dízelnél nem működik; az AI az akku fele alatt automatikusan használja.
 //   v1.14.238 (2026-10-26) – SZABAD MOZGÁS: az U-boat a belső játékterületen (pl. 80-as táblán az 50×50-esen) bárhol léphet be, nem csak a szélén (uInner, alapból BE; KI = a régi szél-belépés uEdge szerint).
 //   v1.14.237 (2026-10-26) – HEDGEHOG / SQUID ELLENŐRZÉS: az U-boat lépés utáni kiértékelésében a hedgehog / Squid „nincs találat” eredmény akkor is kiíródik, ha a vízibombák is hatottak (eddig ilyenkor csak a vízibomba-sor látszott, a hedgehog-ellenőrzés nem)
-const VER = 'v1.14.450';
+const VER = 'v1.14.451';
 // ===== MEGFIGYELŐ / TESZT MÓD (obsMode, v1.14.195) =====
 // Megfigyelő módban mindkét oldalt az AI vezérli (a kísérők is: NPC-logikával), a pálya mindent mutat (nincs köd), és a körök maguktól léptetődnek;
 // a lezárt csatákból statisztika készül (konvoj-, U-boat-, kísérő-veszteség, kimenetel), hogy látszódjon: sokféle csata születik-e, vagy egyoldalú lett a hangolás.
