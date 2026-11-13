@@ -1,6 +1,6 @@
 <!doctype html><html lang="hu" data-theme="light"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>CEG – Konvoj kísérő kampány v1.14.454</title>
+<title>CEG – Konvoj kísérő kampány v1.14.455</title>
 <style>
 /* Színek: világos/sötét téma változókkal; a gombok és táblázatok stílusa */
 :root{--bg:#f4f1ea;--fg:#1d2733;--pn:#fff;--ln:#c9c2b3;--ac:#b3261e;--sea:#d6ecf4;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -4608,6 +4608,7 @@ function storageReport() {
 //   v1.14.418 (2026-11-09) – kézi kísérő iránya (manDir: 0 ki / 1 minden kézi kísérő / 2 csak a kijelölt): narancs szaggatott vonal a legközelebbi látható U-boat felé (az AI-vonal mintájára, az AI érzékelési sugarán belül)
 //   v1.14.417 (2026-11-09) – a napfény és a csillogás (W0–W1) a TELJES taktikai pályán (korábban csak a keretben); az időjárás-effektek (felhő, eső, villám, napfény, csillogás) mind az egész pályán
 //   v1.14.416 (2026-11-09) – a belső felhők kisebbek (3–6 cella) és szintenként sötétednek / szaporodnak: W2 fehér, W3 szürke, W4 sötét, összefüggő tömbökben (csoportok); a pályát nem borítják el
+//   v1.14.455 (2026-11-13) – Beállítások lap: a bevezető „Ugrás: …” szöveg elhagyva (becsukott szakaszoknál nem ugrott sehová; a szakaszcímek a tartalomjegyzék)
 //   v1.14.454 (2026-11-13) – a kiválasztott gyorskapcsoló zöld háttere a Normál és a Sötét témában is látszik; a Főoldalról lekerült a Nézet: Egyszerű / Teljes gomb (a beállítás – simpleUI – megmarad)
 //   v1.14.453 (2026-11-13) – NÉZET átdolgozva: (1) Beállítások lap – felül a gyorskapcsolók (mindig), a szakaszok és csoportok lenyithatók (Egyszerű nézetben becsukva, Teljes nézetben nyitva; Mind kinyit / becsuk; keresés közben minden nyitva); (2) OP és Taktikai lap – az extra beállítások (rétegek, zónák, csata-beállítások, OP / taktikai beállítások, megfigyelő mód) egy lenyitható „⚙ Extra beállítások” csoportban, az Egyszerű nézetben is elérhetők; a menü ⚙ Extrák gombja mindet egyszerre nyitja / zárja; (3) gyorskapcsoló „Irányítás”: Irány-kocka / Kanyar-kocka / Szabad mozgás (a félrevezető „Irányok / Iránykockák” és „Sakktábla / Szabad” helyett)
 //   v1.14.452 (2026-11-12) – IRÁNY-KOCKA: a szenzor-Joker iránya a hajó iránya ±2 (±90°) – jokClamp, alap 2; a szonár / HF-DF a kontaktus felé mutató irányt a sávra vágja, a radar véletlen iránya is a sávon belül; 0 = a régi 1–8
@@ -4823,7 +4824,7 @@ function storageReport() {
 //   v1.14.239 (2026-10-26) – ÚJ: (1) LUT torpedó (lutOn, alap 1; 1944. januártól): az U-boat kártyán „LUT” jelölőnégyzet (az AI lutAiP %); a FAT utóda: lutLen 18 cella, lutRun 6 egyenes, lutLeg 3 fél-szélesség, találat teherhajón d6 ≤ lutHit (3), hadihajón ≤ lutHitE (1); ha FAT is be van jelölve, a LUT számít. (2) LÉGPERISZKÓP / SCHNORCHEL (schOn, alap 1; 1944. júniustól; csak szabad mozgásnál): 1/8-as mélységen a kártya „Légperiszkóp” jelölőnégyzetével a dízel hajt: az akku nem fogy, hanem schRech (2) cellát tölt körönként, max schSpd (2) lépés, kimerült akkuval is halad; kiesett dízelnél nem működik; az AI az akku fele alatt automatikusan használja.
 //   v1.14.238 (2026-10-26) – SZABAD MOZGÁS: az U-boat a belső játékterületen (pl. 80-as táblán az 50×50-esen) bárhol léphet be, nem csak a szélén (uInner, alapból BE; KI = a régi szél-belépés uEdge szerint).
 //   v1.14.237 (2026-10-26) – HEDGEHOG / SQUID ELLENŐRZÉS: az U-boat lépés utáni kiértékelésében a hedgehog / Squid „nincs találat” eredmény akkor is kiíródik, ha a vízibombák is hatottak (eddig ilyenkor csak a vízibomba-sor látszott, a hedgehog-ellenőrzés nem)
-const VER = 'v1.14.454';
+const VER = 'v1.14.455';
 // ===== MEGFIGYELŐ / TESZT MÓD (obsMode, v1.14.195) =====
 // Megfigyelő módban mindkét oldalt az AI vezérli (a kísérők is: NPC-logikával), a pálya mindent mutat (nincs köd), és a körök maguktól léptetődnek;
 // a lezárt csatákból statisztika készül (konvoj-, U-boat-, kísérő-veszteség, kimenetel), hogy látszódjon: sokféle csata születik-e, vagy egyoldalú lett a hangolás.
@@ -5884,7 +5885,7 @@ const CAMP = {
   },
   setupView() {
     this.cfgBack();
-    let h = '<h2>Beállítások <small>(' + VER + ')</small></h2><p><small>Minden beállítás ezen a lapon van, egy helyen; az érték azonnal érvényes és mentődik a kampánnyal. Ugrás: <a href="#setEco">Gazdaság és flotta</a> · <a href="#setCls">Hajóosztályok</a> · <a href="#setPort">Kikötők</a> · <a href="#setTac">Taktikai csata (dobások, üzenetek, pálya, grafika, sötét téma)</a> · <a href="#setOp">OP térkép (események, térkép)</a></small></p>';
+    let h = '<h2>Beállítások <small>(' + VER + ')</small></h2>';   /* v1.14.455: az „Ugrás” bevezető szöveg elhagyva – a lenyitható szakaszok címei adják a tartalomjegyzéket */
     /* v1.14.453: gyorskapcsoló-szakasz a lap tetején (mindig látszik), alatta a lenyitható szakaszok; „Mind kinyit / becsuk” */
     h += '<div style="margin:4px 0 8px;padding:6px 8px;border:1px solid rgba(128,128,128,.45);border-radius:8px"><b>⚡ Gyorskapcsolók</b> <small>(egy kattintás a csoport összes beállítását átállítja)</small><div class="bar" id="qbSet" style="margin-top:4px"></div></div>';
     h += '<p style="margin:4px 0"><button onclick="secAll(1)">▾ Mind kinyit</button> <button onclick="secAll(0)">▸ Mind becsuk</button> <small>(a címre kattintva egyenként is; Egyszerű nézetben alapból becsukva)</small></p>';
