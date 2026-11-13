@@ -1,6 +1,6 @@
 <!doctype html><html lang="hu" data-theme="light"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>CEG – Konvoj kísérő kampány v1.14.471</title>
+<title>CEG – Konvoj kísérő kampány v1.14.472</title>
 <style>
 /* Színek: világos/sötét téma változókkal; a gombok és táblázatok stílusa */
 :root{--bg:#f4f1ea;--fg:#1d2733;--pn:#fff;--ln:#c9c2b3;--ac:#b3261e;--sea:#d6ecf4;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -2482,6 +2482,8 @@ function zoneRingPt(e,cm,z){const f=Math.max(.2,Math.min(1,(+CFG.aiPatrolF||80)/
  const g=toG(ca+tx,cb+ty);return{x:cl(cm.x+g[0],1,N),y:cl(cm.y+g[1],1,N)}}
 // patrolAdv: ha a kísérő elérte (1 cellán belül) a csúcsot, a következő csúcsra vált
 function patrolAdv(e,cm,z){let pt=patrolPt(e,cm,z);if(cheb(e,pt)<=1){e.pw=((e.pw|0)+1)%Math.max(3,Math.min(8,(CFG.aiPatrolN|0)||3));pt=patrolPt(e,cm,z)}return pt}
+/* aiDiceStop (v1.14.472): kanyar-kockánál az AI-kísérő megmaradt lépéseit STOP-kockával (ha nincs, kimaradó lépéssel) zárja – mint amikor a játékos a STOP-ot választja */
+function aiDiceStop(e){for(let g=0;g<20&&e.idx<need(e);g++){const sk=e.dice.findIndex(d=>d.stop&&!d.used);if(sk>=0){const i0=e.idx;chd(sk);if(e.idx>i0)continue}e.ch[e.idx]='S';e.idx++}}
 function aiTurnE(e){if(e.done)return;sel=e;
  if(CFG.aiEsc&&CFG.fog){   // aiEsc: szenzor-kezelés: radar végig be; szonár aiSonP % eséllyel be, kontaktusnál (detSeen) bent marad
   if(e.rq>0)e.emR=1;
@@ -2516,13 +2518,14 @@ function aiTurnE(e){if(e.done)return;sel=e;
   if(!free&&CFG.diceMode&&Array.isArray(e.dice)){
    let bk=-1,bs=1e9;
    e.dice.forEach((d,k)=>{if(d.stop||diceBlk(e,d))return;const sc=scf(nd(e.dir+d.v));if(sc!=null&&sc<bs-1e-9){bs=sc;bk=k}});
-   if(bk<0)break;                                   // nincs használható kocka (vagy mind pályán kívülre vinne): a lépések elvesznek
+   if(bk<0)break;                                   // nincs használható kocka (vagy mind pályán kívülre vinne): a lépések elvesznek (a ciklus után STOP – aiDiceStop)
    const i0=e.idx;chd(bk);if(e.idx===i0)break;      // a lépés nem történt meg (pl. tiltás): ne ragadjon be
    aiDrop(e);continue}
   const opts=free?trStepOpts(cdir,n45,i,trRud(e)).map(q=>q.d):(e.groups[i]||[e.dir]);   // szabad mozgás: nincs véletlen irány-csoport
   for(const d of opts){const sc=scf(d);if(sc!=null&&sc<bd){bd=sc;best=d}}
   if(!free)(e.jokers||[]).forEach((j,n)=>{if(j.used)return;const sc=scf(j.d);if(sc!=null&&sc<bd-1e-9){bd=sc;best=j.d;bj=n}});   // a Joker csak akkor kell, ha szigorúan jobb a hagyományos irányoknál
   {const nd_=best!=null?best:e.dir;ch(e.idx,nd_);if(free){if(Math.min(Math.abs(nd_-cdir),8-Math.abs(nd_-cdir))==1)n45++;cdir=nd_}}if(bj!=null)e.jokers[bj].used=true;aiDrop(e)}
+ if(!free&&CFG.diceMode&&Array.isArray(e.dice))aiDiceStop(e);   // v1.14.472: a megmaradt lépések STOP-pal zárulnak (különben a „kész” nem fogadná el – a kör beragadt)
  mounts(e.c).forEach((M,mi_)=>{const rg=Math.min(D[e.c].gun[M.idx[0]][1],CFG.calCap);
   const t=ships.filter(q=>(q.t=='U'&&q.dep==0)||q.t=='A'||(q.en&&q.t=='E')).filter(q=>cheb(e,q)<=rg).sort((a,b)=>cheb(e,a)-cheb(e,b))[0];
   if(t){e.tgt=t.id;shootMount(mi_)}});
@@ -4651,6 +4654,7 @@ function storageReport() {
 //   v1.14.418 (2026-11-09) – kézi kísérő iránya (manDir: 0 ki / 1 minden kézi kísérő / 2 csak a kijelölt): narancs szaggatott vonal a legközelebbi látható U-boat felé (az AI-vonal mintájára, az AI érzékelési sugarán belül)
 //   v1.14.417 (2026-11-09) – a napfény és a csillogás (W0–W1) a TELJES taktikai pályán (korábban csak a keretben); az időjárás-effektek (felhő, eső, villám, napfény, csillogás) mind az egész pályán
 //   v1.14.416 (2026-11-09) – a belső felhők kisebbek (3–6 cella) és szintenként sötétednek / szaporodnak: W2 fehér, W3 szürke, W4 sötét, összefüggő tömbökben (csoportok); a pályát nem borítják el
+//   v1.14.472 (2026-11-13) – JAVÍTÁS: kanyar-kockánál az AI-kísérő (NPC / automata) beragadt, ha a megmaradt kockák egyike sem volt használható (pl. pályán kívülre vitt volna): a megmaradt lépéseket most STOP-kockával zárja, így a kör / a lejátszás továbbmegy
 //   v1.14.471 (2026-11-13) – JAVÍTÁS: az NPC-konvojok csatáiban elsüllyedt U-boat nem számít (nem pusztul el a kampányban, nem csökkenti az események U-boat-létszámát, nem emeli a fenyegetés-szintet) – csak ha a TE flottád egyik hajója süllyesztette el; egyszeri javítás a mentésben: a felgyűlt U-boat-veszteség és fenyegetés-szint nullázva (emiatt nem jött U-boat a csatákba)
 //   v1.14.470 (2026-11-13) – (1) NPC AI-CSATA MEGNÉZHETŐ (ECO npcWatch, alap 1 = kérdez): a taktikai lapon, alul vezérlősáv: ▶ lejátszás / ⏸, ⏭ 1 kör, sebesség, ⏩ végig, a végén ✔ eredmény; (2) JAVÍTÁS: az NPC-csatában elsüllyedt U-boat már nem emeli a TE konvojod fenyegetés-szintjét (a belépő kocka d35 / d45 lett tőle a következő napokra)
 //   v1.14.469 (2026-11-13) – NPC-KONVOJ AI–AI CSATA (ECO npcSim, alap BE): a gyors képlet helyett a Megfigyelő mód motorja – rendes taktikai csata a háttérben (rajz, animáció, kérdés nélkül), a kampány U-boatjaival; a kísérők NPC-AI-ként; ha a saját hajóid is ott vannak és nem vezényled, ők is AI-ként harcolnak; ha taktikai csata van folyamatban, a régi gyors számítás dönt
@@ -4883,7 +4887,7 @@ function storageReport() {
 //   v1.14.239 (2026-10-26) – ÚJ: (1) LUT torpedó (lutOn, alap 1; 1944. januártól): az U-boat kártyán „LUT” jelölőnégyzet (az AI lutAiP %); a FAT utóda: lutLen 18 cella, lutRun 6 egyenes, lutLeg 3 fél-szélesség, találat teherhajón d6 ≤ lutHit (3), hadihajón ≤ lutHitE (1); ha FAT is be van jelölve, a LUT számít. (2) LÉGPERISZKÓP / SCHNORCHEL (schOn, alap 1; 1944. júniustól; csak szabad mozgásnál): 1/8-as mélységen a kártya „Légperiszkóp” jelölőnégyzetével a dízel hajt: az akku nem fogy, hanem schRech (2) cellát tölt körönként, max schSpd (2) lépés, kimerült akkuval is halad; kiesett dízelnél nem működik; az AI az akku fele alatt automatikusan használja.
 //   v1.14.238 (2026-10-26) – SZABAD MOZGÁS: az U-boat a belső játékterületen (pl. 80-as táblán az 50×50-esen) bárhol léphet be, nem csak a szélén (uInner, alapból BE; KI = a régi szél-belépés uEdge szerint).
 //   v1.14.237 (2026-10-26) – HEDGEHOG / SQUID ELLENŐRZÉS: az U-boat lépés utáni kiértékelésében a hedgehog / Squid „nincs találat” eredmény akkor is kiíródik, ha a vízibombák is hatottak (eddig ilyenkor csak a vízibomba-sor látszott, a hedgehog-ellenőrzés nem)
-const VER = 'v1.14.471';
+const VER = 'v1.14.472';
 // ===== MEGFIGYELŐ / TESZT MÓD (obsMode, v1.14.195) =====
 // Megfigyelő módban mindkét oldalt az AI vezérli (a kísérők is: NPC-logikával), a pálya mindent mutat (nincs köd), és a körök maguktól léptetődnek;
 // a lezárt csatákból statisztika készül (konvoj-, U-boat-, kísérő-veszteség, kimenetel), hogy látszódjon: sokféle csata születik-e, vagy egyoldalú lett a hangolás.
