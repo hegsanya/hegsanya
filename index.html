@@ -1,6 +1,6 @@
 <!doctype html><html lang="hu" data-theme="light"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>CEG – Konvoj kísérő kampány v1.14.469</title>
+<title>CEG – Konvoj kísérő kampány v1.14.470</title>
 <style>
 /* Színek: világos/sötét téma változókkal; a gombok és táblázatok stílusa */
 :root{--bg:#f4f1ea;--fg:#1d2733;--pn:#fff;--ln:#c9c2b3;--ac:#b3261e;--sea:#d6ecf4;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -4651,6 +4651,7 @@ function storageReport() {
 //   v1.14.418 (2026-11-09) – kézi kísérő iránya (manDir: 0 ki / 1 minden kézi kísérő / 2 csak a kijelölt): narancs szaggatott vonal a legközelebbi látható U-boat felé (az AI-vonal mintájára, az AI érzékelési sugarán belül)
 //   v1.14.417 (2026-11-09) – a napfény és a csillogás (W0–W1) a TELJES taktikai pályán (korábban csak a keretben); az időjárás-effektek (felhő, eső, villám, napfény, csillogás) mind az egész pályán
 //   v1.14.416 (2026-11-09) – a belső felhők kisebbek (3–6 cella) és szintenként sötétednek / szaporodnak: W2 fehér, W3 szürke, W4 sötét, összefüggő tömbökben (csoportok); a pályát nem borítják el
+//   v1.14.470 (2026-11-13) – (1) NPC AI-CSATA MEGNÉZHETŐ (ECO npcWatch, alap 1 = kérdez): a taktikai lapon, alul vezérlősáv: ▶ lejátszás / ⏸, ⏭ 1 kör, sebesség, ⏩ végig, a végén ✔ eredmény; (2) JAVÍTÁS: az NPC-csatában elsüllyedt U-boat már nem emeli a TE konvojod fenyegetés-szintjét (a belépő kocka d35 / d45 lett tőle a következő napokra)
 //   v1.14.469 (2026-11-13) – NPC-KONVOJ AI–AI CSATA (ECO npcSim, alap BE): a gyors képlet helyett a Megfigyelő mód motorja – rendes taktikai csata a háttérben (rajz, animáció, kérdés nélkül), a kampány U-boatjaival; a kísérők NPC-AI-ként; ha a saját hajóid is ott vannak és nem vezényled, ők is AI-ként harcolnak; ha taktikai csata van folyamatban, a régi gyors számítás dönt
 //   v1.14.468 (2026-11-13) – OP-ZÁSZLÓK a legfelső cellasorban: nem lógnak lefelé, hanem nagyon rövid a rúd (a zászló a cella tetején)
 //   v1.14.467 (2026-11-13) – OP-ZÁSZLÓK a legfelső cellasorban: fent nincs hely, ezért a zászló lefelé lóg a talpról (saját konvoj, TF, NPC-konvoj)
@@ -4881,7 +4882,7 @@ function storageReport() {
 //   v1.14.239 (2026-10-26) – ÚJ: (1) LUT torpedó (lutOn, alap 1; 1944. januártól): az U-boat kártyán „LUT” jelölőnégyzet (az AI lutAiP %); a FAT utóda: lutLen 18 cella, lutRun 6 egyenes, lutLeg 3 fél-szélesség, találat teherhajón d6 ≤ lutHit (3), hadihajón ≤ lutHitE (1); ha FAT is be van jelölve, a LUT számít. (2) LÉGPERISZKÓP / SCHNORCHEL (schOn, alap 1; 1944. júniustól; csak szabad mozgásnál): 1/8-as mélységen a kártya „Légperiszkóp” jelölőnégyzetével a dízel hajt: az akku nem fogy, hanem schRech (2) cellát tölt körönként, max schSpd (2) lépés, kimerült akkuval is halad; kiesett dízelnél nem működik; az AI az akku fele alatt automatikusan használja.
 //   v1.14.238 (2026-10-26) – SZABAD MOZGÁS: az U-boat a belső játékterületen (pl. 80-as táblán az 50×50-esen) bárhol léphet be, nem csak a szélén (uInner, alapból BE; KI = a régi szél-belépés uEdge szerint).
 //   v1.14.237 (2026-10-26) – HEDGEHOG / SQUID ELLENŐRZÉS: az U-boat lépés utáni kiértékelésében a hedgehog / Squid „nincs találat” eredmény akkor is kiíródik, ha a vízibombák is hatottak (eddig ilyenkor csak a vízibomba-sor látszott, a hedgehog-ellenőrzés nem)
-const VER = 'v1.14.469';
+const VER = 'v1.14.470';
 // ===== MEGFIGYELŐ / TESZT MÓD (obsMode, v1.14.195) =====
 // Megfigyelő módban mindkét oldalt az AI vezérli (a kísérők is: NPC-logikával), a pálya mindent mutat (nincs köd), és a körök maguktól léptetődnek;
 // a lezárt csatákból statisztika készül (konvoj-, U-boat-, kísérő-veszteség, kimenetel), hogy látszódjon: sokféle csata születik-e, vagy egyoldalú lett a hangolás.
@@ -4941,11 +4942,11 @@ async function obsBatch(n){if(OBS.batch)return;n=Math.max(1,Math.min(500,n|0||20
 
 
 // ===== BEÁLLÍTÁSOK (Beállítások fül): gazdaság, flotta, javítás, fejlesztés, bérelt hajó =====
-const ECO0 = { npcSim: 1, cvMinE40: 1, cvMinE41: 2, cvMinEsc: 4, npcAsk: 1, npcHelpR: 6, npcHelpK: 1, npcUbP: 2, npcOn: 1, npcMax: 4, npcMLo: 15, npcMHi: 40, npcELo: 2, npcEHi: 5, npcSpawnP: 50, owP: 40, owEgp: 100, evSkipEGp: 0, startD1: 1, startAsk: 1, misP: 25, misMax: 4, misDays: 10, misN: 3, misRad: 7, misEGp: 60, misShips: 6, sqFx: 1, sqSalvo: 6, sqCost: 250, sqYear: 1943, sqDmg: 6, sqMax: 2, hhFx: 1, hhSalvo: 6, hhDmg: 6, hhMax: 1, hhPrice: 5, hhCls: 'FL,FM,RV,BB,BS', hhFitCost: 150, hhFitDays: 5, hhFrom: 1941, rfBombAA: 50, rfOneCal: 1, rfG5tw: 1, rfAA4: 1, rfTorp: 1, rfTorpBomb: 30, rfTorpFuel: 240, rfTubes1: 3, fleetDesel: 1, startEgp: 0, tutEgp: 200, tutAll: 0, startFleet: 'T,FL,FL,FL', startRand: 1, startPool: 'FL,FM,RV', maxGroup: 6, bombPrice: 1, decPen: 50, decNew: 1, decScale: 60, cvP: 100, stragDie: 30, sensFloor: '4,3,2,1,1', newLuck: 40, newWorse: 2, newMax: 4, shopDaily: 1, upgCost: 100, upgP: 50, hfCls: 'T,H,BS,BB,RV,FL,FM', hfStart: 4, hfBest: 2, hfFrom: '1941-07-01', hfNew: '1942-01-01', hfFitCost: 100, hfFitDays: 5, thrDyn: 1, thrScout: 20, thrDeep: 20, thrShadowDie: 20, thrLoseBase: 25, thrLoseWx: 10, thrLoseTurn: 15, thrLoseHit: 15, thrSink1: 35, thrSink2: 45, thrTele: 1, uAttOn: 1, uAttCut: 3, uAttRec: 0.2, uAttMin: 30, shortP: 30, shortEgp: 100, vipOn: 1, vipP: 30, vipEgp: 100, rescueOn: 1, rescueSpd: 1, shopCnt: 1, shopLo: 1, shopHi: 3, crewOn: 1, crewEgp: 50, crewMed: 1, wreckDays: 2, rfShowCost: 1,
+const ECO0 = { npcWatch: 1, npcSim: 1, cvMinE40: 1, cvMinE41: 2, cvMinEsc: 4, npcAsk: 1, npcHelpR: 6, npcHelpK: 1, npcUbP: 2, npcOn: 1, npcMax: 4, npcMLo: 15, npcMHi: 40, npcELo: 2, npcEHi: 5, npcSpawnP: 50, owP: 40, owEgp: 100, evSkipEGp: 0, startD1: 1, startAsk: 1, misP: 25, misMax: 4, misDays: 10, misN: 3, misRad: 7, misEGp: 60, misShips: 6, sqFx: 1, sqSalvo: 6, sqCost: 250, sqYear: 1943, sqDmg: 6, sqMax: 2, hhFx: 1, hhSalvo: 6, hhDmg: 6, hhMax: 1, hhPrice: 5, hhCls: 'FL,FM,RV,BB,BS', hhFitCost: 150, hhFitDays: 5, hhFrom: 1941, rfBombAA: 50, rfOneCal: 1, rfG5tw: 1, rfAA4: 1, rfTorp: 1, rfTorpBomb: 30, rfTorpFuel: 240, rfTubes1: 3, fleetDesel: 1, startEgp: 0, tutEgp: 200, tutAll: 0, startFleet: 'T,FL,FL,FL', startRand: 1, startPool: 'FL,FM,RV', maxGroup: 6, bombPrice: 1, decPen: 50, decNew: 1, decScale: 60, cvP: 100, stragDie: 30, sensFloor: '4,3,2,1,1', newLuck: 40, newWorse: 2, newMax: 4, shopDaily: 1, upgCost: 100, upgP: 50, hfCls: 'T,H,BS,BB,RV,FL,FM', hfStart: 4, hfBest: 2, hfFrom: '1941-07-01', hfNew: '1942-01-01', hfFitCost: 100, hfFitDays: 5, thrDyn: 1, thrScout: 20, thrDeep: 20, thrShadowDie: 20, thrLoseBase: 25, thrLoseWx: 10, thrLoseTurn: 15, thrLoseHit: 15, thrSink1: 35, thrSink2: 45, thrTele: 1, uAttOn: 1, uAttCut: 3, uAttRec: 0.2, uAttMin: 30, shortP: 30, shortEgp: 100, vipOn: 1, vipP: 30, vipEgp: 100, rescueOn: 1, rescueSpd: 1, shopCnt: 1, shopLo: 1, shopHi: 3, crewOn: 1, crewEgp: 50, crewMed: 1, wreckDays: 2, rfShowCost: 1,
 refitCost: 150, refitHH: 250, refitDay: 5, refitMax: 0, refitYear: 1939, hhYear: 1941, rfBombTw: 20, rfBombG5: 50, upgLo: 2, upgHi: 12,
   ageOn: 0, ageThr: 50, ageP: 50, ageStep: 1, ageW0: 5, ageW1: 7, ageW2: 10, ageW3: 15, ageW4: 25, svcCost: 100, repMode: 'daily', repP: 50, repLo: 2, repHi: 12, rentDie: 25, rentCls: 'T', rentMax: 6, startU: 'U1,U2,U3', startRaid: 'Z1,Z2,CA1' };
 const ECO = Object.assign({}, ECO0);
-const ECO_L = { npcSim: 'NPC-konvoj csatája AI–AI csataként (v1.14.469, 0/1): a Megfigyelő mód motorja a háttérben – a rendes taktikai szabályok, mindkét oldalt az AI vezérli; 0 = a régi gyors számítás (képlet)', cvMinE40: 'Ajánlott legkisebb kíséret 1939–1940-ben (v1.14.464): ennél kevesebb kész kísérőnél a játék megkérdezi, vállalod-e', cvMinE41: 'Ajánlott legkisebb kíséret 1941-ben (v1.14.464)', cvMinEsc: 'Ajánlott legkisebb kíséret 1942-től (v1.14.463/464): ennél kevesebb kész kísérőnél a játék megkérdezi, vállalod-e; ha nem, nincs büntetés – a konvojt más csoport kíséri (NPC-konvoj lesz, ha van szabad hely)', npcAsk: 'NPC-konvoj saját hajóiddal (v1.14.462): ha csatába kerül, megkérdezi, vezényled-e taktikai csatában (a saját hajóid a te irányításod alatt, a konvoj saját kísérői NPC-AI-ként, a konvoj teherhajóival) vagy gyors számítással dőljön el (0 = mindig gyors számítás)', npcHelpR: 'NPC-konvoj VÉSZJELZÉS (v1.14.461): ha csatában teherhajót veszít, és egy kísérőre ennél több teherhajó jut (vagy bajban van), segítséget kér', npcHelpK: '(v1.14.463 óta nem használt: a besegítés jutalma a konvoj rakomány-értékéből jön)', npcUbP: 'NPC-csata: U-boat elsüllyesztésének esélye (%) a kíséret erejének egységenként (a kampány U-boat-létszáma csökken)', npcOn: 'NPC-KONVOJOK (v1.14.460): más konvojok is járnak az OP térképen, saját teherhajókkal és kísérettel (0/1); naponta lépnek, eseménynél gyors eredmény-számítás (nem taktikai csata), az állapotuk (sérülés, bomba, üzemanyag) tárolódik', npcMax: 'NPC-konvojok legnagyobb száma egyszerre', npcMLo: 'NPC-konvoj: teherhajók száma (min)', npcMHi: 'NPC-konvoj: teherhajók száma (max)', npcELo: 'NPC-konvoj: kísérők száma (min)', npcEHi: 'NPC-konvoj: kísérők száma (max)', npcSpawnP: 'NPC-konvoj: naponta ennyi % eséllyel indul új (ha kevesebb van a maximumnál)', owP: 'EGYIRÁNYÚ KÜLDETÉS (v1.14.459): a Liverpool → Reykjavík (LR) konvoj ennyi %-ban egyirányú küldetés: a kíséret Izlandon marad, a következő konvoj Liverpoolból indul (0 = soha)', owEgp: 'Egyirányú küldetés: jutalom (EGp) a megérkezéskor, a konvojpontokon felül – a kíséret ott marad, hazahozatala a te dolgod', evSkipEGp: 'Esemény kikerülése (evDodge) költsége EGp-ben (alap 0; pl. 100)', startD1: 'A kezdő romboló neve D1 (0/1; v1.14.251): 1 = a kampány D1-gyel indul, 0 = a régi (Excel-öröklött) D2. A tutorial mindig D2-vel megy; futó kampányt nem érint', startAsk: 'Új kampánynál választható a kezdő romboló (0/1; v1.14.250): T = Admiral 5x5″ (4680 üzemanyag) vagy H = Admiral 4x5″ (5500). A többi kezdő hajó (startFleet) változatlan; 0 = a startFleet szerint indul', misP: 'Küldetések (v1.14.249): új járőr-küldetés esélye naponta (%), amíg a kiírt küldetések száma a misMax alatt van', misMax: 'Egyszerre kiírt (nem teljesített) küldetések legnagyobb száma', misDays: 'Egy küldetés határideje napokban (a ki nem választott küldetés ennyi nap után eltűnik, büntetés nélkül)', misN: 'Járőr-küldetés: hány célcellát kell érinteni', misRad: 'Járőr-küldetés: a célcellák legnagyobb távolsága a kiíró kikötőtől (cella)', misEGp: 'Járőr-küldetés jutalma célcellánként (EGp); a teljes jutalom = ez × a cellák száma', misShips: 'Egy küldetésre küldhető hajók legnagyobb száma (kötelék)', sqFx: 'Squid ASW mozsár (0/1; v1.14.227): a G4 / G5 helyre építhető át; a hajó körüli 8 szomszédos cella bármelyikére lő, a találat biztos, ha az U-boat a lépése után ott van', sqSalvo: 'Squid: lőszer (lövés / mozsár; egy lövés = egy cella); a kikötőben újratöltődik', sqCost: 'Squid átépítés ára (EGp / mozsár-hely)', sqYear: 'Squid: ettől az évtől építhető át', sqDmg: 'Squid: a sérülés legnagyobb értéke (1..ennyi, véletlen modulon)', sqMax: 'Squid: legfeljebb ennyi sorozat körönként (a működő mozsarak száma is korlát)', hhFx: 'Hedgehog harci hatás (0/1): a felszerelt hedgehog sortűzet adhat le (a hajó iránya szerinti három elöl lévő cella; találat biztos, ha az U-boat a lépése után ott van; mélység nincs)', hhSalvo: 'Hedgehog sortűz-készlet hajónként (db); minden sortűz 1-gyel csökkenti, találat nélkül is', hhDmg: 'Hedgehog találat sebzése: 1–N pont (alap 6) egy véletlen modulon', hhMax: 'Hedgehog: legfeljebb ennyi sortűz hajónként és körönként (alap 1)', hhPrice: 'Hedgehog sortűz ára a kikötői pótláskor (EGp / sortűz)', hhCls: 'Hedgehog modult kapó osztályok (kód, vesszővel; korvett FL/FM, fregatt RV, sloop BB/BS; a modul a Szonár után kerül a listába, a grafika nem változik; újratöltés után érvényes; üres = ki)', hhFitCost: 'Hedgehog utólagos felszerelésének ára (EGp, korvett/fregatt/sloop)', hhFitDays: 'Hedgehog felszerelésének ideje (nap)', hhFrom: 'Hedgehog felszerelhető ettől az évtől (a T/H átépítés hhYear-jétől független)', rfBombAA: 'Átépítés: a T (Admiral_5x5″) Gun3 → dupla AA cseréje ennyi vízibombát ad (alap 50); a H (Admiral_4x5″) eleve AA-s és nem kap (nála az átépítés a hatótávot növelte)', rfOneCal: 'Átépítés: egy hajón egyféle kaliber lehet (0/1): dupla 4″ mellett nem maradhat szimpla 5″ (a Gun3 AA-pár, a Gun5 vízibomba vagy dupla 4″, a Gun1 hedgehog is lehet)', rfTorp: 'Átépítés: a torpedóvetők (Torp1, Torp2) leszerelhetők (0/1): +vízibomba vagy +üzemanyag (HMCS Haida mintájára)', rfTorpBomb: 'Átépítés: egy leszerelt torpedóvető vízibomba-értéke (alap 30)', rfTorpFuel: 'Átépítés: egy leszerelt torpedóvető üzemanyag-értéke tmf-ben (alap 240)', rfTubes1: 'Átépítés: egy megmaradt torpedóvetővel hány cső tölthető körönként (alap 3; két vetővel 5; nincs vető = 0)', rfAA4: 'Átépítés: a G4 1×5″ → dupla AA-pár (AA6-AA7) is lehetséges (0/1), (+rfBombAA vízibomba, T és H is)',
+const ECO_L = { npcWatch: 'NPC-konvoj AI-csatájának megnézése (v1.14.470): 0 = a háttérben (csak az eredmény); 1 = minden csatánál megkérdezi; 2 = mindig megnézed – a taktikai lapon, körönként (⏭) vagy lejátszással (▶), ⏩ = a hátralévő körök azonnal', npcSim: 'NPC-konvoj csatája AI–AI csataként (v1.14.469, 0/1): a Megfigyelő mód motorja a háttérben – a rendes taktikai szabályok, mindkét oldalt az AI vezérli; 0 = a régi gyors számítás (képlet)', cvMinE40: 'Ajánlott legkisebb kíséret 1939–1940-ben (v1.14.464): ennél kevesebb kész kísérőnél a játék megkérdezi, vállalod-e', cvMinE41: 'Ajánlott legkisebb kíséret 1941-ben (v1.14.464)', cvMinEsc: 'Ajánlott legkisebb kíséret 1942-től (v1.14.463/464): ennél kevesebb kész kísérőnél a játék megkérdezi, vállalod-e; ha nem, nincs büntetés – a konvojt más csoport kíséri (NPC-konvoj lesz, ha van szabad hely)', npcAsk: 'NPC-konvoj saját hajóiddal (v1.14.462): ha csatába kerül, megkérdezi, vezényled-e taktikai csatában (a saját hajóid a te irányításod alatt, a konvoj saját kísérői NPC-AI-ként, a konvoj teherhajóival) vagy gyors számítással dőljön el (0 = mindig gyors számítás)', npcHelpR: 'NPC-konvoj VÉSZJELZÉS (v1.14.461): ha csatában teherhajót veszít, és egy kísérőre ennél több teherhajó jut (vagy bajban van), segítséget kér', npcHelpK: '(v1.14.463 óta nem használt: a besegítés jutalma a konvoj rakomány-értékéből jön)', npcUbP: 'NPC-csata: U-boat elsüllyesztésének esélye (%) a kíséret erejének egységenként (a kampány U-boat-létszáma csökken)', npcOn: 'NPC-KONVOJOK (v1.14.460): más konvojok is járnak az OP térképen, saját teherhajókkal és kísérettel (0/1); naponta lépnek, eseménynél gyors eredmény-számítás (nem taktikai csata), az állapotuk (sérülés, bomba, üzemanyag) tárolódik', npcMax: 'NPC-konvojok legnagyobb száma egyszerre', npcMLo: 'NPC-konvoj: teherhajók száma (min)', npcMHi: 'NPC-konvoj: teherhajók száma (max)', npcELo: 'NPC-konvoj: kísérők száma (min)', npcEHi: 'NPC-konvoj: kísérők száma (max)', npcSpawnP: 'NPC-konvoj: naponta ennyi % eséllyel indul új (ha kevesebb van a maximumnál)', owP: 'EGYIRÁNYÚ KÜLDETÉS (v1.14.459): a Liverpool → Reykjavík (LR) konvoj ennyi %-ban egyirányú küldetés: a kíséret Izlandon marad, a következő konvoj Liverpoolból indul (0 = soha)', owEgp: 'Egyirányú küldetés: jutalom (EGp) a megérkezéskor, a konvojpontokon felül – a kíséret ott marad, hazahozatala a te dolgod', evSkipEGp: 'Esemény kikerülése (evDodge) költsége EGp-ben (alap 0; pl. 100)', startD1: 'A kezdő romboló neve D1 (0/1; v1.14.251): 1 = a kampány D1-gyel indul, 0 = a régi (Excel-öröklött) D2. A tutorial mindig D2-vel megy; futó kampányt nem érint', startAsk: 'Új kampánynál választható a kezdő romboló (0/1; v1.14.250): T = Admiral 5x5″ (4680 üzemanyag) vagy H = Admiral 4x5″ (5500). A többi kezdő hajó (startFleet) változatlan; 0 = a startFleet szerint indul', misP: 'Küldetések (v1.14.249): új járőr-küldetés esélye naponta (%), amíg a kiírt küldetések száma a misMax alatt van', misMax: 'Egyszerre kiírt (nem teljesített) küldetések legnagyobb száma', misDays: 'Egy küldetés határideje napokban (a ki nem választott küldetés ennyi nap után eltűnik, büntetés nélkül)', misN: 'Járőr-küldetés: hány célcellát kell érinteni', misRad: 'Járőr-küldetés: a célcellák legnagyobb távolsága a kiíró kikötőtől (cella)', misEGp: 'Járőr-küldetés jutalma célcellánként (EGp); a teljes jutalom = ez × a cellák száma', misShips: 'Egy küldetésre küldhető hajók legnagyobb száma (kötelék)', sqFx: 'Squid ASW mozsár (0/1; v1.14.227): a G4 / G5 helyre építhető át; a hajó körüli 8 szomszédos cella bármelyikére lő, a találat biztos, ha az U-boat a lépése után ott van', sqSalvo: 'Squid: lőszer (lövés / mozsár; egy lövés = egy cella); a kikötőben újratöltődik', sqCost: 'Squid átépítés ára (EGp / mozsár-hely)', sqYear: 'Squid: ettől az évtől építhető át', sqDmg: 'Squid: a sérülés legnagyobb értéke (1..ennyi, véletlen modulon)', sqMax: 'Squid: legfeljebb ennyi sorozat körönként (a működő mozsarak száma is korlát)', hhFx: 'Hedgehog harci hatás (0/1): a felszerelt hedgehog sortűzet adhat le (a hajó iránya szerinti három elöl lévő cella; találat biztos, ha az U-boat a lépése után ott van; mélység nincs)', hhSalvo: 'Hedgehog sortűz-készlet hajónként (db); minden sortűz 1-gyel csökkenti, találat nélkül is', hhDmg: 'Hedgehog találat sebzése: 1–N pont (alap 6) egy véletlen modulon', hhMax: 'Hedgehog: legfeljebb ennyi sortűz hajónként és körönként (alap 1)', hhPrice: 'Hedgehog sortűz ára a kikötői pótláskor (EGp / sortűz)', hhCls: 'Hedgehog modult kapó osztályok (kód, vesszővel; korvett FL/FM, fregatt RV, sloop BB/BS; a modul a Szonár után kerül a listába, a grafika nem változik; újratöltés után érvényes; üres = ki)', hhFitCost: 'Hedgehog utólagos felszerelésének ára (EGp, korvett/fregatt/sloop)', hhFitDays: 'Hedgehog felszerelésének ideje (nap)', hhFrom: 'Hedgehog felszerelhető ettől az évtől (a T/H átépítés hhYear-jétől független)', rfBombAA: 'Átépítés: a T (Admiral_5x5″) Gun3 → dupla AA cseréje ennyi vízibombát ad (alap 50); a H (Admiral_4x5″) eleve AA-s és nem kap (nála az átépítés a hatótávot növelte)', rfOneCal: 'Átépítés: egy hajón egyféle kaliber lehet (0/1): dupla 4″ mellett nem maradhat szimpla 5″ (a Gun3 AA-pár, a Gun5 vízibomba vagy dupla 4″, a Gun1 hedgehog is lehet)', rfTorp: 'Átépítés: a torpedóvetők (Torp1, Torp2) leszerelhetők (0/1): +vízibomba vagy +üzemanyag (HMCS Haida mintájára)', rfTorpBomb: 'Átépítés: egy leszerelt torpedóvető vízibomba-értéke (alap 30)', rfTorpFuel: 'Átépítés: egy leszerelt torpedóvető üzemanyag-értéke tmf-ben (alap 240)', rfTubes1: 'Átépítés: egy megmaradt torpedóvetővel hány cső tölthető körönként (alap 3; két vetővel 5; nincs vető = 0)', rfAA4: 'Átépítés: a G4 1×5″ → dupla AA-pár (AA6-AA7) is lehetséges (0/1), (+rfBombAA vízibomba, T és H is)',
   rfG5tw: 'Átépítés: a G5 (hátsó löveg) 1×5″ → 2×4″ (+vízibomba, mint a többi 2×4) is lehetséges (0/1); a G5 ezután már csak 2×4″ marad', fleetDesel: 'Javításra / szervizre / fejlesztésre / átépítésre küldött hajó kikerül az indulásra kijelölt kísérők közül, és a max. kíséret-létszámba csak az indulásra képes kijelölt hajók számítanak (0/1)', startEgp: 'Kezdő EGp (a tutorial jutalmain felül)', tutEgp: 'Tutorial jutalom gyakorlatonként (EGp, az új kampány kezdő pénzéhez)', tutAll: 'Bónusz az összes gyakorlat teljesítéséért (EGp)', startRand: 'Új kampány (v1.14.392): 1 = a startFleet FL elemei helyett véletlen hajó a startPool-ból (alap: Flower / Flower mod. / River); 0 = fix Flower', startPool: 'A véletlen kezdő hajók osztálykódjai (startRand=1; vesszővel: FL, FM, RV, BB, BS)', startFleet: 'Kezdő flotta (osztálykódok vesszővel: T, H, BS, BB, RV, FL, FM; startRand=1 mellett az FL elemek véletlen hajók)', maxGroup: 'Max kísérő egy konvojnál', decPen: 'Konvoj elutasításának büntetése (EGp)', decNew: 'Elutasítás után másnap új konvoj készül (0/1; 0 = ugyanaz a konvoj vár)', decScale: 'Az elutasítás utáni új konvoj mérete a szokásos méret %-a (min. 1 hajó); NPC-konvojok mellett (npcOn = 1) nem érvényes (v1.14.466)', stragDie: 'Lemaradt (megállt) teherhajó a csata végén: d1–N dobás a sérüléshez adódik; ≥ rakomány: elsüllyed (az utoljára találó U-boaté), különben bevontatják (a megmaradt rakomány EGp)', sensFloor: 'Radar / szonár legjobb elérhető minősége évenként (1939-től vesszővel; az utolsó érték a későbbi éveké; kisebb = jobb; 0 kikapcsolná az érzékelőt)', newLuck: 'Vásárolt hajó: esély (%), hogy a radarja / szonárja (külön-külön) az éves legjobb minőségű', newWorse: 'Vásárolt hajó: ha nem szerencsés, legfeljebb ennyi lépéssel gyengébb az éves legjobbnál', newMax: 'Vásárolt hajó: a radar / szonár legrosszabb (legnagyobb) minősége (4 = nem lehet gyengébb 4-nél)', shopDaily: 'Hajóbolt és fejlesztési ajánlatok naponta újrasorsolva, amíg a konvoj a kikötőben áll (1 = igen, 0 = csak új konvojnál)', cvP: 'Konvoj-készülés esélye naponta (%), az „Indulhat?” szabályon felül (100 = csak a front dönt)',
   ageOn: 'ELÖREGEDÉS bekapcsolva (0/1): a hajó állapota (%) romlik, a küszöb alatt modulok kopnak', ageThr: 'Elöregedés: küszöb (%): ez alatt kopnak a modulok (a fele alatt 2, a harmada alatt 3 dobás / elvesztett %)', ageP: 'Elöregedés: esély (%) körönként, ha a hajó FULL sebességgel lépett (taktikai lap)', ageStep: 'Elöregedés: elvesztett % egy eseménynél', ageW0: 'Elöregedés: napi esély (%) W0 időjárású mezőn (OP: a távolság is kopik; konvoj / TF hajói)', ageW1: 'Elöregedés: napi esély (%) W1 időjárású mezőn (OP)', ageW2: 'Elöregedés: napi esély (%) W2 időjárású mezőn (OP)', ageW3: 'Elöregedés: napi esély (%) W3 időjárású mezőn (OP)', ageW4: 'Elöregedés: napi esély (%) W4 időjárású mezőn (OP)', svcCost: 'Szerviz ára 100% kopásnál (EGp); arányosan: a hiányzó % szerint (50% hiány = fele ár). Az állapotot 100%-ra állítja; az ideje is arányos a javítás felső napjával (repHi)',
   bombPrice: 'Vizibomba ára (EGp / db)', upgCost: 'Fejlesztés ára (EGp / szenzor-minőség)', upgP: 'Egy fejlesztés elérhetőségének esélye (%)', hfCls: 'HF/DF modult kapó osztályok (kód, vesszővel; a modul a Radar után kerül a listába; újratöltés után érvényes)', hfStart: 'HF/DF induló minőség (kisebb = jobb)', hfFrom: 'HF/DF: ettől a naptól (ÉÉÉÉ-HH-NN) szerelhető fel a kikötőben (előtte nincs HF/DF irány)', hfNew: 'HF/DF: ettől a naptól az új (vásárolt) hajók már felszerelve érkeznek', hfFitCost: 'HF/DF felszerelésének ára (EGp)', hfFitDays: 'HF/DF felszerelésének ideje (nap)',
@@ -5263,7 +5264,7 @@ const CAMP = {
   // thrDie: egy U-boat belépő kockája a mai csatában
   thrDie(id) { if (!this.thrOn() || !this.thr) return CFG.uDie; const t = this.thr; if (t.shadow === id) return ECO.thrShadowDie | 0 || CFG.uDie; return t.lvl >= 2 ? (ECO.thrSink2 | 0) : t.lvl == 1 ? (ECO.thrSink1 | 0) : CFG.uDie; },
   // thrSunk: egy U-boat elsüllyedt / elveszett → a következő belépés ritkább
-  thrSunk() { if (!this.thr) this.thrInit(); this.thr.lvl = Math.min(2, this.thr.lvl + 1); this.thr.sunk = 1;
+  thrSunk(npc) { if (!this.thr) this.thrInit(); if (!npc) { this.thr.lvl = Math.min(2, this.thr.lvl + 1); this.thr.sunk = 1; }   // v1.14.470: NPC-konvoj csatájában elsüllyedt U-boat nem ritkítja a TE konvojod U-boat-belépéseit (csak a létszám-veszteség számít)
     // U-boat veszteség (kimerülés): az elsüllyesztett U-boat levonódik az eseménygeneráláshoz használt létszámból (a napi pótlás a thrAdvance-ban)
     if (ECO.uAttOn) { this.thr.lost = (this.thr.lost || 0) + (+ECO.uAttCut || 0); this.log.push('U-boat veszteség: −' + (+ECO.uAttCut || 0) + ' hajó az események létszámából (összesen −' + this.thr.lost.toFixed(1) + ').'); } },
   // thrAdvance: napváltáskor (az OP hívja, az esemény-réteg sorsolása előtt): a tegnapi csaták hatása a mai eseményesélyre, a követés dobása, a visszaállás
@@ -5591,37 +5592,68 @@ const CAMP = {
      Vége: STOP, körhatár (mxT), vagy ha az ellenség már megjelent, és 3 körön át nincs a pályán. Az eredményt a szokásos csata-vége (end → end2 → OPG.npcAfter) írja be.
      Csak akkor fut, ha nincs folyamatban lévő / félbehagyott taktikai csata (különben a gyors számítás dönt) – a hívó ezt a canSim()-mel nézi. */
   canSim() { return !this.battle && !this.bt && !this.mission && !!this.voy; },
-  npcSim(u, type) {
-    if (!this.canSim()) return null;
-    const view = window._navView || 'OP';
-    // ideiglenes beállítások: kézi kocka, animáció, vészjelzés-ablak, támogatás, jelentés-papír ki
-    const keep = { manualDice: CFG.manualDice, fxGun: CFG.fxGun, sinkAlert: CFG.sinkAlert, supOn: CFG.supOn, msgEnd: CFG.msgEnd, entAsk: CFG.entAsk, aiU: CFG.aiU, aiZ: CFG.aiZ, aiA: CFG.aiA };
-    Object.assign(CFG, { manualDice: 0, fxGun: 0, sinkAlert: 0, supOn: 0, msgEnd: 0, entAsk: 0, aiU: 1, aiZ: 1, aiA: 1 });   // az ellenséget mindig az AI vezérli
-    const d0 = draw, c0 = card, cf0 = window.confirm, al0 = window.alert, sv0 = this.save, m0 = ($('o_msg') || {}).textContent;
-    draw = function () { }; card = function () { }; window.confirm = () => false; window.alert = () => { }; this.save = function () { };
-    let res = null; this._sim = true;
-    try {
-      const [r, c] = OPG.npcCell(u.id) || [0, 0];
-      this.event0(type, OPG.addr(r, c), 1, 5, 'npc:' + u.id);
-      FFQ = [];
-      let seen = false, empty = 0, g = 0;
-      const cap = Math.max(5, mxT());
-      while (!stopped && turn < cap && g++ < 200) {
-        const t0 = turn; obsPrep(); aiSupportRun(); runAI(); if (!stopped) step(); FFQ.length = 0;   // egy kör: kísérők, ellenség, konvoj (mint a megfigyelő módban)
-        const en = obsEnemies().length; if (en) { seen = true; empty = 0; } else if (seen) empty++;
-        if (seen && empty >= 3) break;
-        if (turn === t0 && !stopped) break;
-      }
-      res = { turns: turn, mLost: KL.filter(k => k.t === 'M').length, eLost: KL.filter(k => k.t === 'E' && !k.en).length, uSunk: KL.filter(k => k.t === 'U').length };
-      this.end();
-    } catch (e) { console.error('[npcSim]', e); try { if (this.battle) { this.battle = false; this.ev = null; this.bt = null; } } catch (x) { } }
+  /* simBegin: az AI–AI csata felállítása (a vezényelt NPC-csata útján), ideiglenes beállításokkal: kézi kocka, animáció, vészjelzés-ablak, támogatás, jelentés-papír ki; az ellenséget az AI vezérli */
+  simBegin(u, type, watch) {
+    const S = { view: window._navView || 'OP', msg: ($('o_msg') || {}).textContent, watch: !!watch, u, seen: false, empty: 0, g: 0,
+      cfg: { manualDice: CFG.manualDice, fxGun: CFG.fxGun, sinkAlert: CFG.sinkAlert, supOn: CFG.supOn, msgEnd: CFG.msgEnd, entAsk: CFG.entAsk, aiU: CFG.aiU, aiZ: CFG.aiZ, aiA: CFG.aiA },
+      d0: draw, c0: card, cf0: window.confirm, al0: window.alert, sv0: this.save };
+    Object.assign(CFG, { manualDice: 0, sinkAlert: 0, supOn: 0, msgEnd: 0, entAsk: 0, aiU: 1, aiZ: 1, aiA: 1 }, watch ? {} : { fxGun: 0 });
+    if (!watch) { draw = function () { }; card = function () { }; }        // a háttérben rajz nélkül
+    window.confirm = () => false; window.alert = () => { }; this.save = function () { };
+    this._sim = S;
+    const [r, c] = OPG.npcCell(u.id) || [0, 0];
+    this.event0(type, OPG.addr(r, c), 1, 5, 'npc:' + u.id);
+    if (!watch) FFQ = [];
+    SUMSHOWN = true;                                                        // a csata-összesítő ablak nem ugrik fel (a Naplóba kerül)
+    obsPrep();                                                              // a kísérők (a saját hajóid is) NPC-AI-ként
+    return S;
+  },
+  /* simRound: egy kör (kísérők, ellenség, konvoj – mint a megfigyelő módban); igaz, ha a csata véget ért (STOP, körhatár, vagy az ellenség megjelent és 3 körön át nincs a pályán) */
+  simRound() {
+    const S = this._sim; if (!S) return true;
+    const t0 = turn; obsPrep(); aiSupportRun(); runAI(); if (!stopped) step(); if (FFQ) FFQ.length = 0;
+    const en = obsEnemies().length; if (en) { S.seen = true; S.empty = 0; } else if (S.seen) S.empty++;
+    return stopped || turn >= Math.max(5, mxT()) || ++S.g > 200 || (S.seen && S.empty >= 3) || (turn === t0 && !stopped);
+  },
+  /* simFinish: a csata vége (end → end2 → OPG.npcAfter), a beállítások és a nézet visszaállítása */
+  simFinish() {
+    const S = this._sim; if (!S) return null; let res = null;
+    try { res = { turns: turn, mLost: KL.filter(k => k.t === 'M').length, eLost: KL.filter(k => k.t === 'E' && !k.en).length, uSunk: KL.filter(k => k.t === 'U').length }; this.end(); }
+    catch (e) { console.error('[sim]', e); try { this.battle = false; this.ev = null; this.bt = null; } catch (x) { } }
     finally {
-      FFQ = null; draw = d0; card = c0; window.confirm = cf0; window.alert = al0; this.save = sv0; this._sim = false;
-      Object.assign(CFG, keep);
-      showView(view); if ($('o_msg') && m0 != null) $('o_msg').textContent = m0;
+      FFQ = null; draw = S.d0; card = S.c0; window.confirm = S.cf0; window.alert = S.al0; this.save = S.sv0; this._sim = null;
+      Object.assign(CFG, S.cfg);
+      showView(S.watch ? 'OP' : S.view); if (!S.watch && $('o_msg') && S.msg != null) $('o_msg').textContent = S.msg;
       this.save(); this.refresh();
     }
     return res;
+  },
+  /* npcSim: a háttérben, egyben lefuttatva */
+  npcSim(u, type) {
+    if (!this.canSim()) return null;
+    try { this.simBegin(u, type, false); while (!this.simRound()); } catch (e) { console.error('[npcSim]', e); }
+    return this.simFinish();
+  },
+  /* npcWatch (v1.14.470): az AI–AI csata megnézése a taktikai lapon – körönként vagy lejátszással (mint a Megfigyelő módban); done: a vége után hívódik */
+  npcWatch(u, type, done) {
+    if (!this.canSim()) { done && done(null); return; }
+    this.simBegin(u, type, true); showView('TAC');
+    const W = { run: false, t: null, ms: 800 };
+    let bar = $('npcWbar'); if (!bar) { bar = document.createElement('div'); bar.id = 'npcWbar'; document.body.appendChild(bar); }
+    bar.style.cssText = 'position:fixed;left:50%;bottom:10px;transform:translateX(-50%);z-index:100000;background:#263238;color:#fff;border-radius:10px;padding:6px 10px;display:flex;gap:6px;align-items:center;flex-wrap:wrap;box-shadow:0 2px 10px rgba(0,0,0,.4);font-size:13px;max-width:96vw';
+    const hud = () => { const c = x => ships.filter(x).length; const h = $('npcWhud'); if (h) h.textContent = '👁 ' + u.code + ' AI-csata · kör ' + turn + ' · teherhajó ' + c(q => q.t === 'M' && !q.stop) + ' (süllyedt ' + KL.filter(k => k.t === 'M').length + ') · kísérő ' + obsFriends().length + ' · ellenség ' + obsEnemies().length; };
+    const S = this._sim; S.done = done; S.stop = () => { if (W.t) clearTimeout(W.t); W.run = false; bar.remove(); };
+    const finish = () => { S.fin = 1; S.stop(); const r = this.simFinish(); done && done(r); };
+    const one = () => { const over = this.simRound(); draw(); card(); hud(); if (over) { W.run = false; const b = $('npcWrun'); if (b) b.textContent = '✔ Vége – eredmény'; b && (b.onclick = finish); } return over; };
+    const tick = () => { W.t = null; if (!W.run) return; if (one()) return; W.t = setTimeout(tick, W.ms); };
+    bar.innerHTML = '<b id="npcWhud"></b><button id="npcWrun">▶ Lejátszás</button><button id="npcWone">⏭ 1 kör</button>'
+      + '<select id="npcWms"><option value="1500">lassú</option><option value="800" selected>normál</option><option value="300">gyors</option><option value="60">nagyon gyors</option></select>'
+      + '<button id="npcWend" title="A hátralévő körök azonnal, rajz nélkül">⏩ Végig</button>';
+    $('npcWms').onchange = e => { W.ms = +e.target.value || 800; };
+    $('npcWrun').onclick = () => { if (W.run) { W.run = false; $('npcWrun').textContent = '▶ Lejátszás'; return; } W.run = true; $('npcWrun').textContent = '⏸ Szünet'; tick(); };
+    $('npcWone').onclick = () => { if (!W.run) one(); };
+    $('npcWend').onclick = () => { W.run = false; const d = draw, c = card; draw = function () { }; card = function () { }; FFQ = []; try { while (!this.simRound()); } finally { draw = d; card = c; } finish(); };
+    draw(); card(); hud();
   },
   event0(type, cell, w, hd, unitId, again) {
     if (!this.voy) return;
@@ -5642,7 +5674,7 @@ const CAMP = {
     this.logStart = LOG.length;
     if (this.mission && this.mission.stage === 'battle') { say(missionSetup(this.mission.n)); aiSupportRun(); }
     if (this.ev.npc) { ships.filter(q => q.npc && q.t === 'E').forEach(q => { if (q.tn == null || q.tn !== turn) turnFor(q); }); aiSupportRun(); }   // v1.14.462: az NPC-konvoj kísérői az első körben is lépnek (utána a step() futtatja őket)   // a gyakorlat taktikai pályája: gyakorló ellenfél, NPC kísérők
-    $('evt').textContent = (tf ? tf + ' kötelék – ' : '') + 'Esemény: ' + ({ U: 'U-boat', R: 'felszíni hajó', H: 'repülő', K: 'kombinált (mindenki jöhet, akit a kocka beenged)', M: 'gyakorlat' }[type] || type) + ' – ' + cell + ', időjárás ' + w + ', a konvoj iránya a taktikai lapon: ' + AR[hd || 5] + ' ' + (hd || 5) + ' (a cél-kikötő fő iránya; menet közben ±1 kanyarodhat)' +
+    $('evt').textContent = (this.ev.npc ? ((OPG.npc().find(x => x.id === this.ev.npc) || {}).code || this.ev.npc) + ' NPC-konvoj – ' : tf ? tf + ' kötelék – ' : '') + 'Esemény: ' + ({ U: 'U-boat', R: 'felszíni hajó', H: 'repülő', K: 'kombinált (mindenki jöhet, akit a kocka beenged)', M: 'gyakorlat' }[type] || type) + ' – ' + cell + ', időjárás ' + w + ', a konvoj iránya a taktikai lapon: ' + AR[hd || 5] + ' ' + (hd || 5) + ' (a cél-kikötő fő iránya; menet közben ±1 kanyarodhat)' +
       (type == 'H' ? ' (a repülők d' + CFG.airDie + ' = ' + CFG.airDie + ' dobásnál lépnek be a pálya szélén; a csata addig tart, amíg repülő van a pályán)' : type == 'R' ? ' (az ellenséges felszíni hajók d' + CFG.zDie + ' = ' + CFG.zDie + ' dobásnál lépnek be, és d' + CFG.zDie + ' < ' + CFG.zLeave + ' dobásnál lépnek ki)' : '');
     if (type == 'R' || type == 'K') { const sup = initSupport(); if (sup) say('Lehetséges támogatás (nem biztos): ' + sup + '; a d' + CFG.supDie + ' = ' + CFG.supDie + ' dobás léptet be / ki (véletlen pályaszélen).'); }   // a flotta 2 CL-t vagy 1 CA-t küldhet
     say('Taktikai csata kezdődik (' + cell + '). Ha végeztél, a „Csata vége → OP” gombbal térsz vissza.');
@@ -5684,6 +5716,7 @@ const CAMP = {
   },
   end() {
     if (!this.battle || this._ending) return;
+    if (this._sim && this._sim.watch && !this._sim.fin) { const S = this._sim; S.fin = 1; S.stop && S.stop(); const r = this.simFinish(); S.done && S.done(r); return; }   // v1.14.470: megnézett NPC-csata a „Csata vége” gombbal is szabályosan zárul
     if (this.mission || !ECO.rescueOn || (this.ev.unit && !CFG.tfRescue) || this.ev.npc) return this.end2({}, false);   // NPC-konvoj: a sérült hajó a konvojjal halad tovább (v1.14.462)   // TF-csatánál a mentés kérdés csak tfRescue mellett
     gmResolve(); applyDamage(); const c = this.rescueCands();
     if (!c.length) return this.end2({}, true);
@@ -5718,7 +5751,7 @@ const CAMP = {
       const es = OPG.npcEscPF(this.ev.npc).map(f => { const s = ships.find(q => q.npcI === f.npcI && q.t === 'E'); if (!s) return { i: f.npcI, gone: true }; const M = D[s.c].mod, L = M.reduce((a, m) => a + m[1], 0), d = s.dmg.reduce((a, b) => a + b, 0), crew = M.findIndex(m => /^Legén/.test(m[0]));
         const ko = M.map((m, k) => k).filter(k => s.dmg[k] >= M[k][1]);   // v1.14.463: a 6/6 modulok maradnak, a többi kijavul
         return { i: f.npcI, gone: d / L > CFG.sinkPct / 100 || (crew >= 0 && s.dmg[crew] >= 6), ko, hp: Math.max(1, Math.round(100 * (1 - ko.length / M.length))), b: s.b, fu: s.fu }; });
-      const nt = OPG.npcAfter(this.ev.npc, n0, alive, es, this._sim); if (nt) rep.push(nt); }
+      const nt = OPG.npcAfter(this.ev.npc, n0, alive, es, !!this._sim); if (nt) rep.push(nt); }
     // 2) kísérők: elveszett, vagy az állapot (sérülés, bomba, üzemanyag, Medal, szenzor) visszaíródik a flottába; a bérelt hajók nem maradnak meg
     this.battleGroup().forEach(f => {
       const s = ships.find(q => q.id === f.id && !q.rent);
@@ -5759,10 +5792,10 @@ const CAMP = {
     // 3) U-boatok: elpusztult, vagy a tonnázs és a sérülés megmarad; kormány / dízel 6/6 esetén 50% eséllyel elvész a hazaúton
     UID.forEach(id => {
       const p = this.ub[id], o = ships.find(q => q.id === id) || store[id];
-      if (dead[id] && !p.dead) { p.dead = true; if (tf) this.tfAdd(tf, { ubSunk: 1 }); else v.ubSunk++; this.thrSunk(); rep.push(id + ' megsemmisült'); }
+      if (dead[id] && !p.dead) { p.dead = true; if (tf) this.tfAdd(tf, { ubSunk: 1 }); else v.ubSunk++; this.thrSunk(this.ev && this.ev.npc); rep.push(id + ' megsemmisült'); }
       else if (o && !p.dead) {
         p.ton = o.ton || 0; p.dmg = o.dmg.map((x, i) => x >= D.VIIC.mod[i][1] ? x : 0); p.tp = o.tp;   // az U-boat nem 6/6 sérülései is másnapra kijavulnak
-        for (let k = 0; k < (o.lostN || 0) && !p.dead; k++) if (R(0, 1)) { p.dead = true; this.thrSunk(); rep.push(id + ' a kormány / dízel sérülése miatt elveszett a hazaúton (elsüllyesztésnek számít)'); }
+        for (let k = 0; k < (o.lostN || 0) && !p.dead; k++) if (R(0, 1)) { p.dead = true; this.thrSunk(this.ev && this.ev.npc); rep.push(id + ' a kormány / dízel sérülése miatt elveszett a hazaúton (elsüllyesztésnek számít)'); }
         o.lostN = 0; o.lost = false;
       }
     });
@@ -6004,7 +6037,7 @@ const CAMP = {
     const ECO_GROUPS = [
       ['Kampány és kezdőállapot', ['startAsk', 'startD1', 'startEgp', 'tutEgp', 'tutAll', 'startFleet', 'startU', 'startRaid']],
       ['Konvoj és indulás', ['maxGroup', 'cvP', 'decPen', 'decNew', 'decScale', 'stragDie', 'shortP', 'shortEgp', 'vipOn', 'vipP', 'vipEgp', 'owP', 'owEgp']],
-      ['NPC-konvojok', ['npcOn', 'npcMax', 'npcSpawnP', 'npcMLo', 'npcMHi', 'npcELo', 'npcEHi', 'npcHelpR', 'npcUbP', 'npcAsk', 'npcSim', 'cvMinE40', 'cvMinE41', 'cvMinEsc']],
+      ['NPC-konvojok', ['npcOn', 'npcMax', 'npcSpawnP', 'npcMLo', 'npcMHi', 'npcELo', 'npcEHi', 'npcHelpR', 'npcUbP', 'npcAsk', 'npcSim', 'npcWatch', 'cvMinE40', 'cvMinE41', 'cvMinEsc']],
       ['Hajóbolt és fejlesztés', ['fleetDesel', 'sensFloor', 'newLuck', 'newWorse', 'newMax', 'shopDaily', 'bombPrice', 'upgCost', 'upgP', 'upgLo', 'upgHi']],
       ['Elöregedés', ['ageOn', 'ageThr', 'ageP', 'ageStep', 'ageW0', 'ageW1', 'ageW2', 'ageW3', 'ageW4']],
       ['Szerviz és javítás', ['svcCost', 'repMode', 'repP', 'repLo', 'repHi']],
@@ -6910,14 +6943,21 @@ function npcRunPend(){if(CAMP.battle||CAMP.mission||tut)return false;const u=NPC
  const nm={U:'U-boat',H:'repülőtámadás',R:'felszíni támadás',K:'kombinált támadás'}[t]||'támadás',mm=npcMine(u).map(f=>f.id).join(', ');
  const go=confirm('⚔ '+u.id+' ('+u.code+', '+u.from+' → '+u.to+') '+nm+' alá került a(z) '+addr(u.r,u.c)+' cellában.\nA konvojjal haladó hajóid: '+mm+'. A konvoj: '+u.m+' teherhajó, '+u.esc.length+' saját kísérő.\n\nOK = vezénylem (taktikai csata: a hajóid a te irányításod alatt, a konvoj kísérői NPC-AI-ként)\nMégse = gyors számítás (csak az eredmény)');
  if(go){CAMP.npcBattle(u,t);return true}
- if(+ECO.npcSim&&CAMP.canSim()){npcSimOne(u,t);setTimeout(()=>{try{npcRunPend()}catch(e){}},80);return true}   // v1.14.469: a hajóid is AI-ként harcolnak
+ if(+ECO.npcSim&&CAMP.canSim()){if(npcWatchAsk(u,t)){CAMP.npcWatch(u,t,r=>{npcSimMsg(u,r);setTimeout(()=>{try{npcRunPend()}catch(e){}},300)});return true}npcSimOne(u,t);setTimeout(()=>{try{npcRunPend()}catch(e){}},80);return true}   // v1.14.469: a hajóid is AI-ként harcolnak; v1.14.470: megnézhető
  const r=npcFight(u,t);say(u.id+': '+r);draw();setTimeout(()=>{try{npcRunPend()}catch(e){}},80);return true}
 /* npcSimOne / npcRunSim (v1.14.469): AI–AI csata (CAMP.npcSim) egy / a sorban álló NPC-konvojokra; ha nem futhat, a gyors számítás dönt */
 function npcSimOne(u,t){const m=$('o_msg');if(m)m.textContent='⚙ AI-csata számítása: '+u.code+'…';
  const r=CAMP.npcSim(u,t);if(!r){const q=npcFight(u,t);NPCSOS.push(u.code+': '+q);return}
  const L=u.log[u.log.length-1]||'';const msg='⚔ '+u.code+' AI-csata ('+r.turns+' kör): '+L.replace(/^.*AI-csata – /,'');
  if(m)m.textContent=(m.textContent&&!/^⚙/.test(m.textContent)?m.textContent+' ':'')+msg;draw()}
-function npcRunSim(){const Q=NPC.filter(u=>u.simQ);Q.forEach(u=>{const t=u.simQ;delete u.simQ;try{npcSimOne(u,t)}catch(e){console.error('[npcSim]',e);npcFight(u,t)}});npcPanel()}
+function npcRunSim(){const u=NPC.find(x=>x.simQ);if(!u){npcPanel();return}const t=u.simQ;delete u.simQ;
+ if(npcWatchAsk(u,t)){CAMP.npcWatch(u,t,r=>{npcSimMsg(u,r);setTimeout(()=>{try{npcRunSim()}catch(e){console.error(e)}},300)});return}   // v1.14.470: megnézés a taktikai lapon
+ try{npcSimOne(u,t)}catch(e){console.error('[npcSim]',e);npcFight(u,t)}npcRunSim()}
+/* npcWatchAsk (v1.14.470, ECO npcWatch): 0 = a háttérben; 1 = kérdez; 2 = mindig megnézed */
+function npcWatchAsk(u,t){const w=+ECO.npcWatch||0;if(!w||!CAMP.canSim())return false;if(w>=2)return true;
+ const nm={U:'U-boat',H:'repülőtámadás',R:'felszíni támadás',K:'kombinált támadás'}[t]||'támadás';
+ return confirm('⚔ '+u.code+' ('+u.from+' → '+u.to+', '+u.m+' teherhajó, '+u.esc.length+' kísérő) '+nm+' alá került a(z) '+addr(u.r,u.c)+' cellában.\n\nOK = megnézem (AI–AI csata a taktikai lapon, körönként vagy lejátszással)\nMégse = a háttérben (csak az eredmény)')}
+function npcSimMsg(u,r){const m=$('o_msg');if(!m||!r)return;const L=u.log[u.log.length-1]||'';m.textContent='⚔ '+u.code+' AI-csata ('+r.turns+' kör): '+L.replace(/^.*AI-csata – /,'');draw()}
 function npcMer(id){const u=NPC.find(x=>x.id===id);if(!u)return [];return Array.from({length:Math.max(1,Math.min(50,u.m))},(_,i)=>({id:'M'+(i+1),tons:nrnd(25,95)*100,cp:nrnd(CFG.cpLo,CFG.cpHi),aa:nrnd(CFG.aaLo,CFG.aaHi),cd:0}))}
 function npcEscPF(id){const u=NPC.find(x=>x.id===id);if(!u)return [];
  return u.esc.map((e,i)=>{const M=(D[e.c]||{mod:[]}).mod,dmg=M.map((m,k)=>(e.ko||[]).includes(k)?m[1]:0);   // v1.14.463: a kiesett (6/6) modulok
