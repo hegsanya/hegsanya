@@ -1,6 +1,6 @@
 <!doctype html><html lang="hu" data-theme="light"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>CEG – Konvoj kísérő kampány v1.14.472</title>
+<title>CEG – Konvoj kísérő kampány v1.14.473</title>
 <style>
 /* Színek: világos/sötét téma változókkal; a gombok és táblázatok stílusa */
 :root{--bg:#f4f1ea;--fg:#1d2733;--pn:#fff;--ln:#c9c2b3;--ac:#b3261e;--sea:#d6ecf4;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -4654,6 +4654,7 @@ function storageReport() {
 //   v1.14.418 (2026-11-09) – kézi kísérő iránya (manDir: 0 ki / 1 minden kézi kísérő / 2 csak a kijelölt): narancs szaggatott vonal a legközelebbi látható U-boat felé (az AI-vonal mintájára, az AI érzékelési sugarán belül)
 //   v1.14.417 (2026-11-09) – a napfény és a csillogás (W0–W1) a TELJES taktikai pályán (korábban csak a keretben); az időjárás-effektek (felhő, eső, villám, napfény, csillogás) mind az egész pályán
 //   v1.14.416 (2026-11-09) – a belső felhők kisebbek (3–6 cella) és szintenként sötétednek / szaporodnak: W2 fehér, W3 szürke, W4 sötét, összefüggő tömbökben (csoportok); a pályát nem borítják el
+//   v1.14.473 (2026-11-13) – JAVÍTÁS: U-boat nélküli csaták – a régi NPC gyors számítás pótlás nélkül pusztította el a kampány U-boatjait (mind a 3 elfogyott); minden csata elején az élő U-boatok száma visszaáll a kampány induló létszámára (startU), az elpusztultak helyére új érkezik
 //   v1.14.472 (2026-11-13) – JAVÍTÁS: kanyar-kockánál az AI-kísérő (NPC / automata) beragadt, ha a megmaradt kockák egyike sem volt használható (pl. pályán kívülre vitt volna): a megmaradt lépéseket most STOP-kockával zárja, így a kör / a lejátszás továbbmegy
 //   v1.14.471 (2026-11-13) – JAVÍTÁS: az NPC-konvojok csatáiban elsüllyedt U-boat nem számít (nem pusztul el a kampányban, nem csökkenti az események U-boat-létszámát, nem emeli a fenyegetés-szintet) – csak ha a TE flottád egyik hajója süllyesztette el; egyszeri javítás a mentésben: a felgyűlt U-boat-veszteség és fenyegetés-szint nullázva (emiatt nem jött U-boat a csatákba)
 //   v1.14.470 (2026-11-13) – (1) NPC AI-CSATA MEGNÉZHETŐ (ECO npcWatch, alap 1 = kérdez): a taktikai lapon, alul vezérlősáv: ▶ lejátszás / ⏸, ⏭ 1 kör, sebesség, ⏩ végig, a végén ✔ eredmény; (2) JAVÍTÁS: az NPC-csatában elsüllyedt U-boat már nem emeli a TE konvojod fenyegetés-szintjét (a belépő kocka d35 / d45 lett tőle a következő napokra)
@@ -4887,7 +4888,7 @@ function storageReport() {
 //   v1.14.239 (2026-10-26) – ÚJ: (1) LUT torpedó (lutOn, alap 1; 1944. januártól): az U-boat kártyán „LUT” jelölőnégyzet (az AI lutAiP %); a FAT utóda: lutLen 18 cella, lutRun 6 egyenes, lutLeg 3 fél-szélesség, találat teherhajón d6 ≤ lutHit (3), hadihajón ≤ lutHitE (1); ha FAT is be van jelölve, a LUT számít. (2) LÉGPERISZKÓP / SCHNORCHEL (schOn, alap 1; 1944. júniustól; csak szabad mozgásnál): 1/8-as mélységen a kártya „Légperiszkóp” jelölőnégyzetével a dízel hajt: az akku nem fogy, hanem schRech (2) cellát tölt körönként, max schSpd (2) lépés, kimerült akkuval is halad; kiesett dízelnél nem működik; az AI az akku fele alatt automatikusan használja.
 //   v1.14.238 (2026-10-26) – SZABAD MOZGÁS: az U-boat a belső játékterületen (pl. 80-as táblán az 50×50-esen) bárhol léphet be, nem csak a szélén (uInner, alapból BE; KI = a régi szél-belépés uEdge szerint).
 //   v1.14.237 (2026-10-26) – HEDGEHOG / SQUID ELLENŐRZÉS: az U-boat lépés utáni kiértékelésében a hedgehog / Squid „nincs találat” eredmény akkor is kiíródik, ha a vízibombák is hatottak (eddig ilyenkor csak a vízibomba-sor látszott, a hedgehog-ellenőrzés nem)
-const VER = 'v1.14.472';
+const VER = 'v1.14.473';
 // ===== MEGFIGYELŐ / TESZT MÓD (obsMode, v1.14.195) =====
 // Megfigyelő módban mindkét oldalt az AI vezérli (a kísérők is: NPC-logikával), a pálya mindent mutat (nincs köd), és a körök maguktól léptetődnek;
 // a lezárt csatákból statisztika készül (konvoj-, U-boat-, kísérő-veszteség, kimenetel), hogy látszódjon: sokféle csata születik-e, vagy egyoldalú lett a hangolás.
@@ -5670,6 +5671,12 @@ const CAMP = {
     $('wx').value = w;                                             // az időjárás a konvoj cellájából
     setDirOptions(hd || 5);                                        // a kezdő irány a cél-kikötő fő iránya (1-3-5-7); menet közben ±1 kanyarodhat
     showView('TAC'); reset();                                      // a reset() a kampányállapotból épít (lásd taktikai rész)
+    /* v1.14.473: az élő U-boatok száma nem fogyhat a kampány induló létszáma (ECO.startU) alá – az elpusztultak helyére új érkezik
+       (a régi NPC gyors számítás pótlás nélkül pusztította el őket, ezért maradt U-boat nélkül a csata) */
+    { const want = Math.min(3, ECO.startU.split(',').filter(x => /^U\d+$/.test(x.trim())).length || 3), add = [];
+      while (Object.keys(this.ub).filter(id => !this.ub[id].dead).length < want) { const n = 'U' + this.nextNum('U'); this.ub[n] = { ton: 0, dmg: D.VIIC.mod.map(() => 0), tp: 14, dead: false }; add.push(n); }
+      Object.keys(this.ub).forEach(id => { if (this.ub[id].dead) this.ub[id].replaced = true; });
+      if (add.length) this.log.push('[' + OPG.day() + '. nap] U-boat pótlás: ' + add.join(', ') + ' érkezik (az élő U-boatok száma a kampány induló létszámára áll vissza).'); }
     UID.length = 0; Object.keys(this.ub).filter(id => !this.ub[id].dead).slice(0, 3).forEach(id => UID.push(id));   // az aktív (élő) U-boatok, legfeljebb három
     Object.keys(RAID).forEach(k => delete RAID[k]); Object.keys(this.raid).filter(id => !this.raid[id].dead).forEach(id => { RAID[id] = this.raid[id].c; });   // az élő ellenséges felszíni hajók
     UID.forEach(id => {                                            // az U-boatok a pályán kívül (store) várnak, a d25-ös dobás léptet be
