@@ -1,6 +1,6 @@
 <!doctype html><html lang="hu" data-theme="light"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>CEG – Konvoj kísérő kampány v1.14.457</title>
+<title>CEG – Konvoj kísérő kampány v1.14.458</title>
 <style>
 /* Színek: világos/sötét téma változókkal; a gombok és táblázatok stílusa */
 :root{--bg:#f4f1ea;--fg:#1d2733;--pn:#fff;--ln:#c9c2b3;--ac:#b3261e;--sea:#d6ecf4;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -669,19 +669,22 @@ function cardBadges(s,k){if(!+CFG.cardBadge||!k||!(s.t=='E'||s.t=='U'))return ''
 /* ===== ROZSDA A HAJÓKÁRTYA KÉPÉN (v1.14.456, cardRust / rustAt) =====
    rustPic(s,pic): a kép (img.shipimg) fölé egy réteg kerül, amelyet maga a hajókép maszkol (csak a hajót színezi, a hátteret nem):
    rozsdafoltok (radiális színátmenetek) és lefolyó csíkok, sorrendjük és helyük a hajó azonosítójából (állandó). Erősség: w = (100 − állapot) / (100 − rustAt), 0…1.
-   A foltok mix-blend-mode: multiply módon sötétítenek (a kép háttere érintetlen marad). */
+   A foltok rárajzolódnak a hajóra (a kép háttere érintetlen marad, mert a maszk csak a hajót engedi). */
 function rustPic(s,pic){
  if(!+CFG.cardRust||!s||s.age==null||!(s.t=='E'||s.t=='U'))return pic;
  const w=Math.max(0,Math.min(1,(100-s.age)/Math.max(1,100-(+CFG.rustAt||50))));if(w<=0.02)return pic;
  const m=/<img src="([^"]+)"([^>]*class="shipimg"[^>]*)>/.exec(pic);if(!m)return pic;
  let h=0;for(const ch of String(s.id))h=(h*31+ch.charCodeAt(0))>>>0;const rnd=()=>{h=(h*1103515245+12345)>>>0;return (h>>>8)/16777216};
  const n=Math.round(6+w*22),g=[];
- for(let i=0;i<n;i++){const x=Math.round(rnd()*100),y=Math.round(35+rnd()*60),r=Math.round(3+rnd()*6+w*6),a=(0.45+0.45*w*(0.5+rnd()/2)).toFixed(2),c=rnd()<.5?'139,69,19':'110,50,20';
+ for(let i=0;i<n;i++){const x=Math.round(rnd()*100),y=Math.round(35+rnd()*60),r=Math.round(3+rnd()*6+w*6),a=(0.45+0.45*w*(0.5+rnd()/2)).toFixed(2),c=rnd()<.5?'176,88,34':'138,64,24';   // v1.14.458: világosabb rozsdaszín – a sötétszürke hajótesten is látszik
   g.push('radial-gradient(circle at '+x+'% '+y+'%, rgba('+c+','+a+') 0, rgba('+c+',0) '+r+'%)')}
- const st=Math.round(w*8);for(let i=0;i<st;i++){const x=Math.round(rnd()*100);g.push('linear-gradient(90deg, transparent '+x+'%, rgba(120,55,15,'+(0.25+0.35*w).toFixed(2)+') '+x+'%, rgba(120,55,15,0) '+(x+0.8)+'%)')}   // lefolyó rozsdacsíkok
+ const st=Math.round(w*8);for(let i=0;i<st;i++){const x=Math.round(rnd()*100);g.push('linear-gradient(90deg, transparent '+x+'%, rgba(150,70,25,'+(0.3+0.4*w).toFixed(2)+') '+x+'%, rgba(120,55,15,0) '+(x+0.8)+'%)')}   // lefolyó rozsdacsíkok
  const u=m[1],mk='url('+u+') center/100% 100% no-repeat',img=m[0].replace('class="shipimg"','class="shipimg" data-rust="'+w.toFixed(2)+'"');   // a kép szűrő nélkül marad (a sepia a kép hátterét is sárgította)
- const ov='<span style="position:absolute;left:4px;right:4px;top:8px;bottom:8px;pointer-events:none;mix-blend-mode:multiply;background:'+g.join(',')+';-webkit-mask:'+mk+';mask:'+mk+'" title="Állapot: '+s.age+'% – rozsda"></span>';
- return pic.replace(m[0],'<span style="position:relative;display:inline-block;vertical-align:top;max-width:100%">'+img+ov+'</span>')}   // v1.14.457: inline-block – a réteg a kép méretéhez igazodik (széles tárolóban is)
+ const ov='<span style="position:absolute;left:4px;width:100%;top:8px;bottom:8px;pointer-events:none;background:'+g.join(',')+';-webkit-mask:'+mk+';mask:'+mk+'" title="Állapot: '+s.age+'% – rozsda"></span>';
+ /* v1.14.458: a tároló pontosan a kép szélességét veszi fel – blokk-elem a kép max-width értékével (az inline-block a 100%-os képszélességnél összeesett);
+    flow-root: a kép margója a tárolón belül marad (különben „kicsúszik”, és a réteg 4 px-szel lejjebb, 8 px-szel laposabb lesz → rozsda a levegőben) */
+ const mw=/max-width:\s*(\d+)px/.exec(m[0]);
+ return pic.replace(m[0],'<span style="position:relative;display:flow-root;'+(mw?'max-width:'+mw[1]+'px':'')+'">'+img+ov+'</span>')}
 function dmgGrid(s){
  if(!+CFG.dmgGrid||!s||!s.dmg||!s.st||!D[s.c]||s.t=='M'||s.t=='A')return '';
  const k=D[s.c],cls=k.base||s.c,u=sideFor(s.c)||(MPDEF[cls]?artFor(s.c,s.id):'');   /* v1.14.400: ha a hajókártya rajza (ART) és kézzel beállított modul-helyek vannak, azt használja */
@@ -4635,6 +4638,7 @@ function storageReport() {
 //   v1.14.418 (2026-11-09) – kézi kísérő iránya (manDir: 0 ki / 1 minden kézi kísérő / 2 csak a kijelölt): narancs szaggatott vonal a legközelebbi látható U-boat felé (az AI-vonal mintájára, az AI érzékelési sugarán belül)
 //   v1.14.417 (2026-11-09) – a napfény és a csillogás (W0–W1) a TELJES taktikai pályán (korábban csak a keretben); az időjárás-effektek (felhő, eső, villám, napfény, csillogás) mind az egész pályán
 //   v1.14.416 (2026-11-09) – a belső felhők kisebbek (3–6 cella) és szintenként sötétednek / szaporodnak: W2 fehér, W3 szürke, W4 sötét, összefüggő tömbökben (csoportok); a pályát nem borítják el
+//   v1.14.458 (2026-11-13) – JAVÍTÁS: a rozsda-réteg elcsúszott a képhez képest (a „levegőben” is látszott); most a tároló pontosan a kép szélességét veszi fel
 //   v1.14.457 (2026-11-13) – FLOTTA lap: a hajó grafikája is rozsdás az állapot (elöregedés) szerint, ugyanazzal a folt-mintával, mint a Hajókártyán
 //   v1.14.456 (2026-11-13) – HAJÓKÁRTYA tömörítve: a grafikán az állapot (🔧 %, a medál mellett), a használható üzemanyag száma, U-boatnál az akku; a jelölő-sávban mozgás mai/max, bomba készlet · e körben, hedgehog, squid; a Részletekből kimarad, ami a fejlécben / grafikán látszik, és az elavult zóna-koordináták; a kanyar-kocka szöveges listája elrejtve (diceList); ROZSDA a hajó képén az állapottal arányosan (cardRust, rustAt)
 //   v1.14.455 (2026-11-13) – Beállítások lap: a bevezető „Ugrás: …” szöveg elhagyva (becsukott szakaszoknál nem ugrott sehová; a szakaszcímek a tartalomjegyzék)
@@ -4853,7 +4857,7 @@ function storageReport() {
 //   v1.14.239 (2026-10-26) – ÚJ: (1) LUT torpedó (lutOn, alap 1; 1944. januártól): az U-boat kártyán „LUT” jelölőnégyzet (az AI lutAiP %); a FAT utóda: lutLen 18 cella, lutRun 6 egyenes, lutLeg 3 fél-szélesség, találat teherhajón d6 ≤ lutHit (3), hadihajón ≤ lutHitE (1); ha FAT is be van jelölve, a LUT számít. (2) LÉGPERISZKÓP / SCHNORCHEL (schOn, alap 1; 1944. júniustól; csak szabad mozgásnál): 1/8-as mélységen a kártya „Légperiszkóp” jelölőnégyzetével a dízel hajt: az akku nem fogy, hanem schRech (2) cellát tölt körönként, max schSpd (2) lépés, kimerült akkuval is halad; kiesett dízelnél nem működik; az AI az akku fele alatt automatikusan használja.
 //   v1.14.238 (2026-10-26) – SZABAD MOZGÁS: az U-boat a belső játékterületen (pl. 80-as táblán az 50×50-esen) bárhol léphet be, nem csak a szélén (uInner, alapból BE; KI = a régi szél-belépés uEdge szerint).
 //   v1.14.237 (2026-10-26) – HEDGEHOG / SQUID ELLENŐRZÉS: az U-boat lépés utáni kiértékelésében a hedgehog / Squid „nincs találat” eredmény akkor is kiíródik, ha a vízibombák is hatottak (eddig ilyenkor csak a vízibomba-sor látszott, a hedgehog-ellenőrzés nem)
-const VER = 'v1.14.457';
+const VER = 'v1.14.458';
 // ===== MEGFIGYELŐ / TESZT MÓD (obsMode, v1.14.195) =====
 // Megfigyelő módban mindkét oldalt az AI vezérli (a kísérők is: NPC-logikával), a pálya mindent mutat (nincs köd), és a körök maguktól léptetődnek;
 // a lezárt csatákból statisztika készül (konvoj-, U-boat-, kísérő-veszteség, kimenetel), hogy látszódjon: sokféle csata születik-e, vagy egyoldalú lett a hangolás.
