@@ -1,6 +1,6 @@
 <!doctype html><html lang="hu" data-theme="light"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>CEG – Konvoj kísérő kampány v1.14.470</title>
+<title>CEG – Konvoj kísérő kampány v1.14.471</title>
 <style>
 /* Színek: világos/sötét téma változókkal; a gombok és táblázatok stílusa */
 :root{--bg:#f4f1ea;--fg:#1d2733;--pn:#fff;--ln:#c9c2b3;--ac:#b3261e;--sea:#d6ecf4;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -4651,6 +4651,7 @@ function storageReport() {
 //   v1.14.418 (2026-11-09) – kézi kísérő iránya (manDir: 0 ki / 1 minden kézi kísérő / 2 csak a kijelölt): narancs szaggatott vonal a legközelebbi látható U-boat felé (az AI-vonal mintájára, az AI érzékelési sugarán belül)
 //   v1.14.417 (2026-11-09) – a napfény és a csillogás (W0–W1) a TELJES taktikai pályán (korábban csak a keretben); az időjárás-effektek (felhő, eső, villám, napfény, csillogás) mind az egész pályán
 //   v1.14.416 (2026-11-09) – a belső felhők kisebbek (3–6 cella) és szintenként sötétednek / szaporodnak: W2 fehér, W3 szürke, W4 sötét, összefüggő tömbökben (csoportok); a pályát nem borítják el
+//   v1.14.471 (2026-11-13) – JAVÍTÁS: az NPC-konvojok csatáiban elsüllyedt U-boat nem számít (nem pusztul el a kampányban, nem csökkenti az események U-boat-létszámát, nem emeli a fenyegetés-szintet) – csak ha a TE flottád egyik hajója süllyesztette el; egyszeri javítás a mentésben: a felgyűlt U-boat-veszteség és fenyegetés-szint nullázva (emiatt nem jött U-boat a csatákba)
 //   v1.14.470 (2026-11-13) – (1) NPC AI-CSATA MEGNÉZHETŐ (ECO npcWatch, alap 1 = kérdez): a taktikai lapon, alul vezérlősáv: ▶ lejátszás / ⏸, ⏭ 1 kör, sebesség, ⏩ végig, a végén ✔ eredmény; (2) JAVÍTÁS: az NPC-csatában elsüllyedt U-boat már nem emeli a TE konvojod fenyegetés-szintjét (a belépő kocka d35 / d45 lett tőle a következő napokra)
 //   v1.14.469 (2026-11-13) – NPC-KONVOJ AI–AI CSATA (ECO npcSim, alap BE): a gyors képlet helyett a Megfigyelő mód motorja – rendes taktikai csata a háttérben (rajz, animáció, kérdés nélkül), a kampány U-boatjaival; a kísérők NPC-AI-ként; ha a saját hajóid is ott vannak és nem vezényled, ők is AI-ként harcolnak; ha taktikai csata van folyamatban, a régi gyors számítás dönt
 //   v1.14.468 (2026-11-13) – OP-ZÁSZLÓK a legfelső cellasorban: nem lógnak lefelé, hanem nagyon rövid a rúd (a zászló a cella tetején)
@@ -4882,7 +4883,7 @@ function storageReport() {
 //   v1.14.239 (2026-10-26) – ÚJ: (1) LUT torpedó (lutOn, alap 1; 1944. januártól): az U-boat kártyán „LUT” jelölőnégyzet (az AI lutAiP %); a FAT utóda: lutLen 18 cella, lutRun 6 egyenes, lutLeg 3 fél-szélesség, találat teherhajón d6 ≤ lutHit (3), hadihajón ≤ lutHitE (1); ha FAT is be van jelölve, a LUT számít. (2) LÉGPERISZKÓP / SCHNORCHEL (schOn, alap 1; 1944. júniustól; csak szabad mozgásnál): 1/8-as mélységen a kártya „Légperiszkóp” jelölőnégyzetével a dízel hajt: az akku nem fogy, hanem schRech (2) cellát tölt körönként, max schSpd (2) lépés, kimerült akkuval is halad; kiesett dízelnél nem működik; az AI az akku fele alatt automatikusan használja.
 //   v1.14.238 (2026-10-26) – SZABAD MOZGÁS: az U-boat a belső játékterületen (pl. 80-as táblán az 50×50-esen) bárhol léphet be, nem csak a szélén (uInner, alapból BE; KI = a régi szél-belépés uEdge szerint).
 //   v1.14.237 (2026-10-26) – HEDGEHOG / SQUID ELLENŐRZÉS: az U-boat lépés utáni kiértékelésében a hedgehog / Squid „nincs találat” eredmény akkor is kiíródik, ha a vízibombák is hatottak (eddig ilyenkor csak a vízibomba-sor látszott, a hedgehog-ellenőrzés nem)
-const VER = 'v1.14.470';
+const VER = 'v1.14.471';
 // ===== MEGFIGYELŐ / TESZT MÓD (obsMode, v1.14.195) =====
 // Megfigyelő módban mindkét oldalt az AI vezérli (a kísérők is: NPC-logikával), a pálya mindent mutat (nincs köd), és a körök maguktól léptetődnek;
 // a lezárt csatákból statisztika készül (konvoj-, U-boat-, kísérő-veszteség, kimenetel), hogy látszódjon: sokféle csata születik-e, vagy egyoldalú lett a hangolás.
@@ -5792,7 +5793,11 @@ const CAMP = {
     // 3) U-boatok: elpusztult, vagy a tonnázs és a sérülés megmarad; kormány / dízel 6/6 esetén 50% eséllyel elvész a hazaúton
     UID.forEach(id => {
       const p = this.ub[id], o = ships.find(q => q.id === id) || store[id];
-      if (dead[id] && !p.dead) { p.dead = true; if (tf) this.tfAdd(tf, { ubSunk: 1 }); else v.ubSunk++; this.thrSunk(this.ev && this.ev.npc); rep.push(id + ' megsemmisült'); }
+      /* v1.14.471: NPC-konvoj csatájában az U-boat csak akkor számít elsüllyesztettnek, ha a TE flottád egyik hajója süllyesztette el;
+         különben a kampányban életben marad, a sérülése sem öröklődik (az NPC-csata nem fogyasztja a kampány U-boatjait) */
+      const npcU = this.ev && this.ev.npc, mineKill = k => { const f = k && k.by && this.get(k.by); return !!(f && f.loc === 'npc:' + npcU); };
+      if (npcU && !p.dead && !mineKill(KL.find(k => k.t === 'U' && k.id === id))) { if (dead[id]) rep.push(id + ' elsüllyedt (NPC-kísérő – a kampányban nem számít)'); return; }
+      if (dead[id] && !p.dead) { p.dead = true; if (tf) this.tfAdd(tf, { ubSunk: 1 }); else v.ubSunk++; this.thrSunk(npcU); rep.push(id + ' megsemmisült'); }
       else if (o && !p.dead) {
         p.ton = o.ton || 0; p.dmg = o.dmg.map((x, i) => x >= D.VIIC.mod[i][1] ? x : 0); p.tp = o.tp;   // az U-boat nem 6/6 sérülései is másnapra kijavulnak
         for (let k = 0; k < (o.lostN || 0) && !p.dead; k++) if (R(0, 1)) { p.dead = true; this.thrSunk(this.ev && this.ev.npc); rep.push(id + ' a kormány / dízel sérülése miatt elveszett a hazaúton (elsüllyesztésnek számít)'); }
@@ -6242,7 +6247,8 @@ const CAMP = {
   },
   restore(o) {
     if (!o.c || !o.c.fleet) throw new Error('A mentés régi formátumú (v1.2 vagy korábbi): új kampányt kell kezdeni.');
-    Object.assign(this, o.c); if (!o.c.reps) this.reps = []; if (!o.c.tfs) { this.tfs = {}; this.tfRetro = undefined; } if (!o.c.mis) { this.mis = []; this.misN = 0; } if (!o.c.raid) this.initRaid(); try { const pv = +(/v1\.14\.(\d+)/.exec(o.v || '') || [0, 0])[1]; if (o.cls && pv < 91) { if (o.cls.T) delete o.cls.T.bomb; if (o.cls.H) delete o.cls.H.bomb; } } catch (e) { } if (!this.thr) this.thrInit(); if (!this.medQ) this.medQ = []; if (o.eco) Object.assign(ECO, o.eco); if (o.ports) Object.keys(o.ports).forEach(p => Object.assign(PORTS_T[p] = PORTS_T[p] || {}, o.ports[p]));
+    Object.assign(this, o.c);
+    try { if (localStorage.getItem('ceg_mig471') !== '1' && this.thr) { const l = this.thr.lost || 0; this.thr.lost = 0; this.thr.lvl = 0; this.thr.sunk = 0; this.log.push('[v1.14.471 javítás] Az NPC-csaták U-boat-veszteségei nem számítanak: a felgyűlt U-boat-veszteség (−' + (+l).toFixed(1) + ') és a fenyegetés-szint nullázva.'); localStorage.setItem('ceg_mig471', '1'); } } catch (e) { } if (!o.c.reps) this.reps = []; if (!o.c.tfs) { this.tfs = {}; this.tfRetro = undefined; } if (!o.c.mis) { this.mis = []; this.misN = 0; } if (!o.c.raid) this.initRaid(); try { const pv = +(/v1\.14\.(\d+)/.exec(o.v || '') || [0, 0])[1]; if (o.cls && pv < 91) { if (o.cls.T) delete o.cls.T.bomb; if (o.cls.H) delete o.cls.H.bomb; } } catch (e) { } if (!this.thr) this.thrInit(); if (!this.medQ) this.medQ = []; if (o.eco) Object.assign(ECO, o.eco); if (o.ports) Object.keys(o.ports).forEach(p => Object.assign(PORTS_T[p] = PORTS_T[p] || {}, o.ports[p]));
     this.battle = false; this.ev = null; if (o.c.bt && !this.mission) setTimeout(() => { try { CAMP.resumeBt(); } catch (e) { } }, 500); else this.bt = null;
     if (o.cls) FLEET_CLS.forEach(c => Object.assign(D[c], o.cls[c] || {})); if (o.zone) Object.assign(ZONE, o.zone); if (o.op) OPG.load(o.op); this.refresh();
   },
@@ -6908,7 +6914,7 @@ function npcFight(u,t){
   if(tp||ko/M.length>=(+CFG.sinkPct||60)/100||(crew>=0&&f.dmg[crew]>=M[crew][1])){f.st='lost';CAMP.lostShips.push(CAMP.lostRec(f,(tp?'torpedótalálat – ':'')+'elsüllyedt az NPC-konvoj ('+u.code+') kíséretében','npc'));CAMP.fleet=CAMP.fleet.filter(x=>x!==f);u.mine=u.mine.filter(id=>id!==f.id);mine.push(f.id+' ELSÜLLYEDT')}
   else mine.push(f.id+' sérült ('+fHp(f)+'%)')});
  /* U-boat elsüllyesztése (a kampány U-boat-létszáma csökken): esély = npcUbP % × a kíséret ereje */
- let ub='';if((t=='U'||t=='K')&&CAMP.ub&&Math.random()*100<Math.min(50,(+ECO.npcUbP||0)*S)){const live=Object.keys(CAMP.ub).filter(k=>!CAMP.ub[k].dead);if(live.length){const k=live[nrnd(0,live.length-1)];CAMP.ub[k].dead=true;ub=k}}
+ let ub='';if((t=='U'||t=='K')&&CAMP.ub&&Math.random()*100<Math.min(50,(+ECO.npcUbP||0)*S)){const live=Object.keys(CAMP.ub).filter(k=>!CAMP.ub[k].dead);if(live.length){const k=live[nrnd(0,live.length-1)];ub=k}}   // v1.14.471: a kampány U-boatja nem pusztul el (NPC-veszteség nem számít)
  const nm={U:'U-boat',H:'légitámadás',R:'felszíni támadás',K:'kombinált támadás'}[t]||'támadás';
  const txt=day+'. nap '+addr(u.r,u.c)+': '+nm+' – '+(lost?lost+' teherhajó elsüllyedt':'nincs veszteség')+(hit.length?', sérült kísérő: '+hit.join(', '):'')+(sunk.length?', ELSÜLLYEDT KÍSÉRŐ: '+sunk.join(', '):'')+(mine.length?', SAJÁT: '+mine.join(', '):'')+(ub?', U-boat elsüllyesztve: '+ub:'');
  u.log.push(txt);if(u.log.length>8)u.log.shift();
