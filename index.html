@@ -1,6 +1,6 @@
 <!doctype html><html lang="hu" data-theme="light"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>CEG – Konvoj kísérő kampány v1.14.453</title>
+<title>CEG – Konvoj kísérő kampány v1.14.454</title>
 <style>
 /* Színek: világos/sötét téma változókkal; a gombok és táblázatok stílusa */
 :root{--bg:#f4f1ea;--fg:#1d2733;--pn:#fff;--ln:#c9c2b3;--ac:#b3261e;--sea:#d6ecf4;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -306,7 +306,8 @@ html[data-theme="dark"] body.tblOP[data-view="MIS"] .misSheet{--mp:transparent;-
 @keyframes fxPop{0%{opacity:0;transform:scale(.2)}35%{opacity:1;transform:scale(1.1)}100%{opacity:0;transform:scale(1.5)}}
 @keyframes fxTrace{from{stroke-dashoffset:28;opacity:1}to{stroke-dashoffset:0;opacity:.25}}
 @media (prefers-reduced-motion:reduce){.dxfx .fxk{animation:none!important;opacity:.0}}
-#qb{margin-top:-4px;gap:6px}#qb .qg,#qbSet .qg{display:inline-flex;align-items:center;gap:3px;padding:3px 6px}#qb .qg small,#qbSet .qg small{opacity:.75;margin-right:2px}#qb .qg button,#qbSet .qg button{padding:2px 8px;border:1px solid var(--ln);border-radius:5px;background:var(--pn);color:var(--fg);font:inherit;cursor:pointer}#qb .qg button.on,#qbSet .qg button.on{background:#2e7d32;color:#fff;border-color:#1b5e20;font-weight:700}#qb .qg i,#qbSet .qg i{font-size:11px;opacity:.8}
+#qb{margin-top:-4px;gap:6px}#qb .qg,#qbSet .qg{display:inline-flex;align-items:center;gap:3px;padding:3px 6px}#qb .qg small,#qbSet .qg small{opacity:.75;margin-right:2px}#qb .qg button,#qbSet .qg button{padding:2px 8px;border:1px solid var(--ln);border-radius:5px;background:var(--pn);color:var(--fg);font:inherit;cursor:pointer}/* v1.14.454: a kiválasztott gyorskapcsoló zöld háttere minden témában (a Normál / Sötét téma gombstílusa eddig felülírta) */ #qb .qg button.on,#qbSet .qg button.on{background:#2e7d32!important;background-image:none!important;color:#fff!important;border-color:#1b5e20!important;text-shadow:none!important}
+#qb .qg button.on,#qbSet .qg button.on{background:#2e7d32;color:#fff;border-color:#1b5e20;font-weight:700}#qb .qg i,#qbSet .qg i{font-size:11px;opacity:.8}
 /* ===== FŐOLDAL (homePage): teljes képernyős kép, a fő gombok (Játék, Új kampány, Betöltés, Mentés, Tutorial, Beállítások, Téma, Nézet) itt vannak; a felső sorban csak a játékhoz kellő gombok maradnak ===== */
 body.hmOn [data-hm]{display:none!important}
 body[data-view="HOME"]{padding:0;background:#0b1218}
@@ -362,7 +363,7 @@ body.opN #vOP #o_notes>div:not(#zz):nth-child(2n)::before{transform:rotate(2deg)
 <button class="hm-b" onclick="CAMP.setupView()"><span class="ic">⚙</span><span>Beállítások<small>szabályok, nehézség, gazdaság</small></span></button>
 </div>
 <div id="hm_store" style="margin-top:10px;font-size:12px;line-height:1.4;color:#e8e2d2;padding:5px 8px;border-radius:6px;background:rgba(0,0,0,.35)"></div>   <!-- v1.14.446: tárhely-sor (homeStore) -->
-<div class="hm-opt"><label>Téma <select id="hm_th" onchange="setTheme(this.value)"><option value="light">Normál</option><option value="orig">Világoskék</option><option value="navy">Eredeti (sötétkék)</option><option value="dark">Sötét</option><option value="white">Fehér</option><option value="blue">Tervrajz</option></select></label><button id="hm_vw" onclick="simpleToggle()" title="Egyszerű nézet (kezdőknek) / Teljes nézet (hangolás)">Nézet: Egyszerű</button></div>
+<div class="hm-opt"><label>Téma <select id="hm_th" onchange="setTheme(this.value)"><option value="light">Normál</option><option value="orig">Világoskék</option><option value="navy">Eredeti (sötétkék)</option><option value="dark">Sötét</option><option value="white">Fehér</option><option value="blue">Tervrajz</option></select></label><button id="hm_vw" style="display:none" onclick="simpleToggle()" title="Egyszerű nézet (kezdőknek) / Teljes nézet (hangolás)">Nézet: Egyszerű</button></div>
 </div></div>
 <div id="vOP"><!-- OP nézet: kompakt állapotsor, a térkép feletti (görgetéskor tapadó) műveleti sáv, majd a térkép; a ritkán használt részek (rétegek magyarázata, zóna-szerkesztő, beállítások) lenyithatók -->
 <table class="m top">
@@ -4607,6 +4608,7 @@ function storageReport() {
 //   v1.14.418 (2026-11-09) – kézi kísérő iránya (manDir: 0 ki / 1 minden kézi kísérő / 2 csak a kijelölt): narancs szaggatott vonal a legközelebbi látható U-boat felé (az AI-vonal mintájára, az AI érzékelési sugarán belül)
 //   v1.14.417 (2026-11-09) – a napfény és a csillogás (W0–W1) a TELJES taktikai pályán (korábban csak a keretben); az időjárás-effektek (felhő, eső, villám, napfény, csillogás) mind az egész pályán
 //   v1.14.416 (2026-11-09) – a belső felhők kisebbek (3–6 cella) és szintenként sötétednek / szaporodnak: W2 fehér, W3 szürke, W4 sötét, összefüggő tömbökben (csoportok); a pályát nem borítják el
+//   v1.14.454 (2026-11-13) – a kiválasztott gyorskapcsoló zöld háttere a Normál és a Sötét témában is látszik; a Főoldalról lekerült a Nézet: Egyszerű / Teljes gomb (a beállítás – simpleUI – megmarad)
 //   v1.14.453 (2026-11-13) – NÉZET átdolgozva: (1) Beállítások lap – felül a gyorskapcsolók (mindig), a szakaszok és csoportok lenyithatók (Egyszerű nézetben becsukva, Teljes nézetben nyitva; Mind kinyit / becsuk; keresés közben minden nyitva); (2) OP és Taktikai lap – az extra beállítások (rétegek, zónák, csata-beállítások, OP / taktikai beállítások, megfigyelő mód) egy lenyitható „⚙ Extra beállítások” csoportban, az Egyszerű nézetben is elérhetők; a menü ⚙ Extrák gombja mindet egyszerre nyitja / zárja; (3) gyorskapcsoló „Irányítás”: Irány-kocka / Kanyar-kocka / Szabad mozgás (a félrevezető „Irányok / Iránykockák” és „Sakktábla / Szabad” helyett)
 //   v1.14.452 (2026-11-12) – IRÁNY-KOCKA: a szenzor-Joker iránya a hajó iránya ±2 (±90°) – jokClamp, alap 2; a szonár / HF-DF a kontaktus felé mutató irányt a sávra vágja, a radar véletlen iránya is a sávon belül; 0 = a régi 1–8
 //   v1.14.451 (2026-11-12) – JAVÍTÁS: a gyakorló küldetés ideiglenes beállításai (14 hajós konvoj, STOP kikapcsolva = stopBase 100000, támogatás ki, AI-agresszivitás 7) bekerülhettek a mentett beállításokba; most a mentésbe mindig az eredeti értékek kerülnek, és a bennragadt értékek egyszer visszaállnak
@@ -4821,7 +4823,7 @@ function storageReport() {
 //   v1.14.239 (2026-10-26) – ÚJ: (1) LUT torpedó (lutOn, alap 1; 1944. januártól): az U-boat kártyán „LUT” jelölőnégyzet (az AI lutAiP %); a FAT utóda: lutLen 18 cella, lutRun 6 egyenes, lutLeg 3 fél-szélesség, találat teherhajón d6 ≤ lutHit (3), hadihajón ≤ lutHitE (1); ha FAT is be van jelölve, a LUT számít. (2) LÉGPERISZKÓP / SCHNORCHEL (schOn, alap 1; 1944. júniustól; csak szabad mozgásnál): 1/8-as mélységen a kártya „Légperiszkóp” jelölőnégyzetével a dízel hajt: az akku nem fogy, hanem schRech (2) cellát tölt körönként, max schSpd (2) lépés, kimerült akkuval is halad; kiesett dízelnél nem működik; az AI az akku fele alatt automatikusan használja.
 //   v1.14.238 (2026-10-26) – SZABAD MOZGÁS: az U-boat a belső játékterületen (pl. 80-as táblán az 50×50-esen) bárhol léphet be, nem csak a szélén (uInner, alapból BE; KI = a régi szél-belépés uEdge szerint).
 //   v1.14.237 (2026-10-26) – HEDGEHOG / SQUID ELLENŐRZÉS: az U-boat lépés utáni kiértékelésében a hedgehog / Squid „nincs találat” eredmény akkor is kiíródik, ha a vízibombák is hatottak (eddig ilyenkor csak a vízibomba-sor látszott, a hedgehog-ellenőrzés nem)
-const VER = 'v1.14.453';
+const VER = 'v1.14.454';
 // ===== MEGFIGYELŐ / TESZT MÓD (obsMode, v1.14.195) =====
 // Megfigyelő módban mindkét oldalt az AI vezérli (a kísérők is: NPC-logikával), a pálya mindent mutat (nincs köd), és a körök maguktól léptetődnek;
 // a lezárt csatákból statisztika készül (konvoj-, U-boat-, kísérő-veszteség, kimenetel), hogy látszódjon: sokféle csata születik-e, vagy egyoldalú lett a hangolás.
