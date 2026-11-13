@@ -1,6 +1,6 @@
 <!doctype html><html lang="hu" data-theme="light"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>CEG – Konvoj kísérő kampány v1.14.467</title>
+<title>CEG – Konvoj kísérő kampány v1.14.468</title>
 <style>
 /* Színek: világos/sötét téma változókkal; a gombok és táblázatok stílusa */
 :root{--bg:#f4f1ea;--fg:#1d2733;--pn:#fff;--ln:#c9c2b3;--ac:#b3261e;--sea:#d6ecf4;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -4651,6 +4651,7 @@ function storageReport() {
 //   v1.14.418 (2026-11-09) – kézi kísérő iránya (manDir: 0 ki / 1 minden kézi kísérő / 2 csak a kijelölt): narancs szaggatott vonal a legközelebbi látható U-boat felé (az AI-vonal mintájára, az AI érzékelési sugarán belül)
 //   v1.14.417 (2026-11-09) – a napfény és a csillogás (W0–W1) a TELJES taktikai pályán (korábban csak a keretben); az időjárás-effektek (felhő, eső, villám, napfény, csillogás) mind az egész pályán
 //   v1.14.416 (2026-11-09) – a belső felhők kisebbek (3–6 cella) és szintenként sötétednek / szaporodnak: W2 fehér, W3 szürke, W4 sötét, összefüggő tömbökben (csoportok); a pályát nem borítják el
+//   v1.14.468 (2026-11-13) – OP-ZÁSZLÓK a legfelső cellasorban: nem lógnak lefelé, hanem nagyon rövid a rúd (a zászló a cella tetején)
 //   v1.14.467 (2026-11-13) – OP-ZÁSZLÓK a legfelső cellasorban: fent nincs hely, ezért a zászló lefelé lóg a talpról (saját konvoj, TF, NPC-konvoj)
 //   v1.14.466 (2026-11-13) – NPC-ZÁSZLÓ: a konvoj nevével (HXN3), koppintásra kinyílik az NPC-panel a konvoj soránál (kiemelve; telefonon is); elutasítás után nincs 60%-os konvojméret-csökkentés, ha az NPC-konvojok be vannak kapcsolva (az elutasítás már nem büntet)
 //   v1.14.465 (2026-11-13) – NPC-KONVOJ NEVE: a saját konvojok sorszámát folytatja N betűvel (HX2 után HXN3, ON6 után ONN7); a kihagyott saját konvoj: OG1 → OGN1
@@ -4879,7 +4880,7 @@ function storageReport() {
 //   v1.14.239 (2026-10-26) – ÚJ: (1) LUT torpedó (lutOn, alap 1; 1944. januártól): az U-boat kártyán „LUT” jelölőnégyzet (az AI lutAiP %); a FAT utóda: lutLen 18 cella, lutRun 6 egyenes, lutLeg 3 fél-szélesség, találat teherhajón d6 ≤ lutHit (3), hadihajón ≤ lutHitE (1); ha FAT is be van jelölve, a LUT számít. (2) LÉGPERISZKÓP / SCHNORCHEL (schOn, alap 1; 1944. júniustól; csak szabad mozgásnál): 1/8-as mélységen a kártya „Légperiszkóp” jelölőnégyzetével a dízel hajt: az akku nem fogy, hanem schRech (2) cellát tölt körönként, max schSpd (2) lépés, kimerült akkuval is halad; kiesett dízelnél nem működik; az AI az akku fele alatt automatikusan használja.
 //   v1.14.238 (2026-10-26) – SZABAD MOZGÁS: az U-boat a belső játékterületen (pl. 80-as táblán az 50×50-esen) bárhol léphet be, nem csak a szélén (uInner, alapból BE; KI = a régi szél-belépés uEdge szerint).
 //   v1.14.237 (2026-10-26) – HEDGEHOG / SQUID ELLENŐRZÉS: az U-boat lépés utáni kiértékelésében a hedgehog / Squid „nincs találat” eredmény akkor is kiíródik, ha a vízibombák is hatottak (eddig ilyenkor csak a vízibomba-sor látszott, a hedgehog-ellenőrzés nem)
-const VER = 'v1.14.467';
+const VER = 'v1.14.468';
 // ===== MEGFIGYELŐ / TESZT MÓD (obsMode, v1.14.195) =====
 // Megfigyelő módban mindkét oldalt az AI vezérli (a kísérők is: NPC-logikával), a pálya mindent mutat (nincs köd), és a körök maguktól léptetődnek;
 // a lezárt csatákból statisztika készül (konvoj-, U-boat-, kísérő-veszteség, kimenetel), hogy látszódjon: sokféle csata születik-e, vagy egyoldalú lett a hangolás.
@@ -6740,7 +6741,7 @@ function draw(){applyMap();try{renderCV()}catch(e){}
    /* v1.14.449 (opFlags): a konvoj (zöld) és a TF-ek (kék) színe – a zászló és az útvonal is; a régi nézetben a színsor marad */
  const cols=+CFG.opFlags?all.map(u=>u.k==='C'?(CFG.opFlagC||'#2e7d32'):(CFG.opFlagT||'#1565c0')):cols0;
  /* opFlag: kis talpas zászló a cella közepén – talp (ellipszis), rúd, a rúd tetején lobogó a névvel; az aktív egység zászlója vastag fekete keretű */
- const opFlag=(u,col,on)=>{const x=(u.c+.5)*32,yb=(u.r+.5)*rh(),h=Math.max(26,rh()*1.25),dn=yb-h<2,yt=dn?yb+h-17:yb-h,   /* v1.14.467: a legfelső sorban (fent nincs hely) a zászló lefelé lóg */
+ const opFlag=(u,col,on)=>{const x=(u.c+.5)*32,yb=(u.r+.5)*rh(),h=Math.max(26,rh()*1.25),dn=0,yt=Math.max(1,yb-h),   /* v1.14.468: a legfelső sorban (fent nincs hely) nagyon rövid a rúd – a zászló a cella tetején */
   w=Math.max(34,u.id.length*7.2+10);   // v1.14.450: a talp a cella közepén áll
   return '<g>'
    +'<ellipse cx="'+x+'" cy="'+yb+'" rx="6" ry="2.6" fill="#3e2723" stroke="#fff" stroke-width=".8"/>'                       // talp
@@ -6902,7 +6903,7 @@ function npcJoinBtns(el){if(!+ECO.npcOn||tut)return;units.filter(t=>!t.tow).forE
 /* npcNearMe: a kész hajóid kikötőnként és a távolság (cella) a bajba jutott konvojtól */
 function npcNearMe(u){const L=[];Object.keys(PORTS).forEach(p=>{const n=CAMP.fleet.filter(f=>f.loc===p&&f.st==='ready'&&!CAMP.worn(f)).length;if(!n)return;const[pr,pc]=parse(PORTS[p]);L.push({p,n,d:Math.max(Math.abs(pr-u.r),Math.abs(pc-u.c))})});return L.sort((a,b)=>a.d-b.d)}
 /* npcMarks: szürke zászlók a térképen (a konvoj- és TF-zászló mintájára); bajban: piros keret */
-function npcMarks(){if(!+ECO.npcOn||tut)return '';return NPC.map(u=>{const x=(u.c+.5)*32,yb=(u.r+.5)*rh(),h=Math.max(22,rh()*1.05),dn=yb-h<2,yt=dn?yb+h-15:yb-h,lb=u.code||u.id,w=Math.max(28,lb.length*7+10),bad=npcTrouble(u);
+function npcMarks(){if(!+ECO.npcOn||tut)return '';return NPC.map(u=>{const x=(u.c+.5)*32,yb=(u.r+.5)*rh(),h=Math.max(22,rh()*1.05),dn=0,yt=Math.max(1,yb-h),lb=u.code||u.id,w=Math.max(28,lb.length*7+10),bad=npcTrouble(u);
  /* v1.14.466: a zászlón a konvoj neve; koppintásra / kattintásra kinyílik az NPC-panel a konvoj soránál (telefonon is) */
  return '<g opacity=".9" style="pointer-events:auto;cursor:pointer" onclick="event.stopPropagation();OPG.npcShow(\''+u.id+'\')"><title>'+u.code+' ('+u.from+' → '+u.to+'): '+u.m+'/'+u.m0+' teherhajó, '+u.esc.length+' kísérő'+(bad?' – BAJBAN: '+bad:'')+(u.sos?' – VÉSZJELZÉS: kell még '+Math.max(1,npcNeed(u))+' kísérő':'')+'</title>'
   +'<ellipse cx="'+x+'" cy="'+yb+'" rx="5" ry="2.2" fill="#424242" stroke="#fff" stroke-width=".7"/><line x1="'+x+'" y1="'+yb+'" x2="'+x+'" y2="'+(dn?yt+15:yt)+'" stroke="#424242" stroke-width="1.6"/>'
