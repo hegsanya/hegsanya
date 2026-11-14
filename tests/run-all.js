@@ -80,7 +80,7 @@ await T(b,'LUT és légperiszkóp (schUse, needMax, kártya)',()=>{CFG.turnRule=
  CFG.schOn=0;const useOff=schUse(u);
  return{ok:o.avail[0]&&o.avail[1]&&o.card[0]&&o.card[1]&&use1!==useOff,info:JSON.stringify({o,use1,need1,need0,useOff})}});
 // 13) küldetések (v1.14.250, jelentkezés nélkül): sorsolás, lap, kötelék indítása, cellák érintése az útvonalon, kikötés → jutalom (két küldetés egy úton), mentés
-await T(b,'Küldetések: sorsolás → TF útvonal → kikötés → EGp',(fx)=>{CAMP.restore(fx);ECO.misP=100;for(let i=0;i<3;i++)CAMP.newDay();const o={};
+await T(b,'Küldetések: sorsolás → TF útvonal → kikötés → EGp',(fx)=>{CAMP.restore(fx);CFG.misOn=1;ECO.misP=100;for(let i=0;i<3;i++)CAMP.newDay();const o={};
  o.n=MIS.list().length;MIS.view();o.html=document.getElementById('vMIS').innerHTML.length;
  const rd=CAMP.fleet.filter(f=>CAMP.inPort(f)&&f.st==='ready'&&!CAMP.worn(f));rd.filter(f=>f.loc===rd[0].loc).slice(0,2).forEach(f=>f.tsel=true);
  const n0=OPG.units().length;MIS.launch();const u=OPG.units()[OPG.units().length-1];if(OPG.units().length!==n0+1)return{ok:false,info:'nem indult kötelék'};
