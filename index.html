@@ -1,6 +1,6 @@
 <!doctype html><html lang="hu" data-theme="light"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>CEG – Konvoj kísérő kampány v1.14.477</title>
+<title>CEG – Konvoj kísérő kampány v1.14.478</title>
 <style>
 /* Színek: világos/sötét téma változókkal; a gombok és táblázatok stílusa */
 :root{--bg:#f4f1ea;--fg:#1d2733;--pn:#fff;--ln:#c9c2b3;--ac:#b3261e;--sea:#d6ecf4;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -3343,6 +3343,9 @@ function step(){
  maxT=Math.min(mxT(),capT);$('mx').textContent=maxT;
  if(turn>=maxT){say('A taktikai csata '+maxT+' lépésnél megáll'+(maxT<35?' (a konvoj mélysége miatt, az elején 5 cella hely hátul, a végén legalább 5 elöl).':'.'));return}
  // minden irányítható hajónak végig kell lépnie, különben a kör nem léptethető
+ /* v1.14.478: ha egy AI-vezérelt egység még nem lépett (pl. a pár kísérő gépe, amelyik a vezérgép lelövése után önálló lett, miután az AI már lefutott),
+    most lép – különben a kör beragadt („Még nem léptek végig: R2 (5 lépés)”) */
+ if(!aiBusy){const pa=pend().filter(q=>!q.done&&aiOn(q));if(pa.length){aiBusy=true;const keep=sel;try{pa.forEach(q=>{try{aiTurn(q)}catch(e){}})}finally{aiBusy=false;sel=keep}}}
  {const p=pend();if(p.length){say('Még nem léptek végig: '+p.map(q=>q.id+(q.idx<need(q)?' ('+(need(q)-q.idx)+' lépés)':' (Kész)')).join(', ')+'. A kör nem léptethető.');return}}
  if(ECO.ageOn)ships.filter(q=>q.t=='E'&&!q.en&&!q.sup&&!q.npc&&q.age!=null&&q.full&&q.spd>0).forEach(q=>{if(Math.random()*100<ECO.ageP){const m=ageLose(q,q.c,ECO.ageStep);say(q.id+': FULL sebesség – állapot '+q.age+'%'+(m.length?', kopás: '+m.join(', ')+' −1':'')+'.')}});   // elöregedés: a FULL sebesség igénybe veszi a hajót
  ships.filter(q=>q.t=='E'&&!q.en&&!q.sup&&!q.npc&&q.zid&&$('fo').checked).forEach(q=>{q.rep=false;aiRepair(q)});   // az automata kísérők is javítanak (körönként egy modul)
@@ -4662,6 +4665,7 @@ function storageReport() {
 //   v1.14.418 (2026-11-09) – kézi kísérő iránya (manDir: 0 ki / 1 minden kézi kísérő / 2 csak a kijelölt): narancs szaggatott vonal a legközelebbi látható U-boat felé (az AI-vonal mintájára, az AI érzékelési sugarán belül)
 //   v1.14.417 (2026-11-09) – a napfény és a csillogás (W0–W1) a TELJES taktikai pályán (korábban csak a keretben); az időjárás-effektek (felhő, eső, villám, napfény, csillogás) mind az egész pályán
 //   v1.14.416 (2026-11-09) – a belső felhők kisebbek (3–6 cella) és szintenként sötétednek / szaporodnak: W2 fehér, W3 szürke, W4 sötét, összefüggő tömbökben (csoportok); a pályát nem borítják el
+//   v1.14.478 (2026-11-14) – JAVÍTÁS: repülő-pár – ha a vezérgépet lelövik, a kísérő gép önálló lesz, de az AI már lefutott, ezért nem lépett („Még nem léptek végig: R2 (5 lépés)”); a Kör léptetése most előbb lépteti a még nem lépett AI-egységeket
 //   v1.14.477 (2026-11-14) – REPÜLŐ HÁROMSZÖG (airTri, alap 1): a taktikai térképen a repülő piros háromszög, a csúcsa a haladási irányba mutat (Tervrajz témában a téma színeivel)
 //   v1.14.476 (2026-11-14) – JAVÍTÁS: AI–AI (NPC) csatában a repülők lépésénél néha kézzel kellett besegíteni – biztonsági háló: ha egy AI-egység nem fejezte be a lépését, még egyszer lép, ha így sem, a lépése lezárul (az elemzési naplóban jelezve)
 //   v1.14.475 (2026-11-14) – KÜLDETÉSEK KI: a járőr-küldetések (Küldetések lap) alapból kikapcsolva (misOn 0, egyszer a mentett beállításban is) – a konvojokra koncentrálunk; a Beállításokban visszakapcsolható
@@ -4900,7 +4904,7 @@ function storageReport() {
 //   v1.14.239 (2026-10-26) – ÚJ: (1) LUT torpedó (lutOn, alap 1; 1944. januártól): az U-boat kártyán „LUT” jelölőnégyzet (az AI lutAiP %); a FAT utóda: lutLen 18 cella, lutRun 6 egyenes, lutLeg 3 fél-szélesség, találat teherhajón d6 ≤ lutHit (3), hadihajón ≤ lutHitE (1); ha FAT is be van jelölve, a LUT számít. (2) LÉGPERISZKÓP / SCHNORCHEL (schOn, alap 1; 1944. júniustól; csak szabad mozgásnál): 1/8-as mélységen a kártya „Légperiszkóp” jelölőnégyzetével a dízel hajt: az akku nem fogy, hanem schRech (2) cellát tölt körönként, max schSpd (2) lépés, kimerült akkuval is halad; kiesett dízelnél nem működik; az AI az akku fele alatt automatikusan használja.
 //   v1.14.238 (2026-10-26) – SZABAD MOZGÁS: az U-boat a belső játékterületen (pl. 80-as táblán az 50×50-esen) bárhol léphet be, nem csak a szélén (uInner, alapból BE; KI = a régi szél-belépés uEdge szerint).
 //   v1.14.237 (2026-10-26) – HEDGEHOG / SQUID ELLENŐRZÉS: az U-boat lépés utáni kiértékelésében a hedgehog / Squid „nincs találat” eredmény akkor is kiíródik, ha a vízibombák is hatottak (eddig ilyenkor csak a vízibomba-sor látszott, a hedgehog-ellenőrzés nem)
-const VER = 'v1.14.477';
+const VER = 'v1.14.478';
 // ===== MEGFIGYELŐ / TESZT MÓD (obsMode, v1.14.195) =====
 // Megfigyelő módban mindkét oldalt az AI vezérli (a kísérők is: NPC-logikával), a pálya mindent mutat (nincs köd), és a körök maguktól léptetődnek;
 // a lezárt csatákból statisztika készül (konvoj-, U-boat-, kísérő-veszteség, kimenetel), hogy látszódjon: sokféle csata születik-e, vagy egyoldalú lett a hangolás.
