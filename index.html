@@ -1,6 +1,6 @@
 <!doctype html><html lang="hu" data-theme="light"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>CEG – Konvoj kísérő kampány v1.14.475</title>
+<title>CEG – Konvoj kísérő kampány v1.14.476</title>
 <style>
 /* Színek: világos/sötét téma változókkal; a gombok és táblázatok stílusa */
 :root{--bg:#f4f1ea;--fg:#1d2733;--pn:#fff;--ln:#c9c2b3;--ac:#b3261e;--sea:#d6ecf4;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -4655,6 +4655,7 @@ function storageReport() {
 //   v1.14.418 (2026-11-09) – kézi kísérő iránya (manDir: 0 ki / 1 minden kézi kísérő / 2 csak a kijelölt): narancs szaggatott vonal a legközelebbi látható U-boat felé (az AI-vonal mintájára, az AI érzékelési sugarán belül)
 //   v1.14.417 (2026-11-09) – a napfény és a csillogás (W0–W1) a TELJES taktikai pályán (korábban csak a keretben); az időjárás-effektek (felhő, eső, villám, napfény, csillogás) mind az egész pályán
 //   v1.14.416 (2026-11-09) – a belső felhők kisebbek (3–6 cella) és szintenként sötétednek / szaporodnak: W2 fehér, W3 szürke, W4 sötét, összefüggő tömbökben (csoportok); a pályát nem borítják el
+//   v1.14.476 (2026-11-14) – JAVÍTÁS: AI–AI (NPC) csatában a repülők lépésénél néha kézzel kellett besegíteni – biztonsági háló: ha egy AI-egység nem fejezte be a lépését, még egyszer lép, ha így sem, a lépése lezárul (az elemzési naplóban jelezve)
 //   v1.14.475 (2026-11-14) – KÜLDETÉSEK KI: a járőr-küldetések (Küldetések lap) alapból kikapcsolva (misOn 0, egyszer a mentett beállításban is) – a konvojokra koncentrálunk; a Beállításokban visszakapcsolható
 //   v1.14.474 (2026-11-14) – U-BOAT FLOTTILLÁK ÉS HATÓTÁV: (1) 3 bázis (Wilhelmshaven AA12, Narvik AC5 1940-06-tól, Lorient W15 1940-08-tól; ECO uBases) – a csatát a legközelebbi működő bázis flottillája vívja, minden U-boat a saját medáljával a flottillájában marad; (2) csatánkénti U-boat-szám a görbéből: 1–2 / 2–3 / 3–4 (uPackLo 40 / uPackHi 90); (3) SÉRÜLT U-BOAT 6/6-os modullal hazamegy a legközelebbi bázisra: a tengeri távolság napjaiig −1 a görbéből, a helyére új lép, utána kijavulva visszatér (uHomeOn / uHomeSpd / uRepDays); kormány / dízel 6/6: 50% elvész, mint eddig; (4) ELSÜLLYESZTÉS −1 (uAttCut 3 → 1), az NPC-konvojok csatáiban is (a te konvojod belépő kockáját csak a te sikereid emelik); (5) HATÓTÁV évenként (uRange 1939:11, 1941:16, 1942:35 cella a legközelebbi bázistól): azon kívül nincs U-esemény, a térképen szürkítve
 //   v1.14.473 (2026-11-13) – JAVÍTÁS: U-boat nélküli csaták – a régi NPC gyors számítás pótlás nélkül pusztította el a kampány U-boatjait (mind a 3 elfogyott); minden csata elején az élő U-boatok száma visszaáll a kampány induló létszámára (startU), az elpusztultak helyére új érkezik
@@ -4891,7 +4892,7 @@ function storageReport() {
 //   v1.14.239 (2026-10-26) – ÚJ: (1) LUT torpedó (lutOn, alap 1; 1944. januártól): az U-boat kártyán „LUT” jelölőnégyzet (az AI lutAiP %); a FAT utóda: lutLen 18 cella, lutRun 6 egyenes, lutLeg 3 fél-szélesség, találat teherhajón d6 ≤ lutHit (3), hadihajón ≤ lutHitE (1); ha FAT is be van jelölve, a LUT számít. (2) LÉGPERISZKÓP / SCHNORCHEL (schOn, alap 1; 1944. júniustól; csak szabad mozgásnál): 1/8-as mélységen a kártya „Légperiszkóp” jelölőnégyzetével a dízel hajt: az akku nem fogy, hanem schRech (2) cellát tölt körönként, max schSpd (2) lépés, kimerült akkuval is halad; kiesett dízelnél nem működik; az AI az akku fele alatt automatikusan használja.
 //   v1.14.238 (2026-10-26) – SZABAD MOZGÁS: az U-boat a belső játékterületen (pl. 80-as táblán az 50×50-esen) bárhol léphet be, nem csak a szélén (uInner, alapból BE; KI = a régi szél-belépés uEdge szerint).
 //   v1.14.237 (2026-10-26) – HEDGEHOG / SQUID ELLENŐRZÉS: az U-boat lépés utáni kiértékelésében a hedgehog / Squid „nincs találat” eredmény akkor is kiíródik, ha a vízibombák is hatottak (eddig ilyenkor csak a vízibomba-sor látszott, a hedgehog-ellenőrzés nem)
-const VER = 'v1.14.475';
+const VER = 'v1.14.476';
 // ===== MEGFIGYELŐ / TESZT MÓD (obsMode, v1.14.195) =====
 // Megfigyelő módban mindkét oldalt az AI vezérli (a kísérők is: NPC-logikával), a pálya mindent mutat (nincs köd), és a körök maguktól léptetődnek;
 // a lezárt csatákból statisztika készül (konvoj-, U-boat-, kísérő-veszteség, kimenetel), hogy látszódjon: sokféle csata születik-e, vagy egyoldalú lett a hangolás.
@@ -5643,7 +5644,14 @@ const CAMP = {
   /* simRound: egy kör (kísérők, ellenség, konvoj – mint a megfigyelő módban); igaz, ha a csata véget ért (STOP, körhatár, vagy az ellenség megjelent és 3 körön át nincs a pályán) */
   simRound() {
     const S = this._sim; if (!S) return true;
-    const t0 = turn; obsPrep(); aiSupportRun(); runAI(); if (!stopped) step(); if (FFQ) FFQ.length = 0;
+    const t0 = turn; obsPrep(); aiSupportRun(); runAI();
+    /* v1.14.476: biztonsági háló – ha egy AI-egység (repülő, U-boat, kísérő) nem fejezte be a lépését, még egyszer lép; ha így sem, a lépése lezárul
+       (különben a kör nem léptethető, és a megnézett csatában kézzel kellett „besegíteni”) */
+    ships.filter(q => !q.done && !q.dead && q.t !== 'M').forEach(q => {
+      try { if (aiOn(q) || q.npc) aiTurn(q); } catch (e) { }
+      if (!q.done) { q.done = true; try { alogAdd(q.id + ': az AI nem fejezte be a lépését – automatikusan lezárva (AI-csata).'); } catch (e) { } }
+    });
+    if (!stopped) step(); if (FFQ) FFQ.length = 0;
     const en = obsEnemies().length; if (en) { S.seen = true; S.empty = 0; } else if (S.seen) S.empty++;
     return stopped || turn >= Math.max(5, mxT()) || ++S.g > 200 || (S.seen && S.empty >= 3) || (turn === t0 && !stopped);
   },
