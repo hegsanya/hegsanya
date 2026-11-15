@@ -1,6 +1,6 @@
 <!doctype html><html lang="hu" data-theme="light"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>CEG – Konvoj kísérő kampány v1.14.493</title>
+<title>CEG – Konvoj kísérő kampány v1.14.494</title>
 <style>
 /* Színek: világos/sötét téma változókkal; a gombok és táblázatok stílusa */
 :root{--bg:#f4f1ea;--fg:#1d2733;--pn:#fff;--ln:#c9c2b3;--ac:#b3261e;--sea:#d6ecf4;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -1149,11 +1149,16 @@ function qbRender(){const el=document.getElementById('qb'),e2=document.getElemen
  if(el)el.innerHTML=H;if(e2)e2.innerHTML=H}   /* v1.14.453: qbSet = a Beállítások lap tetején álló gyorskapcsoló-szakasz */
 /* saveCfg: a beállítások mentése. v1.14.451: a gyakorló küldetés (tutorial) alatt a CFG ideiglenes értékeket kap (14 hajós konvoj, STOP kikapcsolva stb.);
    ezek eddig bekerülhettek a mentésbe, ha a gyakorlat közben bármi elmentette a beállításokat → a mentésbe mindig az eredeti (eltett) értékek kerülnek */
-function saveCfg(){try{const m=(typeof CAMP!=='undefined'&&CAMP.mission&&CAMP.stashCfg)?Object.assign({},CFG,CAMP.stashCfg):CFG;localStorage.setItem('ceg_cfg',JSON.stringify(m))}catch(e){}}
+function saveCfg(){try{let m=(typeof CAMP!=='undefined'&&CAMP.mission&&CAMP.stashCfg)?Object.assign({},CFG,CAMP.stashCfg):CFG;
+ if(typeof CAMP!=='undefined'&&CAMP._sim&&CAMP._sim.cfg)m=Object.assign({},m,CAMP._sim.cfg);   /* v1.14.494: AI-csata közben az ideiglenes beállítások (jelentés-papír, támogatás, AI…) nem kerülhetnek a mentésbe */
+ localStorage.setItem('ceg_cfg',JSON.stringify(m))}catch(e){}}
 try{Object.assign(CFG,JSON.parse(localStorage.getItem('ceg_cfg')||'{}'))}catch(e){}
 /* v1.14.387: egyszeri átállás – a vihar extra rajz-animációja (wxSmSwirl) alapból ki: a mentett 60 → 0 */
 /* v1.14.451: a tutorial bennragadt ideiglenes beállításai (ismertetőjel: stopBase = 100000 – ezt csak a gyakorlat állítja) → vissza az alapértékre (egyszer):
    konvoj mérete 14 / 14 → 20 / 50, STOP-alap → 80, támogató hajók → be, AI agresszivitás 7 → 6. Az AI-kapcsolókat és a kézi dobást nem bántjuk (lehet saját döntés). */
+try{if(localStorage.getItem('ceg_mig494')!=='1'){const j=JSON.parse(localStorage.getItem('ceg_cfg')||'{}');   /* v1.14.494: egy megnézett AI-csata alatt a beállítás-mentés elmenthette az ideiglenes értékeket – ha a jellegzetes minta látszik, visszaáll */
+ if(+j.msgEnd===0&&+j.entAsk===0&&+j.supOn===0){const fx={msgEnd:1,entAsk:1,supOn:1,sinkAlert:1,aiU:0,aiZ:0,aiA:0};Object.assign(CFG,fx);localStorage.setItem('ceg_cfg',JSON.stringify(Object.assign(j,fx)));window._mig494=1}
+ localStorage.setItem('ceg_mig494','1')}}catch(e){}
 try{if(localStorage.getItem('ceg_mig475')!=='1'){CFG.misOn=0;localStorage.setItem('ceg_mig475','1');try{localStorage.setItem('ceg_cfg',JSON.stringify(Object.assign(JSON.parse(localStorage.getItem('ceg_cfg')||'{}'),{misOn:0})))}catch(e){}}}catch(e){}   // v1.14.475: a járőr-küldetések kikapcsolva (egyszer; a Beállításokban visszakapcsolható)
 try{if(localStorage.getItem('ceg_mig451')!=='1'){if(+CFG.stopBase===100000){const fx={stopBase:80,supOn:1};if(+CFG.shipsLo===14&&+CFG.shipsHi===14){fx.shipsLo=20;fx.shipsHi=50}if(+CFG.aiAggr===7)fx.aiAggr=6;Object.assign(CFG,fx);localStorage.setItem('ceg_cfg',JSON.stringify(Object.assign(JSON.parse(localStorage.getItem('ceg_cfg')||'{}'),fx)))}localStorage.setItem('ceg_mig451','1')}}catch(e){}
 /* v1.14.450: a kanyar-kocka új alapsúlyai (előre / 45° = 4, 90° = 2, STOP = 1) – ha a mentett beállításban még a régi, egyforma 1-esek vannak, átállítjuk (egyszer) */
@@ -4774,6 +4779,7 @@ function storageReport() {
 //   v1.14.418 (2026-11-09) – kézi kísérő iránya (manDir: 0 ki / 1 minden kézi kísérő / 2 csak a kijelölt): narancs szaggatott vonal a legközelebbi látható U-boat felé (az AI-vonal mintájára, az AI érzékelési sugarán belül)
 //   v1.14.417 (2026-11-09) – a napfény és a csillogás (W0–W1) a TELJES taktikai pályán (korábban csak a keretben); az időjárás-effektek (felhő, eső, villám, napfény, csillogás) mind az egész pályán
 //   v1.14.416 (2026-11-09) – a belső felhők kisebbek (3–6 cella) és szintenként sötétednek / szaporodnak: W2 fehér, W3 szürke, W4 sötét, összefüggő tömbökben (csoportok); a pályát nem borítják el
+//   v1.14.494 (2026-11-15) – JAVÍTÁS: hiányzó csata-végi összegzés – egy megnézett NPC AI-csata alatt a beállítás-mentés elmenthette az AI-csata ideiglenes értékeit (jelentés-papír ki, támogatás ki, belépés-kérdés ki, ellenség AI); a mentés ezt már kizárja, és a hibás mentett értékek egyszer visszaállnak
 //   v1.14.493 (2026-11-15) – SÉRÜLÉS JELZÉSE TŰZ NÉLKÜL: a lángok kikapcsolva (fxFlame, alap 0) a kártyán és a térképen; helyette kétszer annyi füst, több füstforrás; az U-boaton nincs füst és korom sem
 //   v1.14.492 (2026-11-15) – TŰZ ÉS KOROM: a sérült hajó a kártyán kormos, füstös (fxSoot – a rozsdához hasonlóan csak a hajót festi, a sérüléssel erősödik); a tűz 1–2 nagyon széles tűzhalom (izzó alap + sűrű, középen magasabb lángnyelvek); súlyos sérülésnél füstös égbolt a kép tetején
 //   v1.14.491 (2026-11-15) – a Csata-jelentések listája a Flotta lapról a Kampány-összegzés lapra került (a Kampánynapló elé)
@@ -5028,7 +5034,7 @@ function storageReport() {
 //   v1.14.239 (2026-10-26) – ÚJ: (1) LUT torpedó (lutOn, alap 1; 1944. januártól): az U-boat kártyán „LUT” jelölőnégyzet (az AI lutAiP %); a FAT utóda: lutLen 18 cella, lutRun 6 egyenes, lutLeg 3 fél-szélesség, találat teherhajón d6 ≤ lutHit (3), hadihajón ≤ lutHitE (1); ha FAT is be van jelölve, a LUT számít. (2) LÉGPERISZKÓP / SCHNORCHEL (schOn, alap 1; 1944. júniustól; csak szabad mozgásnál): 1/8-as mélységen a kártya „Légperiszkóp” jelölőnégyzetével a dízel hajt: az akku nem fogy, hanem schRech (2) cellát tölt körönként, max schSpd (2) lépés, kimerült akkuval is halad; kiesett dízelnél nem működik; az AI az akku fele alatt automatikusan használja.
 //   v1.14.238 (2026-10-26) – SZABAD MOZGÁS: az U-boat a belső játékterületen (pl. 80-as táblán az 50×50-esen) bárhol léphet be, nem csak a szélén (uInner, alapból BE; KI = a régi szél-belépés uEdge szerint).
 //   v1.14.237 (2026-10-26) – HEDGEHOG / SQUID ELLENŐRZÉS: az U-boat lépés utáni kiértékelésében a hedgehog / Squid „nincs találat” eredmény akkor is kiíródik, ha a vízibombák is hatottak (eddig ilyenkor csak a vízibomba-sor látszott, a hedgehog-ellenőrzés nem)
-const VER = 'v1.14.493';
+const VER = 'v1.14.494';
 // ===== MEGFIGYELŐ / TESZT MÓD (obsMode, v1.14.195) =====
 // Megfigyelő módban mindkét oldalt az AI vezérli (a kísérők is: NPC-logikával), a pálya mindent mutat (nincs köd), és a körök maguktól léptetődnek;
 // a lezárt csatákból statisztika készül (konvoj-, U-boat-, kísérő-veszteség, kimenetel), hogy látszódjon: sokféle csata születik-e, vagy egyoldalú lett a hangolás.
