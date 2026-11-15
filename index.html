@@ -1,6 +1,6 @@
 <!doctype html><html lang="hu" data-theme="light"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>CEG – Konvoj kísérő kampány v1.14.494</title>
+<title>CEG – Konvoj kísérő kampány v1.14.495</title>
 <style>
 /* Színek: világos/sötét téma változókkal; a gombok és táblázatok stílusa */
 :root{--bg:#f4f1ea;--fg:#1d2733;--pn:#fff;--ln:#c9c2b3;--ac:#b3261e;--sea:#d6ecf4;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -704,13 +704,13 @@ function fireTick(){if(fireTimer)return;fireTimer=setInterval(()=>{try{if(+CFG.f
 setTimeout(()=>{try{fireTick()}catch(e){}},1500);
 /* stepBoxOn (v1.14.483): látszik-e a lépés-négyzet (irány- / kanyar-kocka, csatában) */
 function stepBoxOn(s){return !!(+CFG.cardBadge&&+CFG.cardStep&&!CFG.turnRule&&typeof ships!=='undefined'&&ships.includes(s)&&typeof need=='function'&&(s.t=='E'||s.t=='U'))}
-function cardBadges(s,k){if(!+CFG.cardBadge||!k||!(s.t=='E'||s.t=='U'))return '';
+function cardBadges(s,k,noStep){if(!+CFG.cardBadge||!k||!(s.t=='E'||s.t=='U'))return '';
  const pill='position:absolute;top:5px;display:flex;align-items:center;gap:5px;padding:2px 8px;border-radius:12px;background:rgba(13,43,74,.8);color:#fff;font:600 12px/16px sans-serif;z-index:3';
  /* v1.14.456: a medál mellé az állapot (elöregedés) – a kopottsági küszöb (ECO.ageThr) alatt narancs */
  const ag=s.age!=null?'<span title="Állapot (elöregedés): '+s.age+'%'+(s.age<ECO.ageThr?' – kopott':'')+'" style="color:'+(s.age<ECO.ageThr?'#ffb74d':'#a5d6a7')+'">🔧 '+s.age+'%</span>':'';
  let h='<div style="'+pill+';left:6px"><span title="Medálok">🏅 '+(s.med|0)+'</span>'+(ag?' '+ag:'')+'</div>';
  /* v1.14.481: irány- / kanyar-kockánál a medál alatt egy négyzetben az aktuális lépés (csizma + szám / összes lépés) */
- try{if(stepBoxOn(s)){const n=need(s),i=s.idx|0,dn=s.done||i>=n,cur=dn?n:i+1;
+ try{if(!noStep&&stepBoxOn(s)){const n=need(s),i=s.idx|0,dn=s.done||i>=n,cur=dn?n:i+1;
   h+='<div title="Lépés: '+(dn?'kész ('+n+' / '+n+')':cur+'. lépés a '+n+'-ből')+'" style="position:absolute;top:30px;left:6px;width:42px;height:42px;border-radius:6px;background:rgba(13,43,74,.85);color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:3;border:1.5px solid '+(dn?'#a5d6a7':'#fff')+'">'
    +'<span style="font-size:13px;line-height:14px">🥾</span><span style="font:700 16px/17px sans-serif">'+(dn?'✓':cur)+'<small style="font-size:10px;opacity:.8">/'+n+'</small></span></div>'}}catch(e){}
  if(k.fuel){const cur=s.fu!=null?s.fu:k.fuel,p=Math.max(0,Math.min(1,cur/k.fuel)),col=p>.5?'#43a047':p>.25?'#fb8c00':'#e53935';
@@ -772,7 +772,7 @@ function dmgGrid(s){
   '<svg viewBox="0 0 '+W+' '+(H+(u?6:0))+'" style="display:block;width:100%" xmlns="http://www.w3.org/2000/svg"><defs><filter id="dgOut" x="0" y="0" width="100%" height="100%" color-interpolation-filters="sRGB">'+
   '<feMorphology in="SourceAlpha" operator="erode" radius="1" result="o1"/><feMorphology in="o1" operator="dilate" radius="1" result="open"/><feMorphology in="open" operator="erode" radius="1" result="e"/><feComposite in="open" in2="e" operator="out" result="edge"/><feFlood flood-color="#cfe8ff"/><feComposite in2="edge" operator="in"/></filter></defs>'+
   '<path d="'+gr+'" stroke="rgba(207,232,255,.12)" stroke-width=".6" fill="none"/>'+
-  (u?'<image href="'+u+'" width="'+W+'" height="'+H+'" filter="url(#dgOut)"/>':hullSvg(cls))+g+'</svg>'+cardBadges(s,k)+'</div>'}
+  (u?'<image href="'+u+'" width="'+W+'" height="'+H+'" filter="url(#dgOut)"/>':hullSvg(cls))+g+'</svg>'+cardBadges(s,k,1)+'</div>'}   // v1.14.495: a Sérülések lapon lépés-négyzet nélkül
 /* modOver: a kép köré egy relatív burkoló + SVG-réteg a jelölőkkel (csak ha van kép és sérülés / szerkesztő mód) */
 function modOver(s,imgHtml){
  if(!CFG.modMark||!imgHtml||imgHtml.indexOf('class="shipimg"')<0||!s.dmg||!D[s.c])return imgHtml;
@@ -4779,6 +4779,7 @@ function storageReport() {
 //   v1.14.418 (2026-11-09) – kézi kísérő iránya (manDir: 0 ki / 1 minden kézi kísérő / 2 csak a kijelölt): narancs szaggatott vonal a legközelebbi látható U-boat felé (az AI-vonal mintájára, az AI érzékelési sugarán belül)
 //   v1.14.417 (2026-11-09) – a napfény és a csillogás (W0–W1) a TELJES taktikai pályán (korábban csak a keretben); az időjárás-effektek (felhő, eső, villám, napfény, csillogás) mind az egész pályán
 //   v1.14.416 (2026-11-09) – a belső felhők kisebbek (3–6 cella) és szintenként sötétednek / szaporodnak: W2 fehér, W3 szürke, W4 sötét, összefüggő tömbökben (csoportok); a pályát nem borítják el
+//   v1.14.495 (2026-11-15) – HAJÓKÁRTYA: a Sérülések lapon nincs lépés-négyzet (eltakarta a modulokat), minden hajótípusnál
 //   v1.14.494 (2026-11-15) – JAVÍTÁS: hiányzó csata-végi összegzés – egy megnézett NPC AI-csata alatt a beállítás-mentés elmenthette az AI-csata ideiglenes értékeit (jelentés-papír ki, támogatás ki, belépés-kérdés ki, ellenség AI); a mentés ezt már kizárja, és a hibás mentett értékek egyszer visszaállnak
 //   v1.14.493 (2026-11-15) – SÉRÜLÉS JELZÉSE TŰZ NÉLKÜL: a lángok kikapcsolva (fxFlame, alap 0) a kártyán és a térképen; helyette kétszer annyi füst, több füstforrás; az U-boaton nincs füst és korom sem
 //   v1.14.492 (2026-11-15) – TŰZ ÉS KOROM: a sérült hajó a kártyán kormos, füstös (fxSoot – a rozsdához hasonlóan csak a hajót festi, a sérüléssel erősödik); a tűz 1–2 nagyon széles tűzhalom (izzó alap + sűrű, középen magasabb lángnyelvek); súlyos sérülésnél füstös égbolt a kép tetején
@@ -5034,7 +5035,7 @@ function storageReport() {
 //   v1.14.239 (2026-10-26) – ÚJ: (1) LUT torpedó (lutOn, alap 1; 1944. januártól): az U-boat kártyán „LUT” jelölőnégyzet (az AI lutAiP %); a FAT utóda: lutLen 18 cella, lutRun 6 egyenes, lutLeg 3 fél-szélesség, találat teherhajón d6 ≤ lutHit (3), hadihajón ≤ lutHitE (1); ha FAT is be van jelölve, a LUT számít. (2) LÉGPERISZKÓP / SCHNORCHEL (schOn, alap 1; 1944. júniustól; csak szabad mozgásnál): 1/8-as mélységen a kártya „Légperiszkóp” jelölőnégyzetével a dízel hajt: az akku nem fogy, hanem schRech (2) cellát tölt körönként, max schSpd (2) lépés, kimerült akkuval is halad; kiesett dízelnél nem működik; az AI az akku fele alatt automatikusan használja.
 //   v1.14.238 (2026-10-26) – SZABAD MOZGÁS: az U-boat a belső játékterületen (pl. 80-as táblán az 50×50-esen) bárhol léphet be, nem csak a szélén (uInner, alapból BE; KI = a régi szél-belépés uEdge szerint).
 //   v1.14.237 (2026-10-26) – HEDGEHOG / SQUID ELLENŐRZÉS: az U-boat lépés utáni kiértékelésében a hedgehog / Squid „nincs találat” eredmény akkor is kiíródik, ha a vízibombák is hatottak (eddig ilyenkor csak a vízibomba-sor látszott, a hedgehog-ellenőrzés nem)
-const VER = 'v1.14.494';
+const VER = 'v1.14.495';
 // ===== MEGFIGYELŐ / TESZT MÓD (obsMode, v1.14.195) =====
 // Megfigyelő módban mindkét oldalt az AI vezérli (a kísérők is: NPC-logikával), a pálya mindent mutat (nincs köd), és a körök maguktól léptetődnek;
 // a lezárt csatákból statisztika készül (konvoj-, U-boat-, kísérő-veszteség, kimenetel), hogy látszódjon: sokféle csata születik-e, vagy egyoldalú lett a hangolás.
