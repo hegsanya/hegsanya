@@ -1,6 +1,6 @@
 <!doctype html><html lang="hu" data-theme="light"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>CEG – Konvoj kísérő kampány v1.14.489</title>
+<title>CEG – Konvoj kísérő kampány v1.14.490</title>
 <style>
 /* Színek: világos/sötét téma változókkal; a gombok és táblázatok stílusa */
 :root{--bg:#f4f1ea;--fg:#1d2733;--pn:#fff;--ln:#c9c2b3;--ac:#b3261e;--sea:#d6ecf4;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -477,6 +477,8 @@ body.noFT #ktab,body.noFT #wtab,body.noFT #ftab,body.noFT #otab{display:none!imp
 <select id="obs_ms"><option value="1500">lassú</option><option value="800" selected>normál</option><option value="300">gyors</option><option value="60">nagyon gyors</option></select>
 <label><input type="checkbox" id="obs_loop"> folyamatos (új csata a végén)</label></div>
 <div class="note" style="display:flex;flex-wrap:wrap;gap:6px;align-items:center">U-boat <input id="obs_u" type="number" min="0" max="3" value="1" style="width:44px"> Z/CA <input id="obs_z" type="number" min="0" max="3" value="0" style="width:44px"> <label><input type="checkbox" id="obs_a"> repülők</label> körhatár <input id="obs_cap" type="number" min="1" max="99" value="35" style="width:50px">
+</div>
+<div class="note" style="display:flex;flex-wrap:wrap;gap:6px;align-items:center" title="v1.14.490: a tesztcsaták felállása">kíséret <input id="obs_esc" type="text" value="T,FL,FL,FL" style="width:150px" title="Osztálykódok vesszővel: T = Admiral 5×5″ romboló, H = Admiral 4×5″ romboló, FL = Flower, FM = Flower mod., BB = Black Swan, BS = Black Swan mod., RV = River fregatt (pl. T,FL,FL,FL); legfeljebb 8; üres = a pályán lévő kíséret"> teherhajó <input id="obs_m" type="number" min="0" max="50" value="0" style="width:50px" title="0 = a pálya beállítása szerint"> időjárás <select id="obs_wx"><option value="">a pálya szerint</option><option>0</option><option>1</option><option>2</option><option>3</option><option>4</option><option value="r">véletlen 0–4</option></select>
 tesztcsaták <input id="obs_n" type="number" min="1" max="500" value="20" style="width:56px"><button onclick="obsBatch(+$('obs_n').value)">🧪 Teszt (gyors)</button><button onclick="OBS.res=[];obsStats()">Statisztika törlése</button></div>
 <div id="obs_hud" class="note"></div><pre id="obs_out" class="note" style="white-space:pre-wrap;font-size:12px;margin:0">(még nincs lezárt csata)</pre></details>
 <details id="logbox" style="display:none" class="lay"><summary>Napló (a csata eseményei, legújabb felül)</summary></details>
@@ -4754,6 +4756,7 @@ function storageReport() {
 //   v1.14.418 (2026-11-09) – kézi kísérő iránya (manDir: 0 ki / 1 minden kézi kísérő / 2 csak a kijelölt): narancs szaggatott vonal a legközelebbi látható U-boat felé (az AI-vonal mintájára, az AI érzékelési sugarán belül)
 //   v1.14.417 (2026-11-09) – a napfény és a csillogás (W0–W1) a TELJES taktikai pályán (korábban csak a keretben); az időjárás-effektek (felhő, eső, villám, napfény, csillogás) mind az egész pályán
 //   v1.14.416 (2026-11-09) – a belső felhők kisebbek (3–6 cella) és szintenként sötétednek / szaporodnak: W2 fehér, W3 szürke, W4 sötét, összefüggő tömbökben (csoportok); a pályát nem borítják el
+//   v1.14.490 (2026-11-15) – MEGFIGYELŐ / TESZT: a tesztcsaták felállása beállítható – kíséret (osztálykódok, pl. T,FL,FL,FL), teherhajók száma, időjárás (0–4 vagy véletlen); a statisztikában új: megrongált repülők, kísérő-sérülés (pont) és a felállás
 //   v1.14.489 (2026-11-15) – CSATA-JELENTÉS: a légitámadás sorában a gép → hajó találatok (pl. „R3 → N4 (16 modul-pont)”); a kíséretnél „Légitámadást kapott: R3 bombája (26. kör, 16 modul-pont)”; a megrongált (nem lezuhant) repülő is találatnak számít
 //   v1.14.488 (2026-11-15) – NAGYOBB TŰZ ÉS FÜST a hajókártyán: a tűzfészek széles lángsáv sok lángnyelvvel, fölötte nagy, sötét, gomolygó füstoszlop (a gyertyaláng-szerű kis lángok helyett)
 //   v1.14.487 (2026-11-15) – (1) SÜLLYEDŐ HAJÓ: a kép alsó ~22%-án telt kék tenger hullámos peremmel; (2) REPÜLŐ SÉRÜLÉSE (airDmg): a lelövés-kocka találata után d8 = sebességvesztés – nagyobb, mint a gép sebessége: lezuhan; különben sérülten repül tovább: lassabb, fekete füstcsíkot húz, kör elején d6 = 1 lezuhan, újabb találat lezuhan; a bombája a szokásos 30%-át sebzi (airDmgHurt), a torpedója 30% eséllyel indul
@@ -5004,7 +5007,7 @@ function storageReport() {
 //   v1.14.239 (2026-10-26) – ÚJ: (1) LUT torpedó (lutOn, alap 1; 1944. januártól): az U-boat kártyán „LUT” jelölőnégyzet (az AI lutAiP %); a FAT utóda: lutLen 18 cella, lutRun 6 egyenes, lutLeg 3 fél-szélesség, találat teherhajón d6 ≤ lutHit (3), hadihajón ≤ lutHitE (1); ha FAT is be van jelölve, a LUT számít. (2) LÉGPERISZKÓP / SCHNORCHEL (schOn, alap 1; 1944. júniustól; csak szabad mozgásnál): 1/8-as mélységen a kártya „Légperiszkóp” jelölőnégyzetével a dízel hajt: az akku nem fogy, hanem schRech (2) cellát tölt körönként, max schSpd (2) lépés, kimerült akkuval is halad; kiesett dízelnél nem működik; az AI az akku fele alatt automatikusan használja.
 //   v1.14.238 (2026-10-26) – SZABAD MOZGÁS: az U-boat a belső játékterületen (pl. 80-as táblán az 50×50-esen) bárhol léphet be, nem csak a szélén (uInner, alapból BE; KI = a régi szél-belépés uEdge szerint).
 //   v1.14.237 (2026-10-26) – HEDGEHOG / SQUID ELLENŐRZÉS: az U-boat lépés utáni kiértékelésében a hedgehog / Squid „nincs találat” eredmény akkor is kiíródik, ha a vízibombák is hatottak (eddig ilyenkor csak a vízibomba-sor látszott, a hedgehog-ellenőrzés nem)
-const VER = 'v1.14.489';
+const VER = 'v1.14.490';
 // ===== MEGFIGYELŐ / TESZT MÓD (obsMode, v1.14.195) =====
 // Megfigyelő módban mindkét oldalt az AI vezérli (a kísérők is: NPC-logikával), a pálya mindent mutat (nincs köd), és a körök maguktól léptetődnek;
 // a lezárt csatákból statisztika készül (konvoj-, U-boat-, kísérő-veszteség, kimenetel), hogy látszódjon: sokféle csata születik-e, vagy egyoldalú lett a hangolás.
@@ -5018,7 +5021,16 @@ function obsRestore(){ships.forEach(s=>{if(s._np0!==undefined){s.npc=s._np0;dele
 // obsEnsureEscorts: ha nincs kísérő a pályán (nincs konvoj-csoport a flottában), alap csoport: T + 3 Flower korvett
 function obsEnsureEscorts(){if(obsFriends().length)return;const cm=cmd();['T','FL','FL','FL'].forEach((c,i)=>{const e=mkE({id:i?'C'+i:'D2',cls:c},SLOT_ORDER[i%6],cm);ships.push(e)});say('Megfigyelő: nincs kísérő a konvojjal – alap csoport (T + 3 Flower) került a pályára.')}
 // obsNew: új csata: új pálya, kísérők, a megadott számú ellenség azonnali belépése
-function obsNew(){reset();obsEnsureEscorts();obsPrep();
+/* obsSetup (v1.14.490): a tesztcsata felállása – a kíséret osztálykódjai, a teherhajók száma, az időjárás (a Megfigyelő sáv mezőiből) */
+const OBS_ESC=['T','H','FL','FM','BB','BS','RV'];   // a választható kísérő-osztályok
+function obsEscList(){const v=String(($('obs_esc')||{}).value||'').trim();if(!v)return null;const A=v.split(/[,; ]+/).map(x=>x.trim().toUpperCase()).filter(Boolean),L=A.filter(x=>OBS_ESC.includes(x)),bad=A.filter(x=>!OBS_ESC.includes(x));
+ if(bad.length)try{say('Megfigyelő: ismeretlen kísérő-kód kimaradt: '+bad.join(', ')+' (választható: '+OBS_ESC.join(', ')+').')}catch(e){}
+ return L.length?L.slice(0,8):null}
+function obsNew(){const nm=+(($('obs_m')||{}).value)|0,n0=$('n')?$('n').value:null;if(nm>0&&$('n'))$('n').value=Math.max(1,Math.min(50,nm));
+ try{reset()}finally{if(n0!=null&&$('n'))$('n').value=n0}
+ const wv=($('obs_wx')||{}).value;if(wv!==''&&wv!=null&&$('wx'))$('wx').value=wv=='r'?R(0,4):wv;
+ const L=obsEscList();if(L&&!(typeof CAMP!=='undefined'&&CAMP.battle)){ships=ships.filter(q=>!(q.t=='E'&&!q.en&&!q.sup));const cm=cmd();L.forEach((c,i)=>ships.push(mkE({id:(i?'C':'D')+(i+1),cls:c},SLOT_ORDER[i%SLOT_ORDER.length],cm)))}
+ obsEnsureEscorts();obsPrep();
  const nU=Math.max(0,Math.min(3,+($('obs_u')||{}).value|0)),nZ=Math.max(0,Math.min(3,+($('obs_z')||{}).value|0));
  for(let i=0;i<nU;i++)enter('U');for(let i=0;i<nZ;i++)enter('Z');if($('obs_a')&&$('obs_a').checked)enter('A');
  OBS.empty=0;OBS.rec=false;sel=null;SUMSHOWN=!!(OBS.loop||OBS.batch);draw();card();obsHud()}
@@ -5030,13 +5042,14 @@ const obsOver=()=>stopped||turn>=obsCap()||OBS.empty>=3;
 function obsStepOnce(){obsPrep();aiSupportRun();runAI();if(!stopped)step();OBS.empty=obsEnemies().length?0:OBS.empty+1}
 // obsResult: a lezárt csata mutatói (a KL = elsüllyedt / lelőtt egységek naplójából)
 function obsResult(){const k=KL,M=k.filter(x=>x.t=='M'),uSunk=k.filter(x=>x.t=='U').length,uDmg=[...ships.filter(q=>q.t=='U'),...Object.values(store)].reduce((a,u)=>a+(u.dmg?u.dmg.reduce((x,y)=>x+y,0):0),0);
- return{turns:turn,mLost:M.length,tons:M.reduce((a,x)=>a+(x.tons||0),0),uSunk,uDmg,eLost:k.filter(x=>x.t=='E'&&!x.en).length,zLost:k.filter(x=>x.t=='E'&&x.en).length,airDown:k.filter(x=>x.t=='A'&&x.why=='lelőtték').length}}
+ return{turns:turn,mLost:M.length,tons:M.reduce((a,x)=>a+(x.tons||0),0),uSunk,uDmg,eLost:k.filter(x=>x.t=='E'&&!x.en).length,zLost:k.filter(x=>x.t=='E'&&x.en).length,airDown:k.filter(x=>x.t=='A'&&x.why=='lelőtték').length,
+  airHurt:(typeof EVL!=='undefined'?EVL.filter(e=>e.t=='airHurt').length:0),eDmg:obsFriends().reduce((a,e)=>a+(e.dmg?e.dmg.reduce((x,y)=>x+y,0):0),0),bombs:obsFriends().reduce((a,e)=>a+((e.b0!=null&&e.b!=null)?Math.max(0,e.b0-e.b):0),0)}}   // v1.14.490: kísérő-sérülés (pont), megrongált repülő
 function obsRecord(){if(OBS.rec)return;OBS.rec=true;OBS.res.push(obsResult());obsStats()}
 // obsStats: összesítő szöveg a lezárt csatákról (átlagok, kimenetel-kategóriák, elsüllyedt teherhajók eloszlása)
 function obsStats(){const o=$('obs_out');if(!o)return;const A=OBS.res,n=A.length;if(!n){o.textContent='(még nincs lezárt csata)';return}
  const avg=key=>(A.reduce((a,r)=>a+r[key],0)/n).toFixed(2),bar=c=>'█'.repeat(Math.round(24*c/n))||'·';
  const cats=[['Nincs veszteség egyik oldalon',r=>!r.mLost&&!r.uSunk],['Kísérők győznek (U elsüllyedt, konvoj ép)',r=>!r.mLost&&r.uSunk>0],['U-boat győz (teherhajó süllyedt, U él)',r=>r.mLost>0&&!r.uSunk],['Véres (mindkét oldal veszít)',r=>r.mLost>0&&r.uSunk>0]];
- let t=n+' lezárt csata · átlag '+avg('turns')+' kör\n\nÁtlagok csatánként: teherhajó süllyedt '+avg('mLost')+' ('+avg('tons')+' t) · U-boat elsüllyedt '+avg('uSunk')+' · U-sérülés (pont) '+avg('uDmg')+' · kísérő elveszett '+avg('eLost')+' · Z/CA elveszett '+avg('zLost')+' · repülő lelőve '+avg('airDown')+'\n\nKimenetel:\n';
+ let t=n+' lezárt csata · átlag '+avg('turns')+' kör\n\nÁtlagok csatánként: teherhajó süllyedt '+avg('mLost')+' ('+avg('tons')+' t) · U-boat elsüllyedt '+avg('uSunk')+' · U-sérülés (pont) '+avg('uDmg')+' · kísérő elveszett '+avg('eLost')+' · Z/CA elveszett '+avg('zLost')+' · repülő lelőve '+avg('airDown')+' · megrongálva '+avg('airHurt')+' · kísérő-sérülés (pont) '+avg('eDmg')+'\nFelállás: kíséret '+((obsEscList()||['a pálya szerint']).join(','))+' · teherhajó '+((+(($('obs_m')||{}).value)|0)||'a pálya szerint')+' · időjárás '+((($('obs_wx')||{}).value)||'a pálya szerint')+'\n\nKimenetel:\n';   // v1.14.490
  cats.forEach(([l,f])=>{const c=A.filter(f).length;t+=('  '+l+':').padEnd(50)+String(c).padStart(4)+' ('+Math.round(100*c/n)+'%) '+bar(c)+'\n'});
  const mx=Math.max(...A.map(r=>r.mLost));t+='\nElsüllyedt teherhajók eloszlása:\n';for(let i=0;i<=Math.min(mx,12);i++){const c=A.filter(r=>r.mLost==i).length;t+='  '+String(i).padStart(2)+' db: '+String(c).padStart(4)+' '+bar(c)+'\n'}
  if(mx>12)t+='  13+ db: '+A.filter(r=>r.mLost>12).length+'\n';o.textContent=t}
