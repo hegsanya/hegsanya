@@ -1,6 +1,6 @@
 <!doctype html><html lang="hu" data-theme="light"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>CEG – Konvoj kísérő kampány v1.14.490</title>
+<title>CEG – Konvoj kísérő kampány v1.14.491</title>
 <style>
 /* Színek: világos/sötét téma változókkal; a gombok és táblázatok stílusa */
 :root{--bg:#f4f1ea;--fg:#1d2733;--pn:#fff;--ln:#c9c2b3;--ac:#b3261e;--sea:#d6ecf4;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -4756,6 +4756,7 @@ function storageReport() {
 //   v1.14.418 (2026-11-09) – kézi kísérő iránya (manDir: 0 ki / 1 minden kézi kísérő / 2 csak a kijelölt): narancs szaggatott vonal a legközelebbi látható U-boat felé (az AI-vonal mintájára, az AI érzékelési sugarán belül)
 //   v1.14.417 (2026-11-09) – a napfény és a csillogás (W0–W1) a TELJES taktikai pályán (korábban csak a keretben); az időjárás-effektek (felhő, eső, villám, napfény, csillogás) mind az egész pályán
 //   v1.14.416 (2026-11-09) – a belső felhők kisebbek (3–6 cella) és szintenként sötétednek / szaporodnak: W2 fehér, W3 szürke, W4 sötét, összefüggő tömbökben (csoportok); a pályát nem borítják el
+//   v1.14.491 (2026-11-15) – a Csata-jelentések listája a Flotta lapról a Kampány-összegzés lapra került (a Kampánynapló elé)
 //   v1.14.490 (2026-11-15) – MEGFIGYELŐ / TESZT: a tesztcsaták felállása beállítható – kíséret (osztálykódok, pl. T,FL,FL,FL), teherhajók száma, időjárás (0–4 vagy véletlen); a statisztikában új: megrongált repülők, kísérő-sérülés (pont) és a felállás
 //   v1.14.489 (2026-11-15) – CSATA-JELENTÉS: a légitámadás sorában a gép → hajó találatok (pl. „R3 → N4 (16 modul-pont)”); a kíséretnél „Légitámadást kapott: R3 bombája (26. kör, 16 modul-pont)”; a megrongált (nem lezuhant) repülő is találatnak számít
 //   v1.14.488 (2026-11-15) – NAGYOBB TŰZ ÉS FÜST a hajókártyán: a tűzfészek széles lángsáv sok lángnyelvvel, fölötte nagy, sötét, gomolygó füstoszlop (a gyertyaláng-szerű kis lángok helyett)
@@ -5007,7 +5008,7 @@ function storageReport() {
 //   v1.14.239 (2026-10-26) – ÚJ: (1) LUT torpedó (lutOn, alap 1; 1944. januártól): az U-boat kártyán „LUT” jelölőnégyzet (az AI lutAiP %); a FAT utóda: lutLen 18 cella, lutRun 6 egyenes, lutLeg 3 fél-szélesség, találat teherhajón d6 ≤ lutHit (3), hadihajón ≤ lutHitE (1); ha FAT is be van jelölve, a LUT számít. (2) LÉGPERISZKÓP / SCHNORCHEL (schOn, alap 1; 1944. júniustól; csak szabad mozgásnál): 1/8-as mélységen a kártya „Légperiszkóp” jelölőnégyzetével a dízel hajt: az akku nem fogy, hanem schRech (2) cellát tölt körönként, max schSpd (2) lépés, kimerült akkuval is halad; kiesett dízelnél nem működik; az AI az akku fele alatt automatikusan használja.
 //   v1.14.238 (2026-10-26) – SZABAD MOZGÁS: az U-boat a belső játékterületen (pl. 80-as táblán az 50×50-esen) bárhol léphet be, nem csak a szélén (uInner, alapból BE; KI = a régi szél-belépés uEdge szerint).
 //   v1.14.237 (2026-10-26) – HEDGEHOG / SQUID ELLENŐRZÉS: az U-boat lépés utáni kiértékelésében a hedgehog / Squid „nincs találat” eredmény akkor is kiíródik, ha a vízibombák is hatottak (eddig ilyenkor csak a vízibomba-sor látszott, a hedgehog-ellenőrzés nem)
-const VER = 'v1.14.490';
+const VER = 'v1.14.491';
 // ===== MEGFIGYELŐ / TESZT MÓD (obsMode, v1.14.195) =====
 // Megfigyelő módban mindkét oldalt az AI vezérli (a kísérők is: NPC-logikával), a pálya mindent mutat (nincs köd), és a körök maguktól léptetődnek;
 // a lezárt csatákból statisztika készül (konvoj-, U-boat-, kísérő-veszteség, kimenetel), hogy látszódjon: sokféle csata születik-e, vagy egyoldalú lett a hangolás.
@@ -5650,7 +5651,7 @@ const CAMP = {
     wu.ships = wu.ships.filter(id => this.get(id)); if (!wu.ships.length) { OPG.tfRemove(wid); this.tfClose(wid, 'feloszlott'); } else { wu.tow = false; wu.skip = 0; }
     this.save(); this.refresh(); this.fleetView();
   },
-  // repHTML / repOpen (v1.14.393): a tárolt csata-jelentések listája a Flotta fülön, újra megnyitható (legújabb elöl)
+  // repHTML / repOpen (v1.14.393): a tárolt csata-jelentések listája a Kampány-összegzés lapon (v1.14.491 óta; előtte a Flotta fülön), újra megnyitható (legújabb elöl)
   repHTML() {
     const L = this.reps || []; if (!L.length) return '';
     let h = '<h3>Csata-jelentések</h3><p><small>A csaták végén készült jelentések (legfeljebb 40); a szöveg a kampánymentéssel együtt marad meg.</small></p>';
@@ -6186,7 +6187,7 @@ const CAMP = {
     h += '<p><button onclick="CAMP.makeTF()">Kötelék indítása a kikötőben álló, kijelölt hajókból</button> <button onclick="CAMP.detachTF()">Leválasztás a konvojról (a kijelölt, úton lévő hajók)</button> <button onclick="CAMP.leaveInPort()">Kikötőben hagyás (a kijelölt, úton lévő hajók, ha a konvoj kikötőben áll)</button></p>';
     const us = OPG.units();
     h += '<h3>Kötelékek (Task Force)</h3>' + (us.length ? TB(['Kötelék', 'Cella', 'Irány', 'Hajók', 'Üzemanyag (leggyengébb hajó)', 'Ma', ''], us.map(u => [u.id, OPG.cellOf(u), u.h, u.ships.join(', '), this.tfFuelHTML(u), u.moved ? 'kész' : u.left + ' lépés', '<button ' + (v && v.sailed && OPG.convoyCell() === OPG.cellOf(u) ? '' : 'disabled ') + 'onclick="CAMP.joinTF(\'' + u.id + '\')">Csatlakozás a konvojhoz</button>'])) : '<p>Nincs külön haladó kötelék.</p>');
-    h += this.rescueHTML(); h += this.repHTML();
+    h += this.rescueHTML();   // v1.14.491: a csata-jelentések a Kampány-összegzés lapra kerültek
     h += this.crewHTML();   /* v1.14.300: a szabad (megmentett) legénységek a vásárlás előtt látszanak */
     h += '<h3>Hajóvásárlás' + (pre ? ' (' + port + ')' : ' – csak indulás előtt a kikötőben') + '</h3><p><small>Ebben az évben a legjobb radar / szonár minőség: ' + this.sensFloor() + ' (kisebb = jobb). Új hajónál szerencsével ennyi, különben legfeljebb ' + Math.max(this.sensFloor(), ECO.newMax | 0) + '; fejlesztéssel javítható az éves legjobbig. ' + (hfDate('from') ? 'HF/DF (T, H, BS, BB, RV, FL, FM): induló minőség ' + ECO.hfStart + ', fejlesztéssel ' + ECO.hfBest + '-ig javítható; ' : '') + 'a szenzorok (radar, szonár' + (hfDate('from') ? ', HF/DF' : '') + ') sikeres dobása egy egyszer használható Joker-irányt ad.</small></p>' + TB(['Osztály', 'Ár (EGp)', 'Most elérhető', 'Sebesség', 'Hatótáv', 'Bomba', ''], FLEET_CLS.map(c => {
       const av = this.shop.av[c], k = D[c], ok = pre && P.shop && av && this.egp >= this.price(c);
@@ -6375,6 +6376,7 @@ const CAMP = {
     h += '<h3>U-boatok</h3>' + TB(['Hajó', 'Elsüllyesztett tonna', 'Medal', 'Állapot'],
       Object.keys(this.ub).map(id => { const p = this.ub[id]; return [id, p.ton, Math.floor(p.ton / CFG.medalT), p.dead ? 'megsemmisült / elveszett' : 'él']; }));
     h += '<h3>Ellenséges felszíni hajók</h3>' + TB(['Hajó', 'Osztály', 'Állapot'], Object.keys(this.raid).map(id => [id, D[this.raid[id].c].n, this.raid[id].dead ? 'elsüllyedt' : 'él']));
+    h += this.repHTML();   // v1.14.491: csata-jelentések (a Flotta lapról áthelyezve)
     h += '<h3>Kampánynapló</h3><div style="font-size:13px">' + this.log.slice().reverse().map(x => '<div>' + x + '</div>').join('') + '</div>';
     h += '<p><button onclick="CAMP.exportFile()">Mentés fájlba</button> <button onclick="showView(\'OP\')">Vissza az OP-ra</button></p>';
     $('vSUM').innerHTML = h; showView('SUM');
