@@ -1,6 +1,6 @@
 <!doctype html><html lang="hu" data-theme="light"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>CEG – Konvoj kísérő kampány v1.14.483</title>
+<title>CEG – Konvoj kísérő kampány v1.14.484</title>
 <style>
 /* Színek: világos/sötét téma változókkal; a gombok és táblázatok stílusa */
 :root{--bg:#f4f1ea;--fg:#1d2733;--pn:#fff;--ln:#c9c2b3;--ac:#b3261e;--sea:#d6ecf4;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -1674,7 +1674,9 @@ function ch(i,d){const s=sel;if(s&&s.t=='U'&&!s.done&&s.dep==0&&dieOut(s)&&!uLoc
  else{snake(s);s.x=nx;s.y=ny;bst(s.id).mv++;pathNote(s);s.used=[];if(s.fu!=null){const fcc=fuelCell(s);s.fu-=fcc;bst(s.id).fc=(bst(s.id).fc||0)+fcc}   /* fc: a csatában elfogyasztott üzemanyag (összesítő) */   // üzemanyag: lépett cellánként 4 + időjárás (W3: +1, W4: +2) + FULL speed: +1 (Game modul, Fogyasztas)
   const low=q=>q.t!='U'||q.dep<=CFG.colDepth,sp=q=>!!(CFG.supNoCol&&q.sup),noCol=!!(s._auto&&CFG.autoNoCol)||sp(s),o=noCol?null:ships.find(q=>q!==s&&q.t!='A'&&!sp(q)&&!uMNoCol(s,q)&&occ(q,nx,ny)&&low(q)&&low(s)),deep=!o&&!noCol&&ships.find(q=>q!==s&&q.t!='A'&&!sp(q)&&!uMNoCol(s,q)&&occ(q,nx,ny));   // a Support hajók nem ütköznek (supNoCol);   // a U-boat csak felszínközelben (mélység ≤ colDepth) ütközhet; mélyebben a hajó fölötte / alatta halad el
   if(deep){const x=(deep.t=='U'&&!low(deep))?deep:s;m+=' – '+x.id+' mélyen van ('+x.dep+'): nincs ütközés'}
-  if(o){const cs=CFG.colDie,r=R(1,cs,s.id+' → '+o.id+': ütközés-vizsgálat','ütközés, ha = '+CFG.colHit,s,v=>v==CFG.colHit?'ÜTKÖZÉS':'nincs');m+=' – ütközésvizsgálat '+o.id+': d'+cs+'='+r+(r==CFG.colHit?' → ÜTKÖZÉS! Mindkét hajó sérül: '+colHurt(s)+' | '+colHurt(o):' → nincs')}}
+  if(o){const cs=CFG.colDie,r=R(1,cs,s.id+' → '+o.id+': ütközés-vizsgálat','ütközés, ha = '+CFG.colHit,s,v=>v==CFG.colHit?'ÜTKÖZÉS':'nincs');if(r==CFG.colHit){const sd=x=>x.dmg?x.dmg.reduce((a,b)=>a+b,0):(x.cd||0),a0=sd(s),b0=sd(o),ha=colHurt(s),hb=colHurt(o);m+=' – ütközésvizsgálat '+o.id+': d'+cs+'='+r+' → ÜTKÖZÉS! Mindkét hajó sérül: '+ha+' | '+hb;
+   evAdd({t:'coll',a:s.id,b:o.id,da:sd(s)-a0,db:sd(o)-b0})}   // v1.14.484: az ütközés a jelentésbe
+  else m+=' – ütközésvizsgálat '+o.id+': d'+cs+'='+r+' → nincs'}}
  const pd=s.dir;s.dir=d;s.ch[i]=d;s.idx++;if(trOn(s))trAfter(s,pd,d);say(m);draw();card();if(s.t=='U'&&s.idx>=need(s))uPost(s)}   // az utolsó lépés után az U-boatra a vízibombák kiértékelése jön
 // back: a bombázható hátsó irányok; bcell: a bomba célcellája; bok: lerakható-e (DP modul, FULL speed, korlát, mezőnként egy bomba állóhelyről).
 const back=s=>[nd(s.dir+3),nd(s.dir+4),nd(s.dir+5)];
@@ -2770,6 +2772,7 @@ function rptParse(){
   repair:{},       /* javítások: repair[U] = {ok,fail} */
   state:{},        /* az U-boat AI szabálya körönként: state[U] = [{k,s}] */
   emptyK:{},       /* azok a körök, amikor egy sortűz üres cellába csapott */
+  coll:[],         /* v1.14.484: ütközések: {k,a,b,da,db} (da/db = a sérülés-pontok összege) */
   evade:[],        /* v1.14.412: kísérőre tartó torpedó „mellé” – a kísérő kitért: {k,id} */
   airIn:[],        /* légi belépések: {k,n,ids} */
   airB:[],         /* bombázások: {k,air,ship,dmg,res,tons,down:{by,w}|null} */
@@ -2845,7 +2848,7 @@ function rptFromEv(E){
  E.gun=[];E.airIn=[];E.airB=[];E.sunk=[];E.uDead={};E.zDead={};E.uExit={};E.zIn={};
  E.shots={};E.tHits=[];E.evade=[];E.zTorp=[];   /* v1.14.432 (2. szakasz, 1. lépés): torpedók */
  E.uHits=[];E.salv=[];E.bombs={};E.emptyK={};E.bNear=0;E.bNearHit=0;   /* v1.14.433 (2. szakasz, 2. lépés): vízibomba, hedgehog, Squid, U-boat-találatok */
- E.entry={};E.detect={};E.rescue=[];E.repair={};E.state={};   /* v1.14.434 (2. szakasz, 3. lépés): belépés, észlelés, mentés, javítás, AI-szabály */
+ E.entry={};E.detect={};E.rescue=[];E.repair={};E.state={};E.coll=[];   /* v1.14.434 (2. szakasz, 3. lépés): belépés, észlelés, mentés, javítás, AI-szabály */
  EVL.forEach(e=>{
   if(e.t=='gun'){
    E.gun.push({k:e.k,by:e.by,tg:e.tg,hit:e.hit,dmg:e.m?e.dmg:0,res:e.res||'',tons:e.tons||0})}
@@ -2862,6 +2865,8 @@ function rptFromEv(E){
    if(e.esc)E.evade.push({k:e.k,id:e.ship})}       // a légi torpedó elől is kitérhet
   else if(e.t=='uEntry'){                           // U-boat belépése (az utolsó belépés számít, mint a szövegnél)
    E.entry[e.id]={k:e.k,tp:e.tp}}
+  else if(e.t=='coll'){                             // v1.14.484: két hajó ütközése
+   E.coll.push({k:e.k,a:e.a,b:e.b,da:e.da||0,db:e.db||0})}
   else if(e.t=='detect'){                           // az U-boat első észlelése
    if(/^U/.test(e.u)&&!E.detect[e.u])E.detect[e.u]={k:e.k,by:e.by}}
   else if(e.t=='rescue'){                           // mentett legénység
@@ -2974,6 +2979,7 @@ function rptBlocks(detail){
  E.rescue.forEach(x=>push(x.k,5,x.by+' kimentette a(z) '+x.ship+' legénységét.',0,1));
  uids.forEach(u=>{const d=E.detect[u];if(d)push(d.k,1,d.by+' észlelte az '+u+'-t, üldözni kezdte.',0,0)});
  /* v1.14.479: az U-boat kilépése a kronológiában – ha üldözték, az üldöző elvesztette a nyomát */
+ (E.coll||[]).forEach(c=>push(c.k,3.5,c.a+' és '+c.b+' összeütközött – mindkét hajó megsérült ('+c.a+': +'+c.da+', '+c.b+': +'+c.db+' sérülés).',0,1));   // v1.14.484
  uids.forEach(u=>{const x=E.uExit[u];if(x==null||E.uDead[u])return;const d=E.detect[u];push(x,8.5,u+' kilépett a pályáról'+(d&&d.k<=x?' – '+d.by+' elvesztette a nyomát':'')+'.',0,1)});
  /* v1.14.412: a kísérők kitérése a közeledő torpedók elől (körönként és hajónként) */
  {const ek={};E.evade.forEach(e=>{const key=e.k+'|'+e.id;ek[key]=(ek[key]||0)+1});Object.keys(ek).forEach(key=>{const p=key.split('|');push(+p[0],3.4,p[1]+' '+(ek[key]>1?ek[key]+' torpedó elől is':'a közeledő torpedó elől')+' kitért.',0,0)})}
@@ -3009,7 +3015,7 @@ function rptBlocks(detail){
  /* csendes szakaszok: legalább 4 egymást követő kör fegyver-, torpedó- és légi tevékenység nélkül */
  const act={};Object.keys(E.shots).forEach(u=>E.shots[u].forEach(k=>act[k]=1));E.tHits.forEach(h=>act[h.k]=1);E.salv.forEach(x=>act[x.k]=1);Object.keys(E.bombs).forEach(id=>Object.keys(E.bombs[id]).forEach(k=>act[k]=1));
  E.airB.forEach(a=>act[a.k]=1);E.gun.forEach(g=>act[g.k]=1);E.zTorp.forEach(t=>act[t.k]=1);
- uids.forEach(u=>{if(E.entry[u])act[E.entry[u].k]=1;if(E.detect[u])act[E.detect[u].k]=1;if(E.uExit[u]!=null)act[E.uExit[u]]=1});   // v1.14.479: belépés / észlelés / kilépés köre nem „nyugodt”
+ (E.coll||[]).forEach(c=>act[c.k]=1);uids.forEach(u=>{if(E.entry[u])act[E.entry[u].k]=1;if(E.detect[u])act[E.detect[u].k]=1;if(E.uExit[u]!=null)act[E.uExit[u]]=1});   // v1.14.479: belépés / észlelés / kilépés köre nem „nyugodt”
  let q0=null;for(let k=1;k<=E.turns+1;k++){if(k<=E.turns&&!act[k]){if(q0==null)q0=k}else{if(q0!=null&&k-q0>=4){
   const on=uids.filter(u=>E.entry[u]&&E.entry[u].k>=q0&&E.entry[u].k<k).map(u=>u+' ('+(+CFG.rptClock?rClk(E.entry[u].k)+', ':'')+E.entry[u].k+'. kör)');
   push(q0,9,kTxt(q0,k-1)+(+CFG.rptClock?' ':': ')+'nyugodt szakasz, érintkezés nélkül.'+(on.length?' Az időszakban belépett: '+on.join(', ')+'.':''),1,1)}q0=null}}
@@ -3060,6 +3066,7 @@ function rptBlocks(detail){
    if(gz.length)pr.push(gz.length+' lövést adott a felszíni ellenségre/repülőkre ('+gz.filter(g=>g.hit).length+' találat)');if(az)pr.push(az+' repülőt lőtt le');
    t+=(pr.length?pr.join(', ')+(hits.length||nb||sv.length?'; '+hits.length+' találatot ért el az U-boatokon':'')+'. ':'')+(ev?'kísérőhajóként '+ev+' alkalommal tért ki közeledő torpedó elől. ':'');   /* v1.14.412 */
    if(isFinite(first)&&first>E.turns*0.6&&rk+sv.length<=4)t+='A csata végén, '+rptArt(first)+' '+first+'. körben kapcsolódott be. '}
+  {const cl=(E.coll||[]).filter(c=>c.a==id||c.b==id);if(cl.length)t+=' '+cl.map(c=>'A '+c.k+'. körben összeütközött: '+(c.a==id?c.b:c.a)+' (sérülés +'+(c.a==id?c.da:c.db)+')').join('; ')+'. '}   // v1.14.484
   if(lost)t+='Elveszett: '+lost.kind+(lost.why?' ('+lost.why+')':'')+' '+rptArt(lost.k)+' '+lost.k+'. körben.';
   return t})});
  /* megállapítások: számok a fegyverek használatáról */
@@ -4679,6 +4686,7 @@ function storageReport() {
 //   v1.14.418 (2026-11-09) – kézi kísérő iránya (manDir: 0 ki / 1 minden kézi kísérő / 2 csak a kijelölt): narancs szaggatott vonal a legközelebbi látható U-boat felé (az AI-vonal mintájára, az AI érzékelési sugarán belül)
 //   v1.14.417 (2026-11-09) – a napfény és a csillogás (W0–W1) a TELJES taktikai pályán (korábban csak a keretben); az időjárás-effektek (felhő, eső, villám, napfény, csillogás) mind az egész pályán
 //   v1.14.416 (2026-11-09) – a belső felhők kisebbek (3–6 cella) és szintenként sötétednek / szaporodnak: W2 fehér, W3 szürke, W4 sötét, összefüggő tömbökben (csoportok); a pályát nem borítják el
+//   v1.14.484 (2026-11-15) – CSATA-JELENTÉS: az ütközések (két hajó összeütközött) a csata menetében és a kíséret soránál is, a sérülés-pontokkal
 //   v1.14.483 (2026-11-15) – HAJÓKÁRTYA: az U-boat képe lejjebb csúszik, hogy a lépés-négyzet ne takarja el
 //   v1.14.482 (2026-11-14) – ÚJ FLOWER-KÉP (a játékos javította): rozsdafoltok nélkül – a rozsdát az állapot (cardRust) teszi rá
 //   v1.14.481 (2026-11-14) – HAJÓKÁRTYA LÉPÉS-NÉGYZET (cardStep, alap 1): irány- és kanyar-kockánál a kép bal felső sarkában, a medál alatt egy négyzetben csizma + az aktuális lépés / összes (kész: ✓)
@@ -4923,7 +4931,7 @@ function storageReport() {
 //   v1.14.239 (2026-10-26) – ÚJ: (1) LUT torpedó (lutOn, alap 1; 1944. januártól): az U-boat kártyán „LUT” jelölőnégyzet (az AI lutAiP %); a FAT utóda: lutLen 18 cella, lutRun 6 egyenes, lutLeg 3 fél-szélesség, találat teherhajón d6 ≤ lutHit (3), hadihajón ≤ lutHitE (1); ha FAT is be van jelölve, a LUT számít. (2) LÉGPERISZKÓP / SCHNORCHEL (schOn, alap 1; 1944. júniustól; csak szabad mozgásnál): 1/8-as mélységen a kártya „Légperiszkóp” jelölőnégyzetével a dízel hajt: az akku nem fogy, hanem schRech (2) cellát tölt körönként, max schSpd (2) lépés, kimerült akkuval is halad; kiesett dízelnél nem működik; az AI az akku fele alatt automatikusan használja.
 //   v1.14.238 (2026-10-26) – SZABAD MOZGÁS: az U-boat a belső játékterületen (pl. 80-as táblán az 50×50-esen) bárhol léphet be, nem csak a szélén (uInner, alapból BE; KI = a régi szél-belépés uEdge szerint).
 //   v1.14.237 (2026-10-26) – HEDGEHOG / SQUID ELLENŐRZÉS: az U-boat lépés utáni kiértékelésében a hedgehog / Squid „nincs találat” eredmény akkor is kiíródik, ha a vízibombák is hatottak (eddig ilyenkor csak a vízibomba-sor látszott, a hedgehog-ellenőrzés nem)
-const VER = 'v1.14.483';
+const VER = 'v1.14.484';
 // ===== MEGFIGYELŐ / TESZT MÓD (obsMode, v1.14.195) =====
 // Megfigyelő módban mindkét oldalt az AI vezérli (a kísérők is: NPC-logikával), a pálya mindent mutat (nincs köd), és a körök maguktól léptetődnek;
 // a lezárt csatákból statisztika készül (konvoj-, U-boat-, kísérő-veszteség, kimenetel), hogy látszódjon: sokféle csata születik-e, vagy egyoldalú lett a hangolás.
