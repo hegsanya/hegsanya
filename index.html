@@ -1,6 +1,6 @@
 <!doctype html><html lang="hu" data-theme="light"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>CEG – Konvoj kísérő kampány v1.14.518</title>
+<title>CEG – Konvoj kísérő kampány v1.14.519</title>
 <style>
 /* Színek: világos/sötét téma változókkal; a gombok és táblázatok stílusa */
 :root{--bg:#f4f1ea;--fg:#1d2733;--pn:#fff;--ln:#c9c2b3;--ac:#b3261e;--sea:#d6ecf4;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -5097,6 +5097,7 @@ function storageReport() {
 //   v1.14.418 (2026-11-09) – kézi kísérő iránya (manDir: 0 ki / 1 minden kézi kísérő / 2 csak a kijelölt): narancs szaggatott vonal a legközelebbi látható U-boat felé (az AI-vonal mintájára, az AI érzékelési sugarán belül)
 //   v1.14.417 (2026-11-09) – a napfény és a csillogás (W0–W1) a TELJES taktikai pályán (korábban csak a keretben); az időjárás-effektek (felhő, eső, villám, napfény, csillogás) mind az egész pályán
 //   v1.14.416 (2026-11-09) – a belső felhők kisebbek (3–6 cella) és szintenként sötétednek / szaporodnak: W2 fehér, W3 szürke, W4 sötét, összefüggő tömbökben (csoportok); a pályát nem borítják el
+//   v1.14.519 (2026-11-20) – JAVÍTÁS (uTrack): a saját konvoj új útjának indulásakor a játék minden U-boat torpedóját 14-re és sérülését 0-ra állította – az új rendszerben ez kimarad (a torpedó és a sérülés a járőr végéig megmarad, a bázison töltődik / javul)
 //   v1.14.518 (2026-11-20) – TÁMOGATÓ KÖTELÉK AZ NPC-KONVOJ CSATÁJÁBAN is (azonos cella: a csata elejétől, szomszédos: d25, az OP-irányból; ilyenkor a csatát te vezényled); a cirkálók 155 / 203 mm-es főtüzérsége nem lő repülőre (aaCalMax 140); a német nehézcirkáló a régi rendszerben is HIPPER1 (nem CA1 – a saját CA1 Norfolk miatt; mentett kampány átírva)
 //   v1.14.517 (2026-11-20) – HIPPER: nincs üzemanyag-korlát (sfDays 0), kitörés Izland körül (sfGap T5) a Csatorna-áttörésig; KONVOJ UTOLJÁRA (cvLast: előbb a kötelékek lépnek); TÁMOGATÓ KÖTELÉK a konvoj csatájában (tfSupport: azonos cella = a csata elejétől, szomszédos = d25, az OP-irányból, a végéig marad); SAJÁT CIRKÁLÓK (supOwn): CL1 Jamaica, CL2 Sheffield, CA1 Norfolk a kezdéskor, 12000 tmf, 10000 EGp-ért vehető, a véletlen támogatás kimarad
 //   v1.14.516 (2026-11-19) – AZ ÚJ RENDSZERBEN (uTrack): a sorsolás csak repülőt ad (a felszíni és a vegyes zóna légi zóna); VEGYES CSATA (UH, UR, HR, UHR – mindenki belép, akit a kockája beenged); NÉMET FELSZÍNI NYILVÁNTARTÁS: Hipper (napi 1:50 kifutás, véletlen cél az időszak szerint – norvég part / atlanti útvonalak / murmanszki útvonal –, 3 portyázó cella, haza, 30–60 nap javítás), Z rombolók (rövid kifutás 3–4 cellára); találkozás (1 cellán belül sfFind %), belépés az elfogás irányából, felderítés és légitámadás, sérülés megmarad, 6/6 → haza, a Hipper elsüllyesztése +300 EGp; Tengely lap: felszíni hajók; OP-jel
@@ -5376,7 +5377,7 @@ function storageReport() {
 //   v1.14.239 (2026-10-26) – ÚJ: (1) LUT torpedó (lutOn, alap 1; 1944. januártól): az U-boat kártyán „LUT” jelölőnégyzet (az AI lutAiP %); a FAT utóda: lutLen 18 cella, lutRun 6 egyenes, lutLeg 3 fél-szélesség, találat teherhajón d6 ≤ lutHit (3), hadihajón ≤ lutHitE (1); ha FAT is be van jelölve, a LUT számít. (2) LÉGPERISZKÓP / SCHNORCHEL (schOn, alap 1; 1944. júniustól; csak szabad mozgásnál): 1/8-as mélységen a kártya „Légperiszkóp” jelölőnégyzetével a dízel hajt: az akku nem fogy, hanem schRech (2) cellát tölt körönként, max schSpd (2) lépés, kimerült akkuval is halad; kiesett dízelnél nem működik; az AI az akku fele alatt automatikusan használja.
 //   v1.14.238 (2026-10-26) – SZABAD MOZGÁS: az U-boat a belső játékterületen (pl. 80-as táblán az 50×50-esen) bárhol léphet be, nem csak a szélén (uInner, alapból BE; KI = a régi szél-belépés uEdge szerint).
 //   v1.14.237 (2026-10-26) – HEDGEHOG / SQUID ELLENŐRZÉS: az U-boat lépés utáni kiértékelésében a hedgehog / Squid „nincs találat” eredmény akkor is kiíródik, ha a vízibombák is hatottak (eddig ilyenkor csak a vízibomba-sor látszott, a hedgehog-ellenőrzés nem)
-const VER = 'v1.14.518';
+const VER = 'v1.14.519';
 // ===== MEGFIGYELŐ / TESZT MÓD (obsMode, v1.14.195) =====
 // Megfigyelő módban mindkét oldalt az AI vezérli (a kísérők is: NPC-logikával), a pálya mindent mutat (nincs köd), és a körök maguktól léptetődnek;
 // a lezárt csatákból statisztika készül (konvoj-, U-boat-, kísérő-veszteség, kimenetel), hogy látszódjon: sokféle csata születik-e, vagy egyoldalú lett a hangolás.
@@ -5752,7 +5753,7 @@ const CAMP = {
     let vip = null; if (ECO.vipOn && !this.mission && n >= 3 && Math.random() * 100 < (+ECO.vipP || 0)) { const k = R(0, n - 1); m[k].vip = true; vip = m[k].id; }
     this.voy = { code: conv.name, from: conv.from, to: conv.to, d0: day, vip, oneway: !!conv.oneway, m, battles: 0, bombs: 0, fuel: 0, ubSunk: 0, air: 0, zSunk: 0, events: [], sailed: false, short: ECO.shortP > 0 && R(1, 100) <= ECO.shortP };
     if (!this.thr) this.thrInit(); this.thr.shadow = null; this.thr.ev = 0; this.thr.deep = 0; this.thr.hit = 0;   // új konvoj: a követés és a függő hatások nem öröklődnek
-    for (const id in this.ub) { const p = this.ub[id]; if (!p.dead) { p.dmg = p.dmg.map(() => 0); p.tp = 14; } }   // az U-boatok sérülései és torpedói az új úton újak
+    if (!+ECO.uTrack) for (const id in this.ub) { const p = this.ub[id]; if (!p.dead) { p.dmg = p.dmg.map(() => 0); p.tp = 14; } }   // az U-boatok sérülései és torpedói az új úton újak (v1.14.519: az új rendszerben NEM – a torpedó és a sérülés a járőr végéig megmarad, a bázison töltődik / javul)
     this.fleet.filter(f => f.loc === conv.from).forEach(f => { f.fu = D[vcls(f)].fuel; f.qs = null; });                          // a kikötőben az üzemanyag-feltöltés ingyenes és azonnali
     this.rollShop(conv.from); this.rollOffers(conv.from); this.autoSelect();
     this.log.push('[' + day + '. nap] Új konvoj: ' + conv.name + ' (' + conv.from + ' → ' + conv.to + ')' + (conv.oneway ? ' – EGYIRÁNYÚ KÜLDETÉS: a kíséret ' + conv.to + 'ban marad' : '') + ', ' + n + ' teherhajó, kikötő: ' + conv.from + '.' + (vip ? ' Kitüntetett hajó: ' + vip + ' (+' + ECO.vipEgp + ' EGp, ha célba ér).' : ''));
