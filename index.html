@@ -1,6 +1,6 @@
 <!doctype html><html lang="hu" data-theme="light"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>CEG – Konvoj kísérő kampány v1.14.537</title>
+<title>CEG – Konvoj kísérő kampány v1.14.538</title>
 <style>
 /* Színek: világos/sötét téma változókkal; a gombok és táblázatok stílusa */
 :root{--bg:#f4f1ea;--fg:#1d2733;--pn:#fff;--ln:#c9c2b3;--ac:#b3261e;--sea:#d6ecf4;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -5133,6 +5133,7 @@ function storageReport() {
 //   v1.14.418 (2026-11-09) – kézi kísérő iránya (manDir: 0 ki / 1 minden kézi kísérő / 2 csak a kijelölt): narancs szaggatott vonal a legközelebbi látható U-boat felé (az AI-vonal mintájára, az AI érzékelési sugarán belül)
 //   v1.14.417 (2026-11-09) – a napfény és a csillogás (W0–W1) a TELJES taktikai pályán (korábban csak a keretben); az időjárás-effektek (felhő, eső, villám, napfény, csillogás) mind az egész pályán
 //   v1.14.416 (2026-11-09) – a belső felhők kisebbek (3–6 cella) és szintenként sötétednek / szaporodnak: W2 fehér, W3 szürke, W4 sötét, összefüggő tömbökben (csoportok); a pályát nem borítják el
+//   v1.14.538 (2026-11-21) – NPC LAP: AZ ELSÜLLYEDT NPC-KÍSÉRŐK nyilvántartása, amíg a konvoj létezik (azonosító, osztály, nap, cella, hogyan / ki – csata: melyik egység és mivel; gyors számítás: torpedó / modulok); az NPC-kísérők azonosítója állandó (N1, N2 … az indulás szerint – elsüllyedés után sem csúszik el)
 //   v1.14.537 (2026-11-21) – TENGELY LAP: ELSÜLLYEDT U-BOATOK táblázat (dátum, hely, hogyan / ki – csata: melyik hajód / NPC-kísérő és mivel; légitámadás; 6/6 legénység; dízel – elsüllyesztették; NPC gyors számítás; külső veszteség); RENDEZHETŐ TÁBLÁZATOK (tblSort, a Tengely és az NPC lapon: fejlécre kattintva); TORPEDÓ-ŐR: a tengeren lévő U-boat készlete nem nőhet (csak a kifutáskor 14), a régi hazaért-javítás nem tölti fel a nyilvántartásos rendszerben
 //   v1.14.536 (2026-11-21) – CSATA ELEJI NAPLÓ (btlOrigin, alap 1; nyilvántartásos rendszer): az elemzési naplóba minden német egység – felszíni hajó: osztály, bázis, állapot (kifelé / portyázik / hazafelé), a bevetés napja, bevetési cél, érkezési irány, sérülés; U-boat: flottilla, járőr-cellák, napok a tengeren, torpedó, sérülés; az üzenetsávba rövid lista
 //   v1.14.535 (2026-11-21) – CSATA NÉLKÜLI CELLÁK (ECO.noBattle, alap X12,X13,W11,V12): itt nincs esemény és nincs találkozás, mindkét rendszerben, a zónáktól függetlenül; NPC-CSATA SAJÁT TF-FEL (npcCmdAI, alap 1): csak a saját hajóidat irányítod, az ellenség és az NPC-kísérők mindig AI-k és magától lépnek
@@ -5431,7 +5432,7 @@ function storageReport() {
 //   v1.14.239 (2026-10-26) – ÚJ: (1) LUT torpedó (lutOn, alap 1; 1944. januártól): az U-boat kártyán „LUT” jelölőnégyzet (az AI lutAiP %); a FAT utóda: lutLen 18 cella, lutRun 6 egyenes, lutLeg 3 fél-szélesség, találat teherhajón d6 ≤ lutHit (3), hadihajón ≤ lutHitE (1); ha FAT is be van jelölve, a LUT számít. (2) LÉGPERISZKÓP / SCHNORCHEL (schOn, alap 1; 1944. júniustól; csak szabad mozgásnál): 1/8-as mélységen a kártya „Légperiszkóp” jelölőnégyzetével a dízel hajt: az akku nem fogy, hanem schRech (2) cellát tölt körönként, max schSpd (2) lépés, kimerült akkuval is halad; kiesett dízelnél nem működik; az AI az akku fele alatt automatikusan használja.
 //   v1.14.238 (2026-10-26) – SZABAD MOZGÁS: az U-boat a belső játékterületen (pl. 80-as táblán az 50×50-esen) bárhol léphet be, nem csak a szélén (uInner, alapból BE; KI = a régi szél-belépés uEdge szerint).
 //   v1.14.237 (2026-10-26) – HEDGEHOG / SQUID ELLENŐRZÉS: az U-boat lépés utáni kiértékelésében a hedgehog / Squid „nincs találat” eredmény akkor is kiíródik, ha a vízibombák is hatottak (eddig ilyenkor csak a vízibomba-sor látszott, a hedgehog-ellenőrzés nem)
-const VER = 'v1.14.537';
+const VER = 'v1.14.538';
 // ===== MEGFIGYELŐ / TESZT MÓD (obsMode, v1.14.195) =====
 // Megfigyelő módban mindkét oldalt az AI vezérli (a kísérők is: NPC-logikával), a pálya mindent mutat (nincs köd), és a körök maguktól léptetődnek;
 // a lezárt csatákból statisztika készül (konvoj-, U-boat-, kísérő-veszteség, kimenetel), hogy látszódjon: sokféle csata születik-e, vagy egyoldalú lett a hangolás.
@@ -6415,9 +6416,11 @@ const CAMP = {
     /* v1.14.462: vezényelt NPC-csata – a teherhajók és az NPC-kísérők eredménye az NPC-konvojba */
     if (this.ev.npc) { const n0 = OPG.npcMer(this.ev.npc).length, alive = ships.filter(q => q.t === 'M' && !q.stop).length;
       const mst = {}; OPG.npcMer(this.ev.npc).forEach(m => { const q = ships.find(x => x.t === 'M' && x.id === m.id); mst[m.id] = { gone: !q || !!q.stop, cd: q ? (q.cd | 0) : 0 }; });   /* v1.14.524 */
-      const es = OPG.npcEscPF(this.ev.npc).map(f => { const s = ships.find(q => q.npcI === f.npcI && q.t === 'E'); if (!s) return { i: f.npcI, gone: true }; const M = D[s.c].mod, L = M.reduce((a, m) => a + m[1], 0), d = s.dmg.reduce((a, b) => a + b, 0), crew = M.findIndex(m => /^Legén/.test(m[0]));
+      const es = OPG.npcEscPF(this.ev.npc).map(f => { const s = ships.find(q => q.npcI === f.npcI && q.t === 'E');
+        if (!s) { const k = KL.filter(x => x.id === f.id).pop() || {}; return { i: f.npcI, gone: true, how: (this._sim ? 'AI-csata' : 'vezényelt csata') + (k.by ? ' – ' + k.by : '') + (k.why ? ': ' + k.why : '') }; }   /* v1.14.538: ki / mivel */ const M = D[s.c].mod, L = M.reduce((a, m) => a + m[1], 0), d = s.dmg.reduce((a, b) => a + b, 0), crew = M.findIndex(m => /^Legén/.test(m[0]));
         const ko = M.map((m, k) => k).filter(k => s.dmg[k] >= M[k][1]);   // v1.14.463: a 6/6 modulok maradnak, a többi kijavul
-        return { i: f.npcI, gone: d / L > CFG.sinkPct / 100 || (crew >= 0 && s.dmg[crew] >= 6), ko, dmg: s.dmg.slice(), hp: Math.max(1, Math.round(100 * (1 - ko.length / M.length))), b: s.b, fu: s.fu }; });   /* v1.14.520: dmg – a teljes sérülés (az új rendszerben megmarad, a tengeren javul) */
+        const gn = d / L > CFG.sinkPct / 100 || (crew >= 0 && s.dmg[crew] >= 6);
+        return { i: f.npcI, gone: gn, how: gn ? (this._sim ? 'AI-csata' : 'vezényelt csata') + ': ' + (crew >= 0 && s.dmg[crew] >= 6 ? 'a legénység 6/6' : 'a sérülések meghaladták a ' + CFG.sinkPct + '%-ot') : '', ko, dmg: s.dmg.slice(), hp: Math.max(1, Math.round(100 * (1 - ko.length / M.length))), b: s.b, fu: s.fu }; });   /* v1.14.520: dmg – a teljes sérülés (az új rendszerben megmarad, a tengeren javul) */
       const nt = OPG.npcAfter(this.ev.npc, n0, alive, es, !!this._sim, mst); if (nt) rep.push(nt); }
     // 2) kísérők: elveszett, vagy az állapot (sérülés, bomba, üzemanyag, Medal, szenzor) visszaíródik a flottába; a bérelt hajók nem maradnak meg
     this.battleGroup().forEach(f => {
@@ -7154,7 +7157,10 @@ function npcView() {
     /* kísérők */
     const ty = e => +ECO.npcEscType ? String(e.c || '').split('~')[0].replace(/[^A-Z]/g, '') : '';
     h += TB(['Kísérő', 'Osztály', 'Épség', 'Sérült modulok', 'Vízibomba', 'Üzemanyag'], u.esc.map((e, i) => { const M = (D[e.c] || { mod: [] }).mod, dm = (e.dmg && e.dmg.length === M.length) ? e.dmg : M.map((m, k) => (e.ko || []).includes(k) ? m[1] : 0);
-      return ['N' + (i + 1) + ty(e), (D[e.c] || {}).n || e.c, (e.hp | 0) + '%', dm.map((v, k) => v > 0 ? (v >= M[k][1] ? '<b style="color:#b3261e">' + M[k][0] + ' ' + v + '/' + M[k][1] + '</b>' : M[k][0] + ' ' + v + '/' + M[k][1]) : '').filter(Boolean).join(', ') || '–', (e.b | 0) + ' / ' + (e.b0 | 0), e.fu | 0]; }));
+      return [(e.nid || 'N' + (i + 1)) + ty(e), (D[e.c] || {}).n || e.c, (e.hp | 0) + '%', dm.map((v, k) => v > 0 ? (v >= M[k][1] ? '<b style="color:#b3261e">' + M[k][0] + ' ' + v + '/' + M[k][1] + '</b>' : M[k][0] + ' ' + v + '/' + M[k][1]) : '').filter(Boolean).join(', ') || '–', (e.b | 0) + ' / ' + (e.b0 | 0), e.fu | 0]; }));
+    /* v1.14.538: az elsüllyedt kísérők, amíg a konvoj létezik */
+    if ((u.escLost || []).length) h += '<p style="margin:2px 0 6px"><b style="color:#b3261e">Elsüllyedt kísérő:</b></p>' + TB(['Kísérő', 'Osztály', 'Mikor', 'Hol', 'Hogyan / ki'],
+      u.escLost.map(x => [x.nid + ty(x), (D[x.c] || {}).n || x.c, x.y ? new Date(Date.UTC(x.y, 0, x.d)).toISOString().slice(0, 10) : x.d + '. nap', x.cell, x.how]));
     const mine = CAMP.fleet.filter(f => f.loc === 'npc:' + u.id);
     if (mine.length) h += '<p><b style="color:#1565c0">Csatlakozott saját hajók:</b> ' + mine.map(f => f.id + ' ' + cname(f)).join(', ') + '</p>';
     /* teherhajók */
@@ -7751,7 +7757,7 @@ function npcFight(u,t){
  const torp=()=>has('U')&&(t=='U'||Math.random()<0.5);
  u.esc.forEach(e=>{if(has('U'))e.b=Math.max(0,e.b-npcBombUse());if(Math.random()>=pH)return;
   if(torp()){e.hp=0;e.dead='torpedó'}else{if(escKO(e,nrnd(1,2)))e.dead='modulok';hit.push(e.c)}});
- for(let i=u.esc.length-1;i>=0;i--)if(u.esc[i].dead){sunk.push(u.esc[i].c+' ('+u.esc[i].dead+')');u.esc.splice(i,1)}
+ npcNid(u);for(let i=u.esc.length-1;i>=0;i--)if(u.esc[i].dead){sunk.push(u.esc[i].c+' ('+u.esc[i].dead+')');npcEscLose(u,u.esc[i],'gyors számítás: '+(u.esc[i].dead=='torpedó'?'torpedótalálat':'a modulok kiestek'));u.esc.splice(i,1)}
  /* a saját hajók: találatnál 1–2 modul kiesik (6/6); ha a kiesett modulok aránya eléri a süllyedési küszöböt, vagy a legénység kiesik, a hajó elsüllyed */
  const mine=[];
  npcMine(u).forEach(f=>{if(has('U'))f.b=Math.max(0,(f.b|0)-npcBombUse());if(Math.random()>=pH)return;
@@ -7825,16 +7831,20 @@ function npcMerInit(u){
 /* k teherhajó elvesztése (gyors számítás): véletlenszerűen az élők közül */
 function npcMerLose(u,k){npcMerInit(u);for(;k>0;k--){const L=u.mer.filter(m=>!m.gone);if(!L.length)break;L[nrnd(0,L.length-1)].gone=true}}
 function npcMer(id){const u=NPC.find(x=>x.id===id);if(!u)return [];return npcMerInit(u).filter(m=>!m.gone).map(m=>({id:m.id,tons:m.tons,cp:m.cp,aa:m.aa,cd:m.cd|0}))}
-function npcEscPF(id){const u=NPC.find(x=>x.id===id);if(!u)return [];
+/* v1.14.538: az NPC-kísérők állandó azonosítója (e.nid = N1, N2 …) – az indulási sorrend szerint; ha egy elsüllyed, a többié nem változik.
+   u.escLost: az elsüllyedt kísérők a konvoj végéig (azonosító, osztály, nap, cella, hogyan / ki) */
+function npcNid(u){(u.esc||[]).forEach((e,i)=>{if(!e.nid)e.nid='N'+(i+1)});if(!u.escLost)u.escLost=[];return u}
+function npcEscLose(u,e,how){npcNid(u);u.escLost.push({nid:e.nid,c:e.c,d:day,y:year,cell:addr(u.r,u.c),how:how||'?'})}
+function npcEscPF(id){const u=NPC.find(x=>x.id===id);if(!u)return [];npcNid(u);
  return u.esc.map((e,i)=>{const M=(D[e.c]||{mod:[]}).mod,dmg=(+ECO.uTrack&&e.dmg&&e.dmg.length===M.length)?e.dmg.slice():M.map((m,k)=>(e.ko||[]).includes(k)?m[1]:0);   /* v1.14.520: a nyilvántartott sérüléssel */   // v1.14.463: a kiesett (6/6) modulok
   /* v1.14.507: az NPC-kísérő neve mellett a típusa is: N2FL, N3T (ECO npcEscType) */
   const ty=+ECO.npcEscType?String(e.c||'').split('~')[0].replace(/[^A-Z]/g,''):'';
-  return {id:'N'+(i+1)+ty,cls:e.c,b:e.b,fu:e.fu,dmg,npcI:i}})}
+  return {id:e.nid+ty,cls:e.c,b:e.b,fu:e.fu,dmg,npcI:i}})}
 function npcAfter(id,n0,alive,es,sim,mst){const u=NPC.find(x=>x.id===id);if(!u)return '';
  const lost=Math.max(0,n0-alive);u.m=Math.max(0,u.m-lost);
  /* v1.14.524: a teherhajók egyenként: a csata után elsüllyedt / lemaradt (mst: {id: {gone, cd}}) */
  if(mst&&u.mer)u.mer.forEach(m=>{const z=mst[m.id];if(!z||m.gone)return;m.cd=z.cd|0;if(z.gone)m.gone=true});
- const keep=[];es.forEach(o=>{const e=u.esc[o.i];if(!e)return;if(o.gone)return;e.ko=o.ko||[];e.hp=o.hp;e.b=o.b;e.fu=o.fu;if(+ECO.uTrack&&o.dmg)e.dmg=o.dmg.slice();else delete e.dmg;keep.push(e)});   /* v1.14.520: az új rendszerben a teljes sérülés megmarad */
+ npcNid(u);const keep=[];es.forEach(o=>{const e=u.esc[o.i];if(!e)return;if(o.gone){npcEscLose(u,e,o.how);return}   /* v1.14.538: a nyilvántartásba */e.ko=o.ko||[];e.hp=o.hp;e.b=o.b;e.fu=o.fu;if(+ECO.uTrack&&o.dmg)e.dmg=o.dmg.slice();else delete e.dmg;keep.push(e)});   /* v1.14.520: az új rendszerben a teljes sérülés megmarad */
  const sunk=u.esc.length-keep.length;u.esc=keep;
  const txt=day+'. nap '+addr(u.r,u.c)+(sim?': AI-csata – ':': vezényelt csata – ')+(lost?lost+' teherhajó elsüllyedt / lemaradt':'nincs teherhajó-veszteség')+(sunk?', elsüllyedt NPC-kísérő: '+sunk:'');
  u.log.push(txt);CAMP.log.push('[NPC '+u.code+'] '+txt);const sos=npcSosChk(u,lost);return txt+(sos?' '+sos:'')}
