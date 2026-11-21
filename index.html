@@ -1,6 +1,6 @@
 <!doctype html><html lang="hu" data-theme="light"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>CEG – Konvoj kísérő kampány v1.14.533</title>
+<title>CEG – Konvoj kísérő kampány v1.14.534</title>
 <style>
 /* Színek: világos/sötét téma változókkal; a gombok és táblázatok stílusa */
 :root{--bg:#f4f1ea;--fg:#1d2733;--pn:#fff;--ln:#c9c2b3;--ac:#b3261e;--sea:#d6ecf4;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -2545,7 +2545,11 @@ function initSupport(){supSlots=[];if(!CFG.supOn||+ECO.supOwn)return '';   /* v1
    (különben a kör megakad: az NPC-kísérők / támogatók / U-boatok közül a hibás után következők nem lépnek, a konvoj nem léptethető) */
 function aiSafeTurn(u,who){
  if(!+CFG.aiSafe){aiTurn(u);return}
- try{aiTurn(u)}catch(e){console.error('[AI]',u&&u.id,e);try{alogAdd((u&&u.id)+': AI-hiba ('+who+'): '+(e&&e.message)+' – a lépése lezárva.')}catch(x){}}
+ try{aiTurn(u)}catch(e){
+  /* v1.14.534: a kézi kocka várakozása (DX_NEED) NEM hiba – tovább kell dobni, hogy a dobás után az akció újrainduljon (a v1.14.525-ös háló eddig elnyelte: „AI-hiba: undefined”, a repülő nem lépett végig) */
+  if(e===DX_NEED)throw e;
+  console.error('[AI]',u&&u.id,e);try{alogAdd((u&&u.id)+': AI-hiba ('+who+'): '+(e&&e.message)+' – a lépése lezárva.')}catch(x){}}
+ if(DX.depth)return;   /* v1.14.534: kockajáték (DX) futás közben a lezárást a DX intézi */
  if(u&&!u.done&&ships.includes(u)&&!(u.t=='A'&&!+CFG.aiSafeA)){u.done=true;try{alogAdd(u.id+': az AI nem fejezte be a lépését ('+who+') – automatikusan lezárva.')}catch(x){}}}
 function aiSupportRun(){if(aiBusy)return;const keep=sel;aiBusy=true;try{ships.filter(q=>(q.sup||q.npc)&&aiOn(q)&&!q.done).forEach(u=>aiSafeTurn(u,'támogató / NPC-kísérő'))}finally{aiBusy=false;sel=keep}draw();card()}
 // aiTurnS: az AI-val vezérelt támogató hadihajó köre: a legközelebbi ellenséges hadihajó (vagy felszíni U-boat) felé tart, ha nincs ilyen, a konvoj közelébe; a löveg-állások a legjobb célpontra lőnek, majd torpedózik
@@ -5126,6 +5130,7 @@ function storageReport() {
 //   v1.14.418 (2026-11-09) – kézi kísérő iránya (manDir: 0 ki / 1 minden kézi kísérő / 2 csak a kijelölt): narancs szaggatott vonal a legközelebbi látható U-boat felé (az AI-vonal mintájára, az AI érzékelési sugarán belül)
 //   v1.14.417 (2026-11-09) – a napfény és a csillogás (W0–W1) a TELJES taktikai pályán (korábban csak a keretben); az időjárás-effektek (felhő, eső, villám, napfény, csillogás) mind az egész pályán
 //   v1.14.416 (2026-11-09) – a belső felhők kisebbek (3–6 cella) és szintenként sötétednek / szaporodnak: W2 fehér, W3 szürke, W4 sötét, összefüggő tömbökben (csoportok); a pályát nem borítják el
+//   v1.14.534 (2026-11-21) – JAVÍTÁS: kézi kockával (manualDice) a v1.14.525-ös AI-háló elnyelte a „dobásra vár” jelzést – „AI-hiba: undefined”, a repülő / NPC-kísérő nem lépett végig, nem lett KÉSZ, a kör nem léptethetett; most a jelzés továbbmegy, a dobás után az AI-lépés folytatódik
 //   v1.14.533 (2026-11-21) – Tengely lap, Felszíni hajók: egyértelműbb oszlopok – „Helye most” (a kikötőben: „– (kikötőben)”), „Bevetési cél” (a kifutáskor kijelölt cél-cella; hazaúton: „elérte / feladta”, a kikötőben „–”), az állapotban „a bevetés N. napja”
 //   v1.14.532 (2026-11-21) – JAVÍTÁS: a támogató cirkálók (CL Jamaica / Sheffield, CA Norfolk) nem kapnak szonár-fejlesztést, mert nincs szonárjuk – az évenkénti minőség-igazítás eddig a „nincs szonár” (0) értéket is felhúzta, így szonárt kaptak; a régi mentésben kapott szonárt visszaveszi; a radar fejleszthető marad
 //   v1.14.531 (2026-11-20) – NÉMET PORTYÁZÓ AZ ÚTON VÉGIG TÁMAD (sfHomeAtk, alap 1): a Hipper / Z hazafelé is megtámadja a közeli konvojt, ha nincs 6/6-os modulja (eddig csak kifelé és a portyán); az U-boat továbbra is csak a járőrcelláin támad, a ki- és hazaútján nem
@@ -5420,7 +5425,7 @@ function storageReport() {
 //   v1.14.239 (2026-10-26) – ÚJ: (1) LUT torpedó (lutOn, alap 1; 1944. januártól): az U-boat kártyán „LUT” jelölőnégyzet (az AI lutAiP %); a FAT utóda: lutLen 18 cella, lutRun 6 egyenes, lutLeg 3 fél-szélesség, találat teherhajón d6 ≤ lutHit (3), hadihajón ≤ lutHitE (1); ha FAT is be van jelölve, a LUT számít. (2) LÉGPERISZKÓP / SCHNORCHEL (schOn, alap 1; 1944. júniustól; csak szabad mozgásnál): 1/8-as mélységen a kártya „Légperiszkóp” jelölőnégyzetével a dízel hajt: az akku nem fogy, hanem schRech (2) cellát tölt körönként, max schSpd (2) lépés, kimerült akkuval is halad; kiesett dízelnél nem működik; az AI az akku fele alatt automatikusan használja.
 //   v1.14.238 (2026-10-26) – SZABAD MOZGÁS: az U-boat a belső játékterületen (pl. 80-as táblán az 50×50-esen) bárhol léphet be, nem csak a szélén (uInner, alapból BE; KI = a régi szél-belépés uEdge szerint).
 //   v1.14.237 (2026-10-26) – HEDGEHOG / SQUID ELLENŐRZÉS: az U-boat lépés utáni kiértékelésében a hedgehog / Squid „nincs találat” eredmény akkor is kiíródik, ha a vízibombák is hatottak (eddig ilyenkor csak a vízibomba-sor látszott, a hedgehog-ellenőrzés nem)
-const VER = 'v1.14.533';
+const VER = 'v1.14.534';
 // ===== MEGFIGYELŐ / TESZT MÓD (obsMode, v1.14.195) =====
 // Megfigyelő módban mindkét oldalt az AI vezérli (a kísérők is: NPC-logikával), a pálya mindent mutat (nincs köd), és a körök maguktól léptetődnek;
 // a lezárt csatákból statisztika készül (konvoj-, U-boat-, kísérő-veszteség, kimenetel), hogy látszódjon: sokféle csata születik-e, vagy egyoldalú lett a hangolás.
@@ -6250,7 +6255,7 @@ const CAMP = {
     const S = this._sim; S.done = done; S.stop = () => { if (W.t) clearTimeout(W.t); W.run = false; bar.remove(); };
     const finish = () => { S.fin = 1; S.stop(); const r = this.simFinish(); done && done(r); };
     const one = () => { let over = false;
-      try { over = this.simRound(); } catch (e) { console.error('[npcWatch]', e); try { alogAdd('AI-csata: hiba a ' + turn + '. körben: ' + (e && e.message) + ' – a lejátszás folytatódik.'); } catch (x) { } if (!+CFG.aiSafe) over = true; }   /* v1.14.525 */
+      try { over = this.simRound(); } catch (e) { if (e === DX_NEED) throw e; console.error('[npcWatch]', e); try { alogAdd('AI-csata: hiba a ' + turn + '. körben: ' + (e && e.message) + ' – a lejátszás folytatódik.'); } catch (x) { } if (!+CFG.aiSafe) over = true; }   /* v1.14.525 */
       draw(); card(); hud();
       if (over) { W.run = false; const b = $('npcWrun'); if (b) { b.textContent = '✔ Vége – eredmény'; b.onclick = finish; b.style.cssText = 'background:#ef6c00;color:#fff;font-weight:bold;animation:npcWblink 1s 6'; }
         /* v1.14.529: az ok a sávban és a naplóban; npcWAuto: magától lezárul (a csata-eredmény a naplóba kerül) */
