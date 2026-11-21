@@ -1,6 +1,6 @@
 <!doctype html><html lang="hu" data-theme="light"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>CEG – Konvoj kísérő kampány v1.14.532</title>
+<title>CEG – Konvoj kísérő kampány v1.14.533</title>
 <style>
 /* Színek: világos/sötét téma változókkal; a gombok és táblázatok stílusa */
 :root{--bg:#f4f1ea;--fg:#1d2733;--pn:#fff;--ln:#c9c2b3;--ac:#b3261e;--sea:#d6ecf4;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -5126,6 +5126,7 @@ function storageReport() {
 //   v1.14.418 (2026-11-09) – kézi kísérő iránya (manDir: 0 ki / 1 minden kézi kísérő / 2 csak a kijelölt): narancs szaggatott vonal a legközelebbi látható U-boat felé (az AI-vonal mintájára, az AI érzékelési sugarán belül)
 //   v1.14.417 (2026-11-09) – a napfény és a csillogás (W0–W1) a TELJES taktikai pályán (korábban csak a keretben); az időjárás-effektek (felhő, eső, villám, napfény, csillogás) mind az egész pályán
 //   v1.14.416 (2026-11-09) – a belső felhők kisebbek (3–6 cella) és szintenként sötétednek / szaporodnak: W2 fehér, W3 szürke, W4 sötét, összefüggő tömbökben (csoportok); a pályát nem borítják el
+//   v1.14.533 (2026-11-21) – Tengely lap, Felszíni hajók: egyértelműbb oszlopok – „Helye most” (a kikötőben: „– (kikötőben)”), „Bevetési cél” (a kifutáskor kijelölt cél-cella; hazaúton: „elérte / feladta”, a kikötőben „–”), az állapotban „a bevetés N. napja”
 //   v1.14.532 (2026-11-21) – JAVÍTÁS: a támogató cirkálók (CL Jamaica / Sheffield, CA Norfolk) nem kapnak szonár-fejlesztést, mert nincs szonárjuk – az évenkénti minőség-igazítás eddig a „nincs szonár” (0) értéket is felhúzta, így szonárt kaptak; a régi mentésben kapott szonárt visszaveszi; a radar fejleszthető marad
 //   v1.14.531 (2026-11-20) – NÉMET PORTYÁZÓ AZ ÚTON VÉGIG TÁMAD (sfHomeAtk, alap 1): a Hipper / Z hazafelé is megtámadja a közeli konvojt, ha nincs 6/6-os modulja (eddig csak kifelé és a portyán); az U-boat továbbra is csak a járőrcelláin támad, a ki- és hazaútján nem
 //   v1.14.530 (2026-11-20) – az NPC és a Tengely lap is megkapja a lap-stílusokat (térkép / tervrajz / sötét stb. háttér, gombok, linkek, mezők – mint a Flotta / Összegzés lap)
@@ -5419,7 +5420,7 @@ function storageReport() {
 //   v1.14.239 (2026-10-26) – ÚJ: (1) LUT torpedó (lutOn, alap 1; 1944. januártól): az U-boat kártyán „LUT” jelölőnégyzet (az AI lutAiP %); a FAT utóda: lutLen 18 cella, lutRun 6 egyenes, lutLeg 3 fél-szélesség, találat teherhajón d6 ≤ lutHit (3), hadihajón ≤ lutHitE (1); ha FAT is be van jelölve, a LUT számít. (2) LÉGPERISZKÓP / SCHNORCHEL (schOn, alap 1; 1944. júniustól; csak szabad mozgásnál): 1/8-as mélységen a kártya „Légperiszkóp” jelölőnégyzetével a dízel hajt: az akku nem fogy, hanem schRech (2) cellát tölt körönként, max schSpd (2) lépés, kimerült akkuval is halad; kiesett dízelnél nem működik; az AI az akku fele alatt automatikusan használja.
 //   v1.14.238 (2026-10-26) – SZABAD MOZGÁS: az U-boat a belső játékterületen (pl. 80-as táblán az 50×50-esen) bárhol léphet be, nem csak a szélén (uInner, alapból BE; KI = a régi szél-belépés uEdge szerint).
 //   v1.14.237 (2026-10-26) – HEDGEHOG / SQUID ELLENŐRZÉS: az U-boat lépés utáni kiértékelésében a hedgehog / Squid „nincs találat” eredmény akkor is kiíródik, ha a vízibombák is hatottak (eddig ilyenkor csak a vízibomba-sor látszott, a hedgehog-ellenőrzés nem)
-const VER = 'v1.14.532';
+const VER = 'v1.14.533';
 // ===== MEGFIGYELŐ / TESZT MÓD (obsMode, v1.14.195) =====
 // Megfigyelő módban mindkét oldalt az AI vezérli (a kísérők is: NPC-logikával), a pálya mindent mutat (nincs köd), és a körök maguktól léptetődnek;
 // a lezárt csatákból statisztika készül (konvoj-, U-boat-, kísérő-veszteség, kimenetel), hogy látszódjon: sokféle csata születik-e, vagy egyoldalú lett a hangolás.
@@ -7127,8 +7128,8 @@ function axisView() {
       return [id, bName(p.base || 'W'), stOf(p), o ? OPG.addr(o.r, o.c) : '–', o && o.pc ? o.pc.map(a => OPG.addr(a[0], a[1])).join('-') : '–', p.tp == null ? '–' : p.tp, dmgTxt(p), Math.round(p.ton || 0), p.sorties | 0, o && !['base', 'trn'].includes(o.st) ? (o.sea | 0) : '–', p.seaTot | 0, o && o.vis === OPG.uDay() ? '👁 igen' : '']; }));
   /* v1.14.516: felszíni portyázók (a nyilvántartásból) */
   if (CAMP.sf) { const sN = { base: 'kikötőben', out: 'kifut', raid: 'portyázik', home: 'hazaút' }, d = OPG.uDay();
-    h += '<h3>Felszíni hajók</h3>' + TB(['Hajó', 'Osztály', 'Bázis', 'Állapot', 'Cella', 'Cél', 'Sérülés', 'Bevetés (db)', 'Tengeren összesen (nap)', 'Ma felderítve'], Object.keys(CAMP.sf).map(id => { const q = CAMP.sf[id], M = D[q.c].mod;
-      return [id, D[q.c].n, bName(q.base), q.dead ? '<b style="color:#2e7d32">elsüllyedt</b>' : q.st === 'base' ? (d < (q.ready || 0) ? 'javítás / pihenő (' + (q.ready - d) + ' nap)' : 'kész') : sN[q.st] + ' (' + (q.days | 0) + '. nap)', q.st === 'base' || q.dead ? '–' : OPG.addr(q.r, q.c2), q.tgt || '–',
+    h += '<h3>Felszíni hajók</h3>' + TB(['Hajó', 'Osztály', 'Bázis', 'Állapot', 'Helye most', 'Bevetési cél', 'Sérülés', 'Bevetés (db)', 'Tengeren összesen (nap)', 'Ma felderítve'], Object.keys(CAMP.sf).map(id => { const q = CAMP.sf[id], M = D[q.c].mod;
+      return [id, D[q.c].n, bName(q.base), q.dead ? '<b style="color:#2e7d32">elsüllyedt</b>' : q.st === 'base' ? (d < (q.ready || 0) ? 'javítás / pihenő (' + (q.ready - d) + ' nap)' : 'kész') : sN[q.st] + ' · a bevetés ' + (q.days | 0) + '. napja', q.st === 'base' || q.dead ? '– (kikötőben)' : OPG.addr(q.r, q.c2), q.st === 'base' || q.dead ? '–' : (q.tgt || '–') + (q.st === 'home' ? ' (elérte / feladta)' : ''),   /* v1.14.533: egyértelműbb oszlopok */
         q.dmg.map((v, i) => v > 0 ? (v >= M[i][1] ? '<b style="color:#b3261e">' + M[i][0] + ' ' + v + '/' + M[i][1] + '</b>' : M[i][0] + ' ' + v + '/' + M[i][1]) : '').filter(Boolean).join(', ') || '–', q.sorties | 0, q.seaTot | 0, q.vis === d ? '👁 igen' : '']; })); }
   /* 3. német hajóosztályok */
   const ax = OTHER_SHIPS.filter(o => /ellenség/.test(o[1]));
