@@ -8394,7 +8394,7 @@ function sfDayMain(S,B){
     utLog(id+' kikötött ('+hb.name+')'+(+ECO.basePts?', pihenő '+(q.ready-UDAY())+' nap'+(q.dmg.some(v=>v>0)?' + javítás (napi '+(ECO.repPts||'0-2')+' javítópont, '+q.dmg.reduce((a,v)=>a+v,0)+' sérülés-pont)':''):', javítás '+(q.ready-UDAY())+' nap')+'.');break}}
   /* v1.14.548: üzemanyag – a megtett cellák (a csatához ugrás is) a hatótáv felénél: haza (a romboló; a nehézcirkálónál sfDays) */
   if(q.c!=='HIPPER'){q.mv=(q.mv|0)+Math.max(Math.abs(o.r-q.r),Math.abs(o.c-q.c2))+(q.jmp|0);q.jmp=0;
-   if(q.st!=='home'&&q.mv>=Math.floor(sfRng(q.c)/2)){q.st='home';if(+ECO.basePtsLog)utLog(sfName(id)+' a hatótáv felénél ('+q.mv+' / '+sfRng(q.c)+' cella) hazafordul.')}   // (gyakori – csak részletes naplónál)}
+   if(q.st!=='home'&&q.mv>=Math.floor(sfRng(q.c)/2)){q.st='home';if(+ECO.basePtsLog)utLog(sfName(id)+' a hatótáv felénél ('+q.mv+' / '+sfRng(q.c)+' cella) hazafordul.')}   /* (gyakori – csak részletes naplónál) */}
   q.r=o.r;q.c2=o.c;
   /* a játékos felderítése: kétszeres eséllyel (nagy hajó / kötelék) */
   if(q.st!='base'&&Math.random()*100<Math.min(90,utDetP(q.r,q.c2)*2)){q.vis=UDAY();
