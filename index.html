@@ -1,6 +1,6 @@
 <!doctype html><html lang="hu" data-theme="light"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>CEG – Konvoj kísérő kampány v1.14.542</title>
+<title>CEG – Konvoj kísérő kampány v1.14.543</title>
 <style>
 /* Színek: világos/sötét téma változókkal; a gombok és táblázatok stílusa */
 :root{--bg:#f4f1ea;--fg:#1d2733;--pn:#fff;--ln:#c9c2b3;--ac:#b3261e;--sea:#d6ecf4;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -1433,6 +1433,7 @@ function award(by,why){const e=find(by);if(e){e.med=(e.med||0)+1;if(+CFG.medLog)
 function hurt(s,i,v,by){if(v>0){s.hotT=turn;const b=typeof by==='string'?find(by):by;if(b&&b.id)b.hotT=turn}   // tűz / csata jelzés a köd-rétegnek
  if(s.practice&&v>0&&typeof CAMP!=='undefined'&&CAMP.mission)CAMP.missionHit(by);   // a találat a gyakorló egységen teljesíti a gyakorlatot
  const m=D[s.c].mod[i],was=s.dmg[i],v0=v;if(CFG.armorRed&&v>0){const arm=Math.max(0,m[1]-6);if(arm>0)v=Math.max(0,v-R(0,arm,null,'páncél: a sebzés ennyivel csökken',null,null,s.id+': '+m[0]+' páncél-kocka (sebzés '+v+')'))}   // páncél: a sebzés csökken random(0; páncél) értékkel
+ s.lastHit={i,was,v0,v,max:m[1]};   /* v1.14.543: az utolsó találat adatai – a csövenkénti lövés-sor ebből írja ki, miért nem sérült a modul */
  s.dmg[i]=Math.min(m[1],was+v);if(s.t=='U'&&s.dopts&&!s.dch&&(m[0].startsWith('Merül')||m[0].startsWith('Emel')))s.dopts=s.dopts.filter(d=>uDepOk(s,d));   // a már kisorsolt mélység-lehetőségek is szűkülnek
  if(v>0)fxAdd('hit',s.x,s.y);if(by){s.by=by;if(v>0&&find(by)&&find(by)!==s){const k=s.t=='U'?'dmgU':'dmgE';bst(by)[k]+=s.dmg[i]-was;if(s.t=='U'&&s.dmg[i]>was)bst(by).uh[s.id]=1}}
  let t=m[0]+' +'+v+' ('+s.dmg[i]+'/'+m[1]+')';
@@ -1855,7 +1856,13 @@ function gunRecHit(t,d0,c0){
  if(t.t=='M')return {mod:'rakomány',dmg:(t.cd||0)-(c0||0)};
  if(!t.dmg||!d0||!D[t.c])return {mod:'–',dmg:0};
  const i=t.dmg.findIndex((v,k)=>v!==d0[k]);
- return i<0?{mod:'páncél',dmg:0}:{mod:D[t.c].mod[i][0],dmg:t.dmg[i]-d0[i]}}
+ if(i>=0)return {mod:D[t.c].mod[i][0],dmg:t.dmg[i]-d0[i]};
+ /* v1.14.543: nem változott semmi – az ok (eddig mindig „páncél” volt kiírva, a páncél nélküli hajón is) */
+ const h=t.lastHit,M=D[t.c].mod;if(!h)return {mod:'nem sérült (0 sebzés)',dmg:0};
+ const n=(M[h.i]||[''])[0];
+ if(h.was>=h.max)return {mod:n+' – már '+h.max+'/'+h.max,dmg:0};
+ if(h.v0>0&&h.v===0)return {mod:n+' – a páncél elnyelte',dmg:0};
+ return {mod:n+' (0 sebzés)',dmg:0}}
 /* v1.14.518: gunAA – a löveg lőhet-e repülőre: a nevéből vett űrméret (G1-155, G1-203) legfeljebb aaCalMax mm; a 105 mm-es kettős rendeltetésű és a kisebb lövegek igen */
 function gunAA(g){const m=/-(\d{3})$/.exec(String(g&&g[0]||''));return !m||+m[1]<=(+CFG.aaCalMax||140)}
 function shootCore(s,gi,t,cell){if(s.gu[gi]||!(t.dep==null||t.dep==0))return '';if(t.t=='A'&&!gunAA(D[s.c].gun[gi]))return '';   /* v1.14.518: a cirkáló főtüzérsége nem lő repülőre */s._pk=s.id+'#'+D[s.c].gun[gi][2];   /* v1.14.438: lövedék-csomag = torony */s.hotT=turn;const g=D[s.c].gun[gi],cal=g[1],rg=Math.min(cal,CFG.calCap),dist=cheb(s,t);{const li=D[s.c].mod.findIndex(z=>z[0]==g[2]);if(li>=0&&!modOk(s,li))return ''}   // a löveg modulja csak Stand = 0 esetén lőhet (a 6/6-os modul soha)
@@ -1868,7 +1875,7 @@ function shootCore(s,gi,t,cell){if(s.gu[gi]||!(t.dep==null||t.dep==0))return '';
  const r=R(gm,rg,dist<=rg?s.id+' '+g[0]+' → '+t.id+' (táv. '+dist+')':null,t.t=='A'?'lelövés, ha = '+dt:'találat, ha ≥ '+dist,s,v=>t.t=='A'?(v==dt?'LELŐTTE':'nem talált'):(v>=dist?'TALÁLAT':'nem talált'),s.id+' '+g[0]+' → '+t.id+' (táv. '+dist+', lőtávon kívül)');let m=s.id+' '+g[0]+' → '+t.id+' (táv. '+dist+', dobás '+r+')';
  if(t.t=='A'){if(dist<=rg&&r==dt){bst(s.id).shh++;bst(s.id).air++;KL.push({id:t.id,t:'A',why:'lelőtték',by:s.id,pf:t.pref,tgt:t.bombTgt||null});ships=ships.filter(q=>q!==t);if(sel===t)sel=null;evGun(s,t,true);gunRec(s,gi,{v:r,need:'= '+dt,res:'lelőtte',hit:true,tg:t.id});return m+' TALÁLAT: a repülő lelőve.'}
   evGun(s,t,false);gunRec(s,gi,{v:r,need:'= '+dt,res:dist>rg?'lőtávon kívül':'mellé',tg:t.id});return m+' – nem talált.'}
- if(dist<=rg&&r>=dist){bst(s.id).shh++;const d0=t.dmg?t.dmg.slice():null,c0=t.cd||0;
+ if(dist<=rg&&r>=dist){bst(s.id).shh++;const d0=t.dmg?t.dmg.slice():null,c0=t.cd||0;t.lastHit=null;
   const tx=m+evGun(s,t,true,()=>gunDmg(s,t,cal));   /* v1.14.431: esemény a jelentéshez */
   gunRec(s,gi,Object.assign({v:r,need:'≥ '+dist,res:'találat',hit:true,tg:t.id},gunRecHit(t,d0,c0)));   /* v1.14.437 */
   return tx}
@@ -5133,6 +5140,7 @@ function storageReport() {
 //   v1.14.418 (2026-11-09) – kézi kísérő iránya (manDir: 0 ki / 1 minden kézi kísérő / 2 csak a kijelölt): narancs szaggatott vonal a legközelebbi látható U-boat felé (az AI-vonal mintájára, az AI érzékelési sugarán belül)
 //   v1.14.417 (2026-11-09) – a napfény és a csillogás (W0–W1) a TELJES taktikai pályán (korábban csak a keretben); az időjárás-effektek (felhő, eső, villám, napfény, csillogás) mind az egész pályán
 //   v1.14.416 (2026-11-09) – a belső felhők kisebbek (3–6 cella) és szintenként sötétednek / szaporodnak: W2 fehér, W3 szürke, W4 sötét, összefüggő tömbökben (csoportok); a pályát nem borítják el
+//   v1.14.543 (2026-11-22) – JAVÍTÁS (csövenkénti lövés-sor): ha a találat nem okozott sérülést, eddig mindig „páncél” állt (a páncél nélküli rombolón is); most az ok: „<modul> – már 6/6” (a modul már tönkrement), „– a páncél elnyelte” (csak páncélos modulnál) vagy „(0 sebzés)”
 //   v1.14.542 (2026-11-21) – NÉMET EGYSÉGEK BÁZISJAVÍTÁSA JAVÍTÓPONTOKKAL (basePts, alap 1): U-boat, Hipper, Z – naponta 1–6 javítópont a sérült modulokra (mint a saját hajóknál), csak épen futnak ki; a Hipper pihenője 7–14 nap (sfRest), a Z-é 3–7 (sfZRest); a régi idő alapú javítás (sfRep) basePts = 0-val
 //   v1.14.541 (2026-11-21) – KIKÖTŐI JAVÍTÁS JAVÍTÓPONTOKKAL (repMode = 'points', alap): naponta 1–6 pont (repPts, × a kikötő minősége), a sérült modulokra osztva – először Legénység, Kormány, gépek (repOrder), utána a legsúlyosabb; pl. 6 pont: Legénység 4/10 → 0/10, T4 5/9 → 3/9; a hajó javítás közben is kifuthat; a napló modulonként írja
 //   v1.14.540 (2026-11-21) – JAVÍTÁS: a saját hajók (kísérők, cirkálók, kötelék) nem 6/6 sérülései a csata után azonnal kijavultak; a nyilvántartásos rendszerben most megmaradnak, és a tengeren naponta apránként javulnak (seaRepP, mint az NPC-kísérőknél, U-boatoknál, német hajóknál), a 6/6 csak kikötőben
@@ -5436,7 +5444,7 @@ function storageReport() {
 //   v1.14.239 (2026-10-26) – ÚJ: (1) LUT torpedó (lutOn, alap 1; 1944. januártól): az U-boat kártyán „LUT” jelölőnégyzet (az AI lutAiP %); a FAT utóda: lutLen 18 cella, lutRun 6 egyenes, lutLeg 3 fél-szélesség, találat teherhajón d6 ≤ lutHit (3), hadihajón ≤ lutHitE (1); ha FAT is be van jelölve, a LUT számít. (2) LÉGPERISZKÓP / SCHNORCHEL (schOn, alap 1; 1944. júniustól; csak szabad mozgásnál): 1/8-as mélységen a kártya „Légperiszkóp” jelölőnégyzetével a dízel hajt: az akku nem fogy, hanem schRech (2) cellát tölt körönként, max schSpd (2) lépés, kimerült akkuval is halad; kiesett dízelnél nem működik; az AI az akku fele alatt automatikusan használja.
 //   v1.14.238 (2026-10-26) – SZABAD MOZGÁS: az U-boat a belső játékterületen (pl. 80-as táblán az 50×50-esen) bárhol léphet be, nem csak a szélén (uInner, alapból BE; KI = a régi szél-belépés uEdge szerint).
 //   v1.14.237 (2026-10-26) – HEDGEHOG / SQUID ELLENŐRZÉS: az U-boat lépés utáni kiértékelésében a hedgehog / Squid „nincs találat” eredmény akkor is kiíródik, ha a vízibombák is hatottak (eddig ilyenkor csak a vízibomba-sor látszott, a hedgehog-ellenőrzés nem)
-const VER = 'v1.14.542';
+const VER = 'v1.14.543';
 // ===== MEGFIGYELŐ / TESZT MÓD (obsMode, v1.14.195) =====
 // Megfigyelő módban mindkét oldalt az AI vezérli (a kísérők is: NPC-logikával), a pálya mindent mutat (nincs köd), és a körök maguktól léptetődnek;
 // a lezárt csatákból statisztika készül (konvoj-, U-boat-, kísérő-veszteség, kimenetel), hogy látszódjon: sokféle csata születik-e, vagy egyoldalú lett a hangolás.
