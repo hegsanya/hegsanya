@@ -1,6 +1,6 @@
 <!doctype html><html lang="hu" data-theme="light"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>CEG – Konvoj kísérő kampány v1.14.559</title>
+<title>CEG – Konvoj kísérő kampány v1.14.560</title>
 <style>
 /* Színek: világos/sötét téma változókkal; a gombok és táblázatok stílusa */
 :root{--bg:#f4f1ea;--fg:#1d2733;--pn:#fff;--ln:#c9c2b3;--ac:#b3261e;--sea:#d6ecf4;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -3073,7 +3073,7 @@ function rptArt(k){return (k==1||k==5||(k>=50&&k<=59))?'az':'a'}
 function rptBlocks(detail){
  if(detail===undefined)detail=true;
  /* v1.14.412 (rptClock): a kör ideje a csata óráján (a nap = a csata hossza, mint a Taktikai lapon) – „12:20 (14)”; tartomány: „12:20–13:40 (14–16)” */
- const rClk=k=>{const m=Math.round(k*1440/Math.max(1,mxT())),p=n=>(n<10?'0':'')+n;return m>=1440?'24:00':p(Math.floor(m/60)%24)+':'+p(m%60)},   // v1.14.479: a csata vége 24:00 (nem 00:00)
+ const rClk=k=>{const m=Math.round(k*1440/dayT()),p=n=>(n<10?'0':'')+n;return m>=1440?'24:00':p(Math.floor(m/60)%24)+':'+p(m%60)},   // v1.14.479: a csata vége 24:00 (nem 00:00)
   kTxt=(a,b)=>+CFG.rptClock?(b==null||a==b?rClk(a)+' ('+a+')':rClk(a)+'–'+rClk(b)+' ('+a+'–'+b+')'):(b==null||a==b?a+'. kör':a+'–'+b+'. kör');
  const E=rptParse(),B=[],plural=(n,a,b)=>n+' '+(n==1?a:b),
   isU=id=>/^U/.test(id),isM=id=>/^M/.test(id),isZ=id=>/^Z/.test(id)||(typeof RAID!=='undefined'&&Object.prototype.hasOwnProperty.call(RAID,id)),   /* v1.14.431: ellenséges felszíni hajó = „Z…” vagy a RAID lista tagja (CA1 = Hipper) */
@@ -3505,10 +3505,12 @@ function zoneReset(){const s=sel;if(!s||s.t!='E'||!s.zid||!ZONE0[s.zid])return;Z
 function loc(dx,dy){const B=bas();return[(dx*B.ac[0]+dy*B.ac[1])/FA(),(dx*B.al[0]+dy*B.al[1])/FB()]}
 const inZ=(z,dx,dy)=>{const[a,b]=loc(dx,dy);return a>=z[0]-.5&&a<=z[2]+.5&&b>=z[1]-.5&&b<=z[3]+.5};
 // tacClk (v1.14.377, tacClock): az óra a körszámláló mellett: a nap (24 óra) = a csata hossza (mxT), indulás 00:00
+/* v1.14.560: a nap hossza = EBBEN a csatában a körök száma (maxT – a konvoj helyétől függ: 29, 33 …), nem a beállított felső korlát (mxT) */
+const dayT=()=>Math.max(1,(typeof maxT!=='undefined'&&maxT>0&&maxT<99)?maxT:mxT());
 function tacClk(){let e=document.getElementById('tclk');if(!e){const t=document.getElementById('tn');if(!t||!t.parentNode)return;e=document.createElement('span');e.id='tclk';e.style.cssText='font-weight:400;margin-left:6px';t.parentNode.appendChild(e)}
  if(!+CFG.tacClock){e.textContent='';return}
- const m=Math.round(turn*1440/Math.max(1,mxT())),hh=Math.floor(m/60)%24,mm=m%60;
- e.textContent='· '+(hh<10?'0':'')+hh+':'+(mm<10?'0':'')+mm;e.title='A csata ideje: a nap ('+Math.round(1440/Math.max(1,mxT()))+' perc / kör), indulás 00:00'}
+ const m=Math.round(turn*1440/dayT()),hh=Math.floor(m/60)%24,mm=m%60;
+ e.textContent='· '+(m>=1440?'24:00':(hh<10?'0':'')+hh+':'+(mm<10?'0':'')+mm);e.title='A csata ideje: a nap = '+dayT()+' kör ('+Math.round(1440/dayT())+' perc / kör), indulás 00:00'}
 // placeConvoy: a felállított konvojt úgy tolja el, hogy hátul 5 szabad cella maradjon (az irányban), oldalra pedig középre kerüljön; kiszámolja, hány kör fér bele (capT).
 function placeConvoy(){const ms=ships.filter(s=>s.t=='M'),v=DV[+dr.value||5],sh={},WD=wideOn(),L0=WD?1:LO,H0=WD?N:HI,GP=WD?Math.max(0,+CFG.wideGap):5;
  if(!ms.length){capT=99;maxT=Math.min(mxT(),capT);$('mx').textContent=maxT;return}   // kötelék-csata: nincs konvoj
@@ -5156,6 +5158,7 @@ function storageReport() {
 //   v1.14.418 (2026-11-09) – kézi kísérő iránya (manDir: 0 ki / 1 minden kézi kísérő / 2 csak a kijelölt): narancs szaggatott vonal a legközelebbi látható U-boat felé (az AI-vonal mintájára, az AI érzékelési sugarán belül)
 //   v1.14.417 (2026-11-09) – a napfény és a csillogás (W0–W1) a TELJES taktikai pályán (korábban csak a keretben); az időjárás-effektek (felhő, eső, villám, napfény, csillogás) mind az egész pályán
 //   v1.14.416 (2026-11-09) – a belső felhők kisebbek (3–6 cella) és szintenként sötétednek / szaporodnak: W2 fehér, W3 szürke, W4 sötét, összefüggő tömbökben (csoportok); a pályát nem borítják el
+//   v1.14.560 (2026-11-23) – CSATA ÓRÁJA: a nap (24 óra) = ennek a csatának a körszáma (maxT: 29, 33 … – a konvoj helyétől függ), nem a beállított felső korlát; az utolsó kör vége 24:00 (a Taktikai lap órája és a csata-jelentés is)
 //   v1.14.559 (2026-11-23) – TENGERI TALÁLKOZÓ (etfOn): a félúti időszakban az NPC-kísérők csoportként (K1, K2 …) hajóznak – a visszaforduló csoport Liverpool felé tart és útközben átveszi a közeli keletre tartó konvojt; ha nincs ilyen, Liverpoolból fut ki egy csoport a találkozási pontra (időzítve); a csoportot a járőröző U-boatok megtámadhatják (etfAtk); OP-térképen szürke háromszög, NPC lapon lista; AI WAC: csak a hiányos kíséretű konvojhoz küld (wacWant, évi ajánlott), a hiány, az U-boat-veszély és a távolság szerint; INGYENES HAJÓK kapcsolója (freeOn, alap 0 = minden hajó a rendes árán)
 //   v1.14.558 (2026-11-23) – MENTÉS: (1) a gyors számításban elsüllyedt saját hajó legénységét a konvoj többi kísérője veszi fel (70%, ha van kísérő; 30%, ha nincs) – a medál és a tapasztalat megmarad (crewSaved); (2) a roncsnál, ha a hajód nem ér oda a határidőig, egy közeli NPC-kísérő veszi fel (70% / 30%); (3) WAC mentési engedély (Flotta lap, gomb): a konvojtól a legtöbb üzemanyagú hajód leválik a roncshoz, ha a konvojnál legalább 2 kísérő marad; MEDÁL AZ NPC-KÍSÉRŐKNÉL: az általuk elsüllyesztett U-boat után (gyors számítás és csata), a nyilvántartásban is megmarad; az NPC lapon Medál oszlop
 //   v1.14.557 (2026-11-23) – AI WAC PARANCSOK (2-es szint, wacOn): nincs saját konvoj – a WAC egy közeli, kevés kísérővel futó NPC-konvojhoz rendel (félúti időszakban a Halifax-útvonalon az M oszlopig, ott automatikus leválás), 3 nap a csatlakozásra, naponta jóváírás (a besegítés napi része), gondjelentés (üzemanyag < 25%, nincs bomba, 6/6 → hazatérés), új hajó, ha minden elveszett (−500 EGp); Flotta lap: WAC parancsok táblázat; A VILÁG A VÁRAKOZÓ NAPON IS HALAD (worldWait: U-boatok, NPC-konvojok, német hajók – eddig csak a hajózó napon)
@@ -5476,7 +5479,7 @@ function storageReport() {
 //   v1.14.239 (2026-10-26) – ÚJ: (1) LUT torpedó (lutOn, alap 1; 1944. januártól): az U-boat kártyán „LUT” jelölőnégyzet (az AI lutAiP %); a FAT utóda: lutLen 18 cella, lutRun 6 egyenes, lutLeg 3 fél-szélesség, találat teherhajón d6 ≤ lutHit (3), hadihajón ≤ lutHitE (1); ha FAT is be van jelölve, a LUT számít. (2) LÉGPERISZKÓP / SCHNORCHEL (schOn, alap 1; 1944. júniustól; csak szabad mozgásnál): 1/8-as mélységen a kártya „Légperiszkóp” jelölőnégyzetével a dízel hajt: az akku nem fogy, hanem schRech (2) cellát tölt körönként, max schSpd (2) lépés, kimerült akkuval is halad; kiesett dízelnél nem működik; az AI az akku fele alatt automatikusan használja.
 //   v1.14.238 (2026-10-26) – SZABAD MOZGÁS: az U-boat a belső játékterületen (pl. 80-as táblán az 50×50-esen) bárhol léphet be, nem csak a szélén (uInner, alapból BE; KI = a régi szél-belépés uEdge szerint).
 //   v1.14.237 (2026-10-26) – HEDGEHOG / SQUID ELLENŐRZÉS: az U-boat lépés utáni kiértékelésében a hedgehog / Squid „nincs találat” eredmény akkor is kiíródik, ha a vízibombák is hatottak (eddig ilyenkor csak a vízibomba-sor látszott, a hedgehog-ellenőrzés nem)
-const VER = 'v1.14.559';
+const VER = 'v1.14.560';
 // ===== MEGFIGYELŐ / TESZT MÓD (obsMode, v1.14.195) =====
 // Megfigyelő módban mindkét oldalt az AI vezérli (a kísérők is: NPC-logikával), a pálya mindent mutat (nincs köd), és a körök maguktól léptetődnek;
 // a lezárt csatákból statisztika készül (konvoj-, U-boat-, kísérő-veszteség, kimenetel), hogy látszódjon: sokféle csata születik-e, vagy egyoldalú lett a hangolás.
