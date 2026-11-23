@@ -1,6 +1,6 @@
 <!doctype html><html lang="hu" data-theme="light"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>CEG – Konvoj kísérő kampány v1.14.561</title>
+<title>CEG – Konvoj kísérő kampány v1.14.562</title>
 <style>
 /* Színek: világos/sötét téma változókkal; a gombok és táblázatok stílusa */
 :root{--bg:#f4f1ea;--fg:#1d2733;--pn:#fff;--ln:#c9c2b3;--ac:#b3261e;--sea:#d6ecf4;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -1160,7 +1160,9 @@ const qsGet=k=>qsIsEco(k)?ECO[k]:CFG[k];
 function qsApply(gi,oi){const g=QS[gi],o=g.o[oi];
  Object.entries(o[1]).forEach(([k,v])=>{if(qsIsEco(k))CAMP.setEco(k,v);else CFG[k]=v});
  if('uTrack' in o[1]){try{OPG.genEv()}catch(e){}}
- if('supOwn' in o[1]&&+ECO.supOwn){try{CAMP.supGive()}catch(e){}}   /* v1.14.517: bekapcsoláskor a kezdő cirkálók (ha még nincsenek) */   /* v1.14.515: az U-boat rendszer váltásakor az eseményréteg újrasorsolása (az új rendszerben U-esemény nélkül) */
+ if('supOwn' in o[1]&&+ECO.supOwn){try{CAMP.supGive()}catch(e){}}
+ /* v1.14.562: a „Véletlen (EGp)” támogatásra váltva a saját cirkálók (TOWN / COUNTY) kikerülnek a Flottából – a tengeren lévők hazaérkezéskor */
+ if('supOwn' in o[1]&&!+ECO.supOwn){try{CAMP.supTake()}catch(e){}}   /* v1.14.517: bekapcsoláskor a kezdő cirkálók (ha még nincsenek) */   /* v1.14.515: az U-boat rendszer váltásakor az eseményréteg újrasorsolása (az új rendszerben U-esemény nélkül) */
  saveCfg();
  try{renderCfg()}catch(e){}
  try{if(document.getElementById('setEco'))CAMP.setupView()}catch(e){}   // ha a Beállítások lap nyitva van, a mezők is frissülnek
@@ -5158,6 +5160,7 @@ function storageReport() {
 //   v1.14.418 (2026-11-09) – kézi kísérő iránya (manDir: 0 ki / 1 minden kézi kísérő / 2 csak a kijelölt): narancs szaggatott vonal a legközelebbi látható U-boat felé (az AI-vonal mintájára, az AI érzékelési sugarán belül)
 //   v1.14.417 (2026-11-09) – a napfény és a csillogás (W0–W1) a TELJES taktikai pályán (korábban csak a keretben); az időjárás-effektek (felhő, eső, villám, napfény, csillogás) mind az egész pályán
 //   v1.14.416 (2026-11-09) – a belső felhők kisebbek (3–6 cella) és szintenként sötétednek / szaporodnak: W2 fehér, W3 szürke, W4 sötét, összefüggő tömbökben (csoportok); a pályát nem borítják el
+//   v1.14.562 (2026-11-23) – TÁMOGATÁS „Véletlen (EGp)”: a saját cirkálók (TOWN / COUNTY) kikerülnek a Flottából – váltáskor a kikötőben lévők azonnal, a tengeren lévők hazaérkezéskor (supTake / supDay)
 //   v1.14.561 (2026-11-23) – A HAJÓK ELHASZNÁLÓDÁSA (ageCap): a szerviz csak a hajó felső határáig javít, ami szervizenként (határ − állapot) / 2-vel, legfeljebb 10 ponttal csökken (Flotta lap: „állapot / határ”); HAJÓCSERE KÉRVÉNYEZÉSE (1-es és 2-es szint): felső határ 75% alatt, legalább 12 hónap szolgálat, kikötőben – ha az utolsó csere óta 1500 EGp eredmény: új hajó az elérhető legjobb osztályból, különben ugyanolyan használt (70–90%); levonás nincs, a legénység / medál / tapasztalat átmegy; NPC-KÍSÉRŐK: utanként 2–5 pont kopás, 40% alatt kivonják
 //   v1.14.560 (2026-11-23) – CSATA ÓRÁJA: a nap (24 óra) = ennek a csatának a körszáma (maxT: 29, 33 … – a konvoj helyétől függ), nem a beállított felső korlát; az utolsó kör vége 24:00 (a Taktikai lap órája és a csata-jelentés is)
 //   v1.14.559 (2026-11-23) – TENGERI TALÁLKOZÓ (etfOn): a félúti időszakban az NPC-kísérők csoportként (K1, K2 …) hajóznak – a visszaforduló csoport Liverpool felé tart és útközben átveszi a közeli keletre tartó konvojt; ha nincs ilyen, Liverpoolból fut ki egy csoport a találkozási pontra (időzítve); a csoportot a járőröző U-boatok megtámadhatják (etfAtk); OP-térképen szürke háromszög, NPC lapon lista; AI WAC: csak a hiányos kíséretű konvojhoz küld (wacWant, évi ajánlott), a hiány, az U-boat-veszély és a távolság szerint; INGYENES HAJÓK kapcsolója (freeOn, alap 0 = minden hajó a rendes árán)
@@ -5480,7 +5483,7 @@ function storageReport() {
 //   v1.14.239 (2026-10-26) – ÚJ: (1) LUT torpedó (lutOn, alap 1; 1944. januártól): az U-boat kártyán „LUT” jelölőnégyzet (az AI lutAiP %); a FAT utóda: lutLen 18 cella, lutRun 6 egyenes, lutLeg 3 fél-szélesség, találat teherhajón d6 ≤ lutHit (3), hadihajón ≤ lutHitE (1); ha FAT is be van jelölve, a LUT számít. (2) LÉGPERISZKÓP / SCHNORCHEL (schOn, alap 1; 1944. júniustól; csak szabad mozgásnál): 1/8-as mélységen a kártya „Légperiszkóp” jelölőnégyzetével a dízel hajt: az akku nem fogy, hanem schRech (2) cellát tölt körönként, max schSpd (2) lépés, kimerült akkuval is halad; kiesett dízelnél nem működik; az AI az akku fele alatt automatikusan használja.
 //   v1.14.238 (2026-10-26) – SZABAD MOZGÁS: az U-boat a belső játékterületen (pl. 80-as táblán az 50×50-esen) bárhol léphet be, nem csak a szélén (uInner, alapból BE; KI = a régi szél-belépés uEdge szerint).
 //   v1.14.237 (2026-10-26) – HEDGEHOG / SQUID ELLENŐRZÉS: az U-boat lépés utáni kiértékelésében a hedgehog / Squid „nincs találat” eredmény akkor is kiíródik, ha a vízibombák is hatottak (eddig ilyenkor csak a vízibomba-sor látszott, a hedgehog-ellenőrzés nem)
-const VER = 'v1.14.561';
+const VER = 'v1.14.562';
 // ===== MEGFIGYELŐ / TESZT MÓD (obsMode, v1.14.195) =====
 // Megfigyelő módban mindkét oldalt az AI vezérli (a kísérők is: NPC-logikával), a pálya mindent mutat (nincs köd), és a körök maguktól léptetődnek;
 // a lezárt csatákból statisztika készül (konvoj-, U-boat-, kísérő-veszteség, kimenetel), hogy látszódjon: sokféle csata születik-e, vagy egyoldalú lett a hangolás.
@@ -5783,6 +5786,11 @@ const CAMP = {
     if (+ECO.supOwn && !this.mission) String(ECO.supStart || '').split(',').map(x => x.trim().split(':')).forEach(([c, nm]) => { if (!D[c]) return; const f = this.addShip(c, 'Liverpool', 'start'); if (nm) f.nm = nm; f.sel = false; });
   },
   /* v1.14.517: supGive – a kezdő saját cirkálók (supStart) Liverpoolba, ha a flottában még nincs Town / County (pl. a kapcsoló bekapcsolásakor futó kampányban) */
+  /* v1.14.562: supTake – a saját támogató cirkálók kivétele a flottából (supOwn = 0, „Véletlen (EGp)”):
+     a kikötőben állók azonnal kikerülnek; a tengeren lévők a következő kikötőbe érve (supOwn 0 mellett a napi ellenőrzés veszi ki őket) */
+  supTake() { if (+ECO.supOwn) return; const out = [];
+    this.fleet = this.fleet.filter(f => { const cr = ['TOWN', 'COUNTY'].includes(f.cls) && f.loc !== 'lost'; if (cr && this.inPort(f)) { out.push(f.id + (f.nm ? ' ' + f.nm : '')); return false; } return true; });
+    if (out.length) { this.log.push('[Támogatás: Véletlen (EGp)] A saját cirkálók kikerültek a flottából: ' + out.join(', ') + '.'); this.save(); try { this.refresh(); } catch (e) { } } },
   supGive() { if (this.mission || this.fleet.some(f => ['TOWN', 'COUNTY'].includes(f.cls) && f.loc !== 'lost')) return; const L = []; String(ECO.supStart || '').split(',').map(x => x.trim().split(':')).forEach(([c, nm]) => { if (!D[c]) return; const f = this.addShip(c, 'Liverpool', 'start'); if (nm) f.nm = nm; f.sel = false; L.push(f.id + (nm ? ' ' + nm : '')); }); if (L.length) { this.log.push('Saját támogató cirkálók a flottában (Liverpool): ' + L.join(', ') + '.'); this.save(); try { this.refresh(); } catch (e) { } } },
   // addShip: új hajó a flottába (osztálykód, kikötő); a hajó neve az előtagból és egy sorszámból áll (D2, S1, C1...)
   // sensFloor: a radar / szonár legjobb (legkisebb) elérhető minősége az OP mai évében (ECO.sensFloor táblázat; 1939-től)
@@ -6004,6 +6012,7 @@ const CAMP = {
   },
   newDay() {
     this.t++;
+    try { this.supDay(); } catch (e) { }   /* v1.14.562: Véletlen támogatásnál a hazaért saját cirkálók kivétele */
     try { this.endCheck(); } catch (e) { }   /* v1.14.341: a játék vége */
     try { MIS.daily(); MIS.navBlink(); } catch (e) { }   /* v1.14.249: küldetések: lejárat és új küldetés sorsolása */
     if (ECO.shopDaily) { if (this.voy && !this.voy.sailed) this.rollShop(this.voy.from); this.rollOffers(); }   // minden nap új bolt-kínálat és fejlesztési ajánlat a kikötőben
@@ -6041,6 +6050,7 @@ const CAMP = {
     const f = this.get(id), P = f && PORTS_T[f.loc]; if (!f || !P || !P.rep || f.st !== 'ready' || f.dmg.every(v => v === 0)) return;
     f.st = 'repair'; this.deSel(f); f.rd = this.t + R(ECO.repLo, ECO.repHi); this.log.push(f.id + ' javításra került (' + f.loc + ').'); this.save(); this.refresh(); this.fleetView();
   },
+  supDay() { if (!+ECO.supOwn && this.fleet.some(f => ['TOWN', 'COUNTY'].includes(f.cls) && this.inPort(f))) this.supTake(); },   // v1.14.562
   svcCostOf(f) { return Math.round(ECO.svcCost * Math.max(0, this.ageMx(f) - (f.age == null ? 100 : f.age)) / 100); },   /* v1.14.561: a felső határig */                       // a szerviz ára a hiányzó % szerint
   svcDaysOf(f) { return Math.max(1, Math.round(ECO.repHi * Math.max(0, this.ageMx(f) - (f.age == null ? 100 : f.age)) / 100)); },
   ageMx(f) { return +ECO.ageCap && f.ageMax != null ? f.ageMax : 100; },   // v1.14.561: a hajó felső határa (meddig javítható szervizben)           // a szerviz napjai a hiányzó % szerint (min. 1 nap)
