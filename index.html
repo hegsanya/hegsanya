@@ -1,6 +1,6 @@
 <!doctype html><html lang="hu" data-theme="light"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>CEG – Konvoj kísérő kampány v1.14.564</title>
+<title>CEG – Konvoj kísérő kampány v1.14.565</title>
 <style>
 /* Színek: világos/sötét téma változókkal; a gombok és táblázatok stílusa */
 :root{--bg:#f4f1ea;--fg:#1d2733;--pn:#fff;--ln:#c9c2b3;--ac:#b3261e;--sea:#d6ecf4;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -5160,6 +5160,7 @@ function storageReport() {
 //   v1.14.418 (2026-11-09) – kézi kísérő iránya (manDir: 0 ki / 1 minden kézi kísérő / 2 csak a kijelölt): narancs szaggatott vonal a legközelebbi látható U-boat felé (az AI-vonal mintájára, az AI érzékelési sugarán belül)
 //   v1.14.417 (2026-11-09) – a napfény és a csillogás (W0–W1) a TELJES taktikai pályán (korábban csak a keretben); az időjárás-effektek (felhő, eső, villám, napfény, csillogás) mind az egész pályán
 //   v1.14.416 (2026-11-09) – a belső felhők kisebbek (3–6 cella) és szintenként sötétednek / szaporodnak: W2 fehér, W3 szürke, W4 sötét, összefüggő tömbökben (csoportok); a pályát nem borítják el
+//   v1.14.565 (2026-11-23) – 2-ES SZINT, OP-TÉRKÉP: nincs saját konvoj-zászló és -útvonal (eddig az OG1 Liverpoolban állt, a cél-gyűrű Gibraltáron); a fejléc: „nincs saját konvoj”, a hajóid NPC-konvojja és a WAC-parancs; a hajóidat vivő NPC-konvoj kék gyűrűvel és névvel (pl. „OGN2 + D1,S1”), a cél-gyűrű annak célján
 //   v1.14.564 (2026-11-23) – WAC-CSATLAKOZÁS: a kötelék a szomszédos cellából is csatlakozhat (joinRng 1), a WAC-parancs konvojához érve automatikusan (wacAutoJoin); a csatlakozási határidő a távolsághoz igazodik (legalább táv / 2 + 2 nap) – eddig 3 nap alatt lejárt, és a WAC útközben másik konvojhoz irányított
 //   v1.14.563 (2026-11-23) – supOwn leírása: a váltás futó kampányban is érvényes (a Beállítások mezőjéből is)
 //   v1.14.562 (2026-11-23) – TÁMOGATÁS „Véletlen (EGp)”: a saját cirkálók (TOWN / COUNTY) kikerülnek a Flottából – váltáskor a kikötőben lévők azonnal, a tengeren lévők hazaérkezéskor (supTake / supDay)
@@ -5485,7 +5486,7 @@ function storageReport() {
 //   v1.14.239 (2026-10-26) – ÚJ: (1) LUT torpedó (lutOn, alap 1; 1944. januártól): az U-boat kártyán „LUT” jelölőnégyzet (az AI lutAiP %); a FAT utóda: lutLen 18 cella, lutRun 6 egyenes, lutLeg 3 fél-szélesség, találat teherhajón d6 ≤ lutHit (3), hadihajón ≤ lutHitE (1); ha FAT is be van jelölve, a LUT számít. (2) LÉGPERISZKÓP / SCHNORCHEL (schOn, alap 1; 1944. júniustól; csak szabad mozgásnál): 1/8-as mélységen a kártya „Légperiszkóp” jelölőnégyzetével a dízel hajt: az akku nem fogy, hanem schRech (2) cellát tölt körönként, max schSpd (2) lépés, kimerült akkuval is halad; kiesett dízelnél nem működik; az AI az akku fele alatt automatikusan használja.
 //   v1.14.238 (2026-10-26) – SZABAD MOZGÁS: az U-boat a belső játékterületen (pl. 80-as táblán az 50×50-esen) bárhol léphet be, nem csak a szélén (uInner, alapból BE; KI = a régi szél-belépés uEdge szerint).
 //   v1.14.237 (2026-10-26) – HEDGEHOG / SQUID ELLENŐRZÉS: az U-boat lépés utáni kiértékelésében a hedgehog / Squid „nincs találat” eredmény akkor is kiíródik, ha a vízibombák is hatottak (eddig ilyenkor csak a vízibomba-sor látszott, a hedgehog-ellenőrzés nem)
-const VER = 'v1.14.564';
+const VER = 'v1.14.565';
 // ===== MEGFIGYELŐ / TESZT MÓD (obsMode, v1.14.195) =====
 // Megfigyelő módban mindkét oldalt az AI vezérli (a kísérők is: NPC-logikával), a pálya mindent mutat (nincs köd), és a körök maguktól léptetődnek;
 // a lezárt csatákból statisztika készül (konvoj-, U-boat-, kísérő-veszteség, kimenetel), hogy látszódjon: sokféle csata születik-e, vagy egyoldalú lett a hangolás.
@@ -7699,6 +7700,10 @@ function cvTable(){const v=CAMP.voy;return '<details'+(window.CVO?' open':'')+' 
 function renderCV(){const e=$('o_cvc');if(!e)return;const hd=['Hajó','Osztály','Állapot (kor)','Sérülés','Üzemanyag','Bomba','Medal'];
  const rows=ids=>ids.map(id=>CAMP.get(id)).filter(Boolean).map(f=>{const k=D[vcls(f)],ds=f.dmg.reduce((a,b)=>a+b,0),ko=f.dmg.filter((v,i)=>v>=k.mod[i][1]).length;return[f.id,cname(f),ECO.ageOn?(f.age==null?100:f.age)+'%':'–',ds+(ko?' ('+ko+' KO)':''),CAMP.fuelHTML(f.fu,k.fuel),f.b+'/'+k.bomb,f.med]});
  const cg=CAMP.group().map(f=>f.id);
+ /* v1.14.565: 2-es szint – a saját konvoj kártyája helyett a hajóidat vivő NPC-konvojok kártyája */
+ if(!tut&&noOwnCv()){let h='';NPC.filter(u=>npcMine(u).length).forEach(u=>{h+='<details open><summary><b>Kíséret – '+u.code+'</b> ('+u.from+' → '+u.to+', cella '+addr(u.r,u.c)+', '+u.m+'/'+u.m0+' teherhajó, '+u.esc.length+' NPC-kísérő)</summary>'+TB(hd,rows(npcMine(u).map(f=>f.id)))+'</details>'});
+  if(!h)h='<p style="margin:2px 0">Nincs saját konvoj (2-es szint): a WAC parancsára egy NPC-konvojhoz csatlakozol.</p>';
+  units.forEach(u=>{h+='<details><summary><b>'+u.id+'</b> (cella '+addr(u.r,u.c)+')</summary>'+TB(hd,rows(u.ships))+'</details>'});e.innerHTML=h;return}
  let h='<details open><summary><b>Konvoj kártya'+(tut?'':' – '+conv.name)+'</b>'+(conv.oneway&&!tut?' <span style="background:#6a1b9a;color:#fff;border-radius:4px;padding:0 5px;font-size:11px" title="Egyirányú küldetés: a kíséret a célkikötőben marad (+'+ECO.owEgp+' EGp), a következő konvoj Liverpoolból indul">EGYIRÁNYÚ KÜLDETÉS</span>':'')+' (cella '+addr(sel[0],sel[1])+(tut?'':', cél '+conv.to)+')</summary>'+(tut||!CAMP.voy?'':cvLine())+(cg.length?TB(hd,rows(cg)):'<p style="margin:2px 0">Nincs a konvojjal haladó kísérő<span class="hint"> (indulás előtt a kíséret-gombokkal itt, vagy a Flotta lapon jelöld ki)</span>.</p>')+(tut||!CAMP.voy?'':cvTable())+'</details>';
  units.forEach(u=>{h+='<details><summary><b>'+u.id+'</b> (cella '+addr(u.r,u.c)+')</summary>'+TB(hd,rows(u.ships))+'</details>'});e.innerHTML=h}
 // ===== sima vihar (v1.14.68): a front a cellák értékéből simított, zajos felhő-réteg (rajzvászon, 1/4 felbontás); a szabály a cellák értéke marad =====
@@ -7738,7 +7743,11 @@ function draw(){applyMap();try{renderCV()}catch(e){}
  $('o_dt').textContent=dateOf(day,year).toISOString().slice(0,10);
  $('o_dn').textContent=day;
  $('o_se').textContent=SEAS[season]+(CFG.wxDaily?' (csökken '+wxNow().dec+'% / nő '+wxNow().inc+'%)':'');
- $('o_cv').textContent=conv.name+': '+conv.from+' → '+conv.to+' ('+PORTS[conv.to]+'), teljesítve: '+done+viaTxt();
+ /* v1.14.565: a 2-es szinten (WAC) nincs saját konvoj – amíg nem fut ki, a fejléc a WAC-parancsot és a hajóid NPC-konvoját mutatja, a térképen nincs saját konvoj-zászló */
+ const noOwn=!tut&&noOwnCv();
+ if(noOwn){const mine=NPC.filter(u=>npcMine(u).length),o=WAC&&WAC.cur;
+  $('o_cv').textContent='nincs saját konvoj (2-es szint)'+(mine.length?' – a hajóid: '+mine.map(u=>u.code+' ('+u.from+' → '+u.to+', '+npcMine(u).map(f=>f.id).join(', ')+')').join('; '):'')+(o?' – WAC '+o.id+': '+(o.kind==='escort'?o.code+' kísérése':'vissza Liverpoolba'):'')}
+ else $('o_cv').textContent=conv.name+': '+conv.from+' → '+conv.to+' ('+PORTS[conv.to]+'), teljesítve: '+done+viaTxt();
  $('o_wi').textContent=wind?AR[wind]+' ('+wind+')':'–';
  {const cl_=!!CFG.opFuelCalc;$('o_fu').textContent=today+' / '+(cl_?(+CFG.opFuel||160):total);const h_=$('o_fuh');if(h_)h_.textContent=cl_?'Fogyasztás ma / Kalkulált':'Fogyasztás ma / össz.'}   // Kalkulált = a beállított napi alap (opFuel); a „ma” ettől tér el az időjárás / szél miatt
  cells.forEach((d,i)=>{const r=Math.floor(i/42),c=i%42;d.className='c v'+W[r][c];d.textContent=W[r][c]});try{wxsRender()}catch(e){}
@@ -7752,10 +7761,11 @@ function draw(){applyMap();try{renderCV()}catch(e){}
   /* horgony, 24 px magas: gyűrű (fent), szár, keresztrúd, ívelt kar a végén hegyekkel; előbb vastag fehér szegély, rá a fekete vonal */
   const body=`<circle cx="0" cy="-10" r="3"/><line x1="0" y1="-7" x2="0" y2="11"/><line x1="-6" y1="-3" x2="6" y2="-3"/><path d="M-10,3 Q-9,11 0,11 Q9,11 10,3"/><path d="M-12.5,5.5 L-10,2 L-7,5.5 M12.5,5.5 L10,2 L7,5.5"/>`;
   return`<g transform="translate(${x},${y})" fill="none" stroke-linecap="round" stroke-linejoin="round"><g stroke="#fff" stroke-width="6.5">${body}</g><g stroke="#000" stroke-width="2.6">${body}</g></g>`};
- const xs=Object.entries(PORTS).map(([n,a])=>{const[x,y]=px(a),d=n===conv.to;return portMark(x,y)+(d?`<circle cx="${x}" cy="${y}" r="20" fill="none" stroke="#b3261e" stroke-width="3"/>`:'')+`<text x="${x+16}" y="${y-8}" font-size="13" font-weight="700" fill="#000" stroke="#fff" stroke-width="3" paint-order="stroke">${n}</text>`}).join('')+XM.map(a=>{const[x,y]=px(a);return`<g stroke="#000" stroke-width="3"><line x1="${x-12}" y1="${y-12}" x2="${x+12}" y2="${y+12}"/><line x1="${x-12}" y1="${y+12}" x2="${x+12}" y2="${y-12}"/></g>`}).join('');
+ const myTo=noOwn?NPC.filter(u=>npcMine(u).length).map(u=>u.to):[conv.to];   // v1.14.565: a cél-gyűrű a hajóid konvojának célján
+ const xs=Object.entries(PORTS).map(([n,a])=>{const[x,y]=px(a),d=myTo.includes(n);return portMark(x,y)+(d?`<circle cx="${x}" cy="${y}" r="20" fill="none" stroke="#b3261e" stroke-width="3"/>`:'')+`<text x="${x+16}" y="${y-8}" font-size="13" font-weight="700" fill="#000" stroke="#fff" stroke-width="3" paint-order="stroke">${n}</text>`}).join('')+XM.map(a=>{const[x,y]=px(a);return`<g stroke="#000" stroke-width="3"><line x1="${x-12}" y1="${y-12}" x2="${x+12}" y2="${y+12}"/><line x1="${x-12}" y1="${y+12}" x2="${x+12}" y2="${y-12}"/></g>`}).join('');
  const{hz,evs}=layers();   // forró zónák szegélye és az esemény-réteg betűi
  const pl=(rt,col)=>'<polyline fill="none" stroke="'+col+'" stroke-width="2" points="'+rt.map(x=>{const[r,c]=parse(x[0]);return(c+.5)*32+','+(r+.5)*rh()}).join(' ')+'"/>';
- const cols0=['#b3261e','#1565c0','#2e7d32','#6a1b9a','#e65100'],all=(tut?[]:[{id:conv.name,r:sel[0],c:sel[1],route:route,k:'C'}]).concat(units.map(u=>({id:u.id,r:u.r,c:u.c,route:u.route,k:u.id})));
+ const cols0=['#b3261e','#1565c0','#2e7d32','#6a1b9a','#e65100'],all=(tut||noOwn?[]:[{id:conv.name,r:sel[0],c:sel[1],route:route,k:'C'}]).concat(units.map(u=>({id:u.id,r:u.r,c:u.c,route:u.route,k:u.id})));
    /* v1.14.449 (opFlags): a konvoj (zöld) és a TF-ek (kék) színe – a zászló és az útvonal is; a régi nézetben a színsor marad */
  const cols=+CFG.opFlags?all.map(u=>u.k==='C'?(CFG.opFlagC||'#2e7d32'):(CFG.opFlagT||'#1565c0')):cols0;
  /* opFlag: kis talpas zászló a cella közepén – talp (ellipszis), rúd, a rúd tetején lobogó a névvel; az aktív egység zászlója vastag fekete keretű */
@@ -8138,6 +8148,8 @@ function npcMakeRoom(u,add,nid){const mx=+ECO.maxGroup||6,have=u.esc.length+npcM
    A parancsok a Flotta lapon (Parancsok) és a kampánynaplóban. */
 let WAC=null;
 const wacOn=()=>+ECO.wacOn&&+CFG.gLevel===2&&!tut&&!CAMP.mission;
+/* v1.14.565 noOwnCv: 2-es szint (WAC), és a saját konvoj nem futott ki – nincs saját konvoj a térképen */
+function noOwnCv(){try{return wacOn()&&!(CAMP.voy&&CAMP.voy.sailed)}catch(e){return false}}
 function wacInit(){if(!WAC)WAC={n:0,cur:null,L:[]};return WAC}
 const wacMid=()=>!!(ECO.midUntil&&dateMs()<Date.parse(ECO.midUntil+'T00:00:00Z'));
 /* a játékos helye: az első kötelék, vagy egy NPC-konvojjal haladó hajó, vagy Liverpool */
@@ -8161,7 +8173,7 @@ function wacIssue(){const W0=wacInit(),[r,c]=wacWhere(),mx=+ECO.maxGroup||6,mc=p
  if(u){const tn=wacTurn(u);o={id,d:dt,kind:'escort',conv:u.id,code:u.code,turn:tn,txt:'Csatlakozz a(z) '+u.code+' konvojhoz ('+u.from+' → '+u.to+', most '+addr(u.r,u.c)+', '+u.esc.length+' kísérő'+(thr(u)?', U-boat-veszély':'')+'), és kísérd '+tn.txt+'.',st:'open',dl:now+Math.max(+ECO.wacDead||3,Math.ceil(Math.max(Math.abs(u.r-r),Math.abs(u.c-c))/2)+2),days:0,egp:0}}   /* v1.14.564: a határidő legalább a távolság / 2 + 2 nap */
  else o={id,d:dt,kind:'home',txt:'Nincs kíséretre váró konvoj a közelben: térj vissza Liverpoolba (vagy maradj ott), és várd a következő parancsot.',st:'open',dl:now+30,days:0,egp:0};
  W0.cur=o;W0.L.push(o);CAMP.log.push('[WAC parancs '+id+'] '+o.txt);
- if(CFG.msgOld)try{parancs({date:enDate(dateOf(day,year)),title:'ORDERS – ESCORT GROUP',to:'Escort Group Commander',stamp:'SECRET',sign:'C-in-C Western Approaches',body:'<p>'+o.txt+'</p>'+(o.kind==='escort'?'<p>A csatlakozásra '+(+ECO.wacDead||3)+' nap áll rendelkezésre.</p>':'')})}catch(e){}
+ if(CFG.msgOld)try{parancs({date:enDate(dateOf(day,year)),title:'ORDERS – ESCORT GROUP',to:'Escort Group Commander',stamp:'SECRET',sign:'C-in-C Western Approaches',body:'<p>'+o.txt+'</p>'+(o.kind==='escort'?'<p>A csatlakozásra '+(o.dl-now)+' nap áll rendelkezésre.</p>':'')})}catch(e){}
  NPCSOS.push('📜 WAC parancs ('+id+'): '+o.txt);return o}
 function wacClose(o,st,why){o.st=st;o.end=dateOf(day,year).toISOString().slice(0,10);if(why)o.why=why;CAMP.log.push('[WAC '+o.id+'] '+({done:'teljesítve',void:'visszavonva',abort:'megszakítva'}[st]||st)+(why?': '+why:'')+(o.egp?' (jóváírva összesen '+o.egp+' EGp)':'')+'.');WAC.cur=null}
 /* wacDay: naponta (az NPC-nap után) – a parancs állapota, a napi jóváírás, a visszafordulás, új parancs */
@@ -8791,6 +8803,7 @@ function npcMarks(){if(!+ECO.npcOn||tut)return '';
  if(!+ECO.npcFlag)return NPC.map(u=>{const x=(u.c+.5)*32,y=(u.r+.5)*rh(),bad=npcTrouble(u);
   return '<g style="pointer-events:auto;cursor:pointer" onclick="event.stopPropagation();OPG.npcShow(\''+u.id+'\')"><title>'+u.code+' ('+u.from+' → '+u.to+'): '+u.m+'/'+u.m0+' teherhajó, '+u.esc.length+' kísérő'+(bad?' – BAJBAN: '+bad:'')+(u.sos?' – VÉSZJELZÉS: kell még '+Math.max(1,npcNeed(u))+' kísérő':'')+'</title>'
    +(bad||u.sos?'<circle cx="'+x+'" cy="'+y+'" r="11" fill="none" stroke="#e53935" stroke-width="2"'+(u.sos?' class="misBlink"':'')+'/>':'')
+   +(npcMine(u).length?'<circle cx="'+x+'" cy="'+y+'" r="13" fill="none" stroke="'+(CFG.opFlagT||'#1565c0')+'" stroke-width="3"/><text x="'+(x+15)+'" y="'+(y-6)+'" font-size="11" font-weight="800" fill="'+(CFG.opFlagT||'#1565c0')+'" stroke="#fff" stroke-width="3" paint-order="stroke">'+u.code+' + '+npcMine(u).map(f=>f.id).join(',')+'</text>':'')   /* v1.14.565: a hajóid ebben a konvojban */
    +'<ellipse cx="'+x+'" cy="'+y+'" rx="8" ry="3.4" fill="#616161" stroke="#fff" stroke-width="1"/><rect x="'+(x-2)+'" y="'+(y-6)+'" width="4" height="3.5" fill="#616161" stroke="#fff" stroke-width=".7"/></g>'}).join('');
  return NPC.map(u=>{const x=(u.c+.5)*32,yb=(u.r+.5)*rh(),h=Math.max(22,rh()*1.05),dn=0,yt=Math.max(1,yb-h),lb=u.code||u.id,w=Math.max(28,lb.length*7+10),bad=npcTrouble(u);
  /* v1.14.466: a zászlón a konvoj neve; koppintásra / kattintásra kinyílik az NPC-panel a konvoj soránál (telefonon is) */
