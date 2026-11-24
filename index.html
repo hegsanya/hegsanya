@@ -1,6 +1,6 @@
 <!doctype html><html lang="hu" data-theme="light"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>CEG – Konvoj kísérő kampány v1.14.576</title>
+<title>CEG – Konvoj kísérő kampány v1.14.577</title>
 <style>
 /* Színek: világos/sötét téma változókkal; a gombok és táblázatok stílusa */
 :root{--bg:#f4f1ea;--fg:#1d2733;--pn:#fff;--ln:#c9c2b3;--ac:#b3261e;--sea:#d6ecf4;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -4106,6 +4106,10 @@ function earBlind(o,t){if(!CFG.earRear||!(fogSp(o)>0))return false;const rel=(di
 // A dobás rejtett, és (kísérő, célpont, kör) hármasonként egyszer dől el, hogy a sokszori kirajzolás / AI-lekérdezés ugyanazt az eredményt adja.
 var HEARR={};
 // fogW: az időjárás levonása az érzékelők hatótávjából (cella). Alap: szint × fogWx (fix). wxRand=1: körönként új véletlen 0..(szint × fogWx) – hóvihar / hullámzás: egyszer még látják egymást, a következő körben már nem (a kör értéke minden érzékelőre közös, a HEARR-rel együtt körönként újra sorsolódik)
+/* v1.14.577 fogWP: szint1 mozgó ablak – a látás / érzékelés időjárás-levonása a megfigyelő és a cél OP cellája közül a rosszabb időjárás szerint
+   (eddig a pálya közös időjárása, vagyis a te hajód cellája); a nem-szint1 csatában változatlan */
+function fogWP(o,t,w){if(!L1W||!o||!t)return w;let wv;try{wv=Math.max(wxS(o),wxS(t))}catch(e){return w}const g0=+(($('wx')||{}).value)||0;if(wv===g0)return w;
+ const base=wv*(+CFG.fogWx||0);if(!CFG.wxRand)return base;return g0>0?Math.round(w*wv/g0):base}
 function fogW(){const mx=(+($('wx')||{}).value||0)*(+CFG.fogWx||0);if(!CFG.wxRand||mx<=0)return mx;
  const k='wxr|'+turn;let r=HEARR[k];if(r==null)r=HEARR[k]=R(0,Math.round(mx));return r}
 // earW: az időjárás hatótáv-levonása a kísérő hallásánál (earWx: 1 = fix levonás (régi), 0 = nincs, 2 = nincs levonás, de bizonytalan a hallás: earWxOk)
@@ -4123,7 +4127,7 @@ function fogHear(o,t,d,w){
   /*a ropogó U-boat az álló helyzetében is hallható*/return d<=Math.max(0,FOG_HE[Math.min(5,fogSp(o))][Math.min(8,t.dep)]+cr-earW(w))&&earOk(o,t.id,d)}   // a kísérő (szonár) hallja a lépő U-boatot; ha az áll, nem hallható
  return false}
 // fogBy: az „o” megfigyelő érzékeli-e a „t” célpontot. 0 = nem; 1 = csak teherhajó látta (pozíció, „!”); 2 = azonosított (látás vagy hallás)
-function fogBy(o,t,w){const d=cheb(o,t);let sight=fogSight(t);
+function fogBy(o,t,w){w=fogWP(o,t,w);const d=cheb(o,t);   /* v1.14.577 */let sight=fogSight(t);
  if(o.t=='M'&&t.t=='U')sight=CFG.fogUm;   // a teherhajó a felszíni U-boatot csak kisebb (3 cella) távolságról veszi észre
  sight=Math.max(0,sight-w);
  if(!(o.t=='U'&&o.dep>0)&&d<=sight)return o.t=='M'?1:2;   // látás (merült U-boat nem lát)
@@ -4635,7 +4639,7 @@ function rlRender(){const w=$('rlog'),b=$('rlbody'),bt=$('rlbtn');if(!w||!b||!bt
 // rlSense: melyik szenzor észleli a „t” célt az „o” kísérővel (a fogBy feltételei szerint); [rang, felirat] vagy null. Rang: kisebb = jobb
 function rlSense(o,t){const d=cheb(o,t);
  if(!CFG.fog)return d<=CFG.lstContactR?[9,'']:null;
- const w=fogW(),sub=t.t=='U'&&t.dep>0;
+ const w=fogWP(o,t,fogW()),   /* v1.14.577 */sub=t.t=='U'&&t.dep>0;
  if(!sub&&d<=Math.max(0,fogSight(t)-w))return [1,'látható '];
  if(fogEm(o,'R')&&CFG.fogRadR>0&&!sub&&d<=Math.max(0,(t.t=='U'?CFG.fogRadU:CFG.fogRadR)+xpR(o)-w))return [2,'radar '];
  if(fogEm(o,'S')&&CFG.fogSonR>0&&sub&&d<=Math.max(0,CFG.fogSonR+xpR(o)-w))return [3,'szonár '];
@@ -4645,7 +4649,7 @@ function rlSense(o,t){const d=cheb(o,t);
 // rlSenseU: az „o” U-boat melyik szenzorral észleli a „t” kísérőt / teherhajót (a fogBy feltételei szerint); [rang, felirat] vagy null
 function rlSenseU(o,t){const d=cheb(o,t);
  if(!CFG.fog)return d<=CFG.lstContactR?[9,'']:null;
- const w=fogW();
+ const w=fogWP(o,t,fogW());   /* v1.14.577 */
  if(o.dep==0&&d<=Math.max(0,fogSight(t)-w))return [1,'látható '];
  if(CFG.fogPer&&o.dep>0&&o.dep<=Math.max(1,CFG.fogPerDep|0)&&d<=Math.max(0,(+CFG.fogPerR||0)-w))return [2,'periszkóp '];
  if(CFG.fogEar&&fogHear(o,t,d,w))return [3,'propeller zaj '];
@@ -5258,6 +5262,7 @@ function storageReport() {
 //   v1.14.418 (2026-11-09) – kézi kísérő iránya (manDir: 0 ki / 1 minden kézi kísérő / 2 csak a kijelölt): narancs szaggatott vonal a legközelebbi látható U-boat felé (az AI-vonal mintájára, az AI érzékelési sugarán belül)
 //   v1.14.417 (2026-11-09) – a napfény és a csillogás (W0–W1) a TELJES taktikai pályán (korábban csak a keretben); az időjárás-effektek (felhő, eső, villám, napfény, csillogás) mind az egész pályán
 //   v1.14.416 (2026-11-09) – a belső felhők kisebbek (3–6 cella) és szintenként sötétednek / szaporodnak: W2 fehér, W3 szürke, W4 sötét, összefüggő tömbökben (csoportok); a pályát nem borítják el
+//   v1.14.577 (2026-11-24) – SZINT1: A KÖD / LÁTÁS az OP cellák szerint – a látás, a radar, a szonár és a hallás időjárás-levonása a megfigyelő és a cél cellája közül a rosszabb időjárás szerint (fogWP)
 //   v1.14.576 (2026-11-24) – SZINT1: a FELHŐK és a VIHAR-ESŐ OP cellánként (a cella saját időjárásával, a cellarészre vágva); EGYSÉGENKÉNTI IDŐJÁRÁS (wxS) a szabályokban: üzemanyag, szenzor-dobás (radar / szonár / HF-DF), a teherhajók megállása (a Commodore cellája)
 //   v1.14.575 (2026-11-24) – SZINT1: IDŐJÁRÁS OP CELLÁNKÉNT a mozgó ablakban – minden OP-cellarész a saját frontját kapja (rosszabb időben sötétebb tenger, W3–W4-nél hullámcsíkok, „P10 · W3” felirat, a part barna); a hajód cellájának időjárása a pálya időjárása (a határt átlépve vált); a löveg hullámzás-szabálya a lövő hajó cellája szerint; a rács határa pontosítva
 //   v1.14.574 (2026-11-24) – SZINT1: FOLYTONOS TENGER, MOZGÓ ABLAKKAL – 1 OP cella = 30 taktikai cella, egy OP nap = 30 kör (a konvoj körönként 1 cellát = naponta 1 OP cellát halad); a taktikai pálya egy 80 × 80-as ablak, amely a hajóddal csúszik; az OP cellák határai és címei a pályán; a hajód OP cellája a helyzetéből adódik; a konvoj világhelyzete az idő függvénye, 15 cellán belül kontakt → csatlakozás (a kontakt helyéről); másnap onnan folytatod, ahol abbahagytad; a nap utolsó köre után a nap magától véget ér
@@ -5595,7 +5600,7 @@ function storageReport() {
 //   v1.14.239 (2026-10-26) – ÚJ: (1) LUT torpedó (lutOn, alap 1; 1944. januártól): az U-boat kártyán „LUT” jelölőnégyzet (az AI lutAiP %); a FAT utóda: lutLen 18 cella, lutRun 6 egyenes, lutLeg 3 fél-szélesség, találat teherhajón d6 ≤ lutHit (3), hadihajón ≤ lutHitE (1); ha FAT is be van jelölve, a LUT számít. (2) LÉGPERISZKÓP / SCHNORCHEL (schOn, alap 1; 1944. júniustól; csak szabad mozgásnál): 1/8-as mélységen a kártya „Légperiszkóp” jelölőnégyzetével a dízel hajt: az akku nem fogy, hanem schRech (2) cellát tölt körönként, max schSpd (2) lépés, kimerült akkuval is halad; kiesett dízelnél nem működik; az AI az akku fele alatt automatikusan használja.
 //   v1.14.238 (2026-10-26) – SZABAD MOZGÁS: az U-boat a belső játékterületen (pl. 80-as táblán az 50×50-esen) bárhol léphet be, nem csak a szélén (uInner, alapból BE; KI = a régi szél-belépés uEdge szerint).
 //   v1.14.237 (2026-10-26) – HEDGEHOG / SQUID ELLENŐRZÉS: az U-boat lépés utáni kiértékelésében a hedgehog / Squid „nincs találat” eredmény akkor is kiíródik, ha a vízibombák is hatottak (eddig ilyenkor csak a vízibomba-sor látszott, a hedgehog-ellenőrzés nem)
-const VER = 'v1.14.576';
+const VER = 'v1.14.577';
 // ===== MEGFIGYELŐ / TESZT MÓD (obsMode, v1.14.195) =====
 // Megfigyelő módban mindkét oldalt az AI vezérli (a kísérők is: NPC-logikával), a pálya mindent mutat (nincs köd), és a körök maguktól léptetődnek;
 // a lezárt csatákból statisztika készül (konvoj-, U-boat-, kísérő-veszteség, kimenetel), hogy látszódjon: sokféle csata születik-e, vagy egyoldalú lett a hangolás.
