@@ -1,6 +1,6 @@
 <!doctype html><html lang="hu" data-theme="light"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>CEG – Konvoj kísérő kampány v1.14.577</title>
+<title>CEG – Konvoj kísérő kampány v1.14.578</title>
 <style>
 /* Színek: világos/sötét téma változókkal; a gombok és táblázatok stílusa */
 :root{--bg:#f4f1ea;--fg:#1d2733;--pn:#fff;--ln:#c9c2b3;--ac:#b3261e;--sea:#d6ecf4;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -852,6 +852,7 @@ D.Z36A={n:'Z-hajó 1936A (Mob) (romboló, Z31–Z39)',sp:3,fuel:0,bomb:0,rad:6,s
 let S=18,N=50,PN=50,M=0,LO=1,HI=50;const O=24,AR=['','↑','↗','→','↘','↓','↙','←','↖'],DV=[0,[0,-1],[1,-1],[1,0],[1,1],[0,1],[-1,1],[-1,0],[-1,-1]];
 // A kísérők zónái a Commodore-hoz viszonyítva: [Ax, Ay, Bx, By] (az Excel S53:V58 táblája). A zóna szerkeszthető a térképen.
 const ZONE={H1:[-16,-11,-7,-6],H2:[-15,2,-5,8],H3:[-3,-11,7,-6],H4:[9,2,18,8],H5:[-3,2,7,8],H6:[9,-11,18,-6]};
+ZONE.L1Z=[-6,3,10,9];   /* v1.14.578: szint1 – a D2 kísérőzónája (alap: a konvoj mögött, középen); a Zóna rajzolása / mozgatása gombbal te állítod be */
 const ZONE0=JSON.parse(JSON.stringify(ZONE));   // az eredeti zónák (az „Alap zóna” gomb ezekre állít vissza)
 // SLOT_ORDER: a kísérők ebben a sorrendben kapják a helyeket (előbb a középsők: elöl középen, hátul középen...); a zónák a csere gombbal átrendezhetők.
 const SLOT_ORDER=['H5','H3','H2','H4','H1','H6'];
@@ -1627,7 +1628,7 @@ function diceAny(s){
 const need=s=>{const n=needBase(s);return (Array.isArray(s.dice)&&s.idx<n&&!diceAny(s))?s.idx:n};   /* v1.14.421: diceNo90 – a 90°-os kanyar-kocka után a mozgás véget ér */
 // fuelCell: egy lépett cella üzemanyag-költsége: alap 4 + időjárás (W3: +1, W4: +2) + FULL speednél +1 (az Excel BC8 és a Fogyasztas makró szándéka).
 /* fuelBase (v1.14.377, fuelAuto): a lépett cella alapfogyasztása – napi keret / a csata hossza (egészre kerekítve); különben a fix fuelStep */
-const fuelBase=()=>+CFG.fuelAuto?Math.max(1,Math.floor((+CFG.opFuel||160)/Math.max(1,mxT()))):CFG.fuelStep;
+const fuelBase=()=>(typeof CAMP!=='undefined'&&CAMP.mission&&CAMP.mission.l1&&L1W)?(+CFG.opFuel||160)/CAMP.l1C():+CFG.fuelAuto?   /* v1.14.578: szint1 – egy OP cella (30 taktikai cella) = egy OP-lépés fogyasztása */Math.max(1,Math.floor((+CFG.opFuel||160)/Math.max(1,mxT()))):CFG.fuelStep;
 const fuelCell=s=>fuelBase()+({3:CFG.fuelW3,4:CFG.fuelW4}[wxS(s)]||0)+(s.full?CFG.fuelFull:0);   /* v1.14.576: a hajó saját cellájának időjárása */
 // ===== KANYAR-KOCKÁS MOZGÁSMÓD (a társasjáték irány-kockái): választható a Beállításokban (diceMode = 1) =====
 // FACES: a kocka lapjai: [kód, kanyar (45°-os egységben), felirat, a CFG-ben a laphoz tartozó darabszám]
@@ -2618,12 +2619,16 @@ function missionSetup(n){const d2=ships.find(s=>s.id==='D2'&&s.t=='E');
    return 'Szint1 – '+maxT+' kör van hátra a napból. Egyedül vagy: a pálya egy mozgó ablak a tengeren (1 OP cella = '+C+' cella, a határok szaggatott vonallal). A konvoj '+(+CFG.l1JoinR||15)+' cellán belül kerül látótávolságba.'}
   ships.filter(s=>s.t=='E'&&!s.en&&!s.sup&&!s.rent&&s.id!=='D2').forEach(s=>{s.npc=true});
   const cm=cmd();
+  if(L.zone)ZONE.L1Z=L.zone.slice();   /* v1.14.578: a kísérőzónád (az előző napi beállítás) */
+  else{/* az első nap: a konvoj mögött, a két szélétől a két széléig, 5 cella mélyen (a teherhajók helyéből, a konvoj saját koordinátáiban: b < 0 = hátra) */
+   let a0=1e9,a1=-1e9,b0=1e9;ships.filter(q=>q.t=='M').forEach(q=>{const[a,b]=loc(q.x-cm.x,q.y-cm.y);a0=Math.min(a0,a);a1=Math.max(a1,a);b0=Math.min(b0,b)});
+   if(a0<1e9)ZONE.L1Z=[Math.floor(a0),Math.floor(b0)-7,Math.ceil(a1),Math.floor(b0)-2]}
   if(d2){const E=L.rel,v=DV[+dr.value]||[0,1],pp=[-v[1],v[0]];d2.zid=null;
    if(E){d2.x=cl(Math.round(cm.x+E.rx),2,N-1);d2.y=cl(Math.round(cm.y+E.ry),2,N-1);d2.dir=E.dir||+dr.value}
-   else{d2.x=cl(Math.round(cm.x+pp[0]*12),3,N-2);d2.y=cl(Math.round(cm.y+pp[1]*12),3,N-2);d2.dir=+dr.value}turnFor(d2)}
+   else{d2.x=cl(Math.round(cm.x+pp[0]*12),3,N-2);d2.y=cl(Math.round(cm.y+pp[1]*12),3,N-2);d2.dir=+dr.value}d2.zid='L1Z';turnFor(d2)}
   /* az ablak a konvojhoz igazítva: a Commodore a konvoj világhelyzetén */
   {const w=CAMP.l1CvW(L.T+(L.used|0));L1W={ox:Math.round(w.x)-cm.x,oy:Math.round(w.y)-cm.y,cv:true}}
-  l1FastUI(false);return 'Szint1 – '+maxT+' kör az '+L.cv.code+' konvojjal: szabad mozgás.'+(L.rel?' A kontakt helyéről közelíted meg a konvojt.':'')}
+  l1FastUI(false);return 'Szint1 – '+maxT+' kör az '+L.cv.code+' konvojjal: szabad mozgás. A zöld terület a kísérőzónád – a D2 kijelölése után a „Zóna rajzolása” / „Zóna mozgatása” gombbal állítod be.'+(L.rel?' A kontakt helyéről közelíted meg a konvojt.':'')}
  if(n===1||n===2){
   if(d2){d2.x=25;d2.y=35;d2.dir=1;d2.zid=null;turnFor(d2)}   // az irány-lehetőségek az új irányhoz (az ellenfél felé) igazodnak   // a D2 az ellenféltől 10 cellára, felé néz
   let e;if(n===1){e=mkU('UT');e.dep=0}else{e=mkX('H1','H')}
@@ -3558,7 +3563,12 @@ function step(){
     most lép – különben a kör beragadt („Még nem léptek végig: R2 (5 lépés)”) */
  if(!aiBusy){const pa=pend().filter(q=>!q.done&&aiOn(q));if(pa.length){aiBusy=true;const keep=sel;try{pa.forEach(q=>{try{aiTurn(q)}catch(e){}})}finally{aiBusy=false;sel=keep}}}
  {const p=pend();if(p.length){say('Még nem léptek végig: '+p.map(q=>q.id+(q.idx<need(q)?' ('+(need(q)-q.idx)+' lépés)':' (Kész)')).join(', ')+'. A kör nem léptethető.');return}}
- if(ECO.ageOn)ships.filter(q=>q.t=='E'&&!q.en&&!q.sup&&!q.npc&&q.age!=null&&q.full&&q.spd>0).forEach(q=>{if(Math.random()*100<ECO.ageP){const m=ageLose(q,q.c,ECO.ageStep);say(q.id+': FULL sebesség – állapot '+q.age+'%'+(m.length?', kopás: '+m.join(', ')+' −1':'')+'.')}});   // elöregedés: a FULL sebesség igénybe veszi a hajót
+ /* v1.14.578: szint1 – a kopás körönként: a vihar (ageW0–W4) és a FULL sebesség (ageP) esélye a nap körszámával osztva, a hajó SAJÁT OP cellájának időjárása szerint
+    (pl. W1-W2-W2 cellákon: 7/30 + 10/30 + 10/30); a napi OP-dobás ilyenkor elmarad */
+ const L1A=(typeof CAMP!=='undefined'&&CAMP.mission&&CAMP.mission.l1)?CAMP.l1DT():0;
+ if(ECO.ageOn&&L1A)ships.filter(q=>q.t=='E'&&!q.en&&!q.sup&&!q.npc&&q.age!=null).forEach(q=>{const w_=wxS(q),pw=(+ECO['ageW'+Math.min(4,Math.max(0,w_))]||0)/L1A;
+  if(pw>0&&Math.random()*100<pw){const m=ageLose(q,q.c,ECO.ageStep);say(q.id+': időjárás (W'+w_+') – állapot '+q.age+'%'+(m.length?', kopás: '+m.join(', ')+' −1':'')+'.')}});
+ if(ECO.ageOn)ships.filter(q=>q.t=='E'&&!q.en&&!q.sup&&!q.npc&&q.age!=null&&q.full&&q.spd>0).forEach(q=>{if(Math.random()*100<(L1A?(+ECO.ageP||0)/L1A:ECO.ageP)){const m=ageLose(q,q.c,ECO.ageStep);say(q.id+': FULL sebesség – állapot '+q.age+'%'+(m.length?', kopás: '+m.join(', ')+' −1':'')+'.')}});   // elöregedés: a FULL sebesség igénybe veszi a hajót
  ships.filter(q=>q.t=='E'&&!q.en&&!q.sup&&!q.npc&&q.zid&&$('fo').checked).forEach(q=>{q.rep=false;aiRepair(q)});   // az automata kísérők is javítanak (körönként egy modul)
  gmResolve();   /* célzó lövések: a jelölt cella összevetése a célok mostani helyével (gunMark) */
  applyDamage();   // az előző kör sérüléseinek hatása a kör elején érvényesül (süllyedés, megállás, végzetes sérülés)
@@ -3627,7 +3637,7 @@ if((evHas('H')||CFG.allEnemies)&&!airDone&&!(+(($('wx')||{}).value||0)>=4&&+CFG.
   else tm+=supEnter(sl)});
  newTurn();
  /* v1.14.573: szint1 – a hajód a pálya szélén → kilép a szomszédos OP cellába; a gyorsított átkelés következő köre */
- if(typeof CAMP!=='undefined'&&CAMP.mission&&CAMP.mission.l1){try{l1Scroll();const d2_=ships.find(q=>q.id==='D2'&&q.t=='E');CAMP.l1Tick(d2_,L1W);const w_=l1WxOf(d2_);if(w_!=null&&$('wx')&&+$('wx').value!==w_){$('wx').value=w_;tm+=' Időjárás a hajód cellájában: W'+w_+'.'}}catch(e){console.error('[L1]',e)}l1AutoEnd();l1FastNext()}
+ if(typeof CAMP!=='undefined'&&CAMP.mission&&CAMP.mission.l1){try{l1Scroll();tm+=l1ZoneChk();const d2_=ships.find(q=>q.id==='D2'&&q.t=='E');CAMP.l1Tick(d2_,L1W);const w_=l1WxOf(d2_);if(w_!=null&&$('wx')&&+$('wx').value!==w_){$('wx').value=w_;tm+=' Időjárás a hajód cellájában: W'+w_+'.'}}catch(e){console.error('[L1]',e)}l1AutoEnd();l1FastNext()}
  draw();card();say('Kör '+turn+': a konvoj lépett '+AR[+dr.value]+' irányba.'+tm);aiSupportRun();aiMaybe();
 }
 /* ===== v1.14.573 GYORSÍTOTT ÁTKELÉS (szint1) =====
@@ -3637,6 +3647,13 @@ let L1FAST=0;   // 0 = ki; 1–8 = az irány
 /* v1.14.574 L1W: a szint1 mozgó ablak – {ox, oy}: a pálya (1,1) cellájának világkoordinátája − 1; cv: a konvojhoz igazítva (nem csúszik) */
 let L1W=null;
 /* l1Scroll: ha a hajód az ablak szélének CFG.l1Edge (15) celláján belül van, az ablak csúszik: minden egység a hajóddal együtt tolódik (a hajód újra középre kerül) */
+/* v1.14.578 l1InZone / l1ZoneChk: a D2 a kísérőzónájában van-e; ha kilép, figyelmeztetés (a jelentés a következő verzióban) */
+function l1InZone(d2){try{const cm=cmd();return !!(d2&&d2.zid&&ZONE[d2.zid]&&cm&&inZ(ZONE[d2.zid],d2.x-cm.x,d2.y-cm.y))}catch(e){return true}}
+function l1ZoneChk(){if(typeof CAMP==='undefined'||!CAMP.mission||!CAMP.mission.l1||!CAMP.mission.l1.joined)return '';const L=CAMP.mission.l1,d2=ships.find(q=>q.id==='D2'&&q.t=='E');if(!d2||!d2.zid)return '';
+ L.zone=ZONE[d2.zid].slice();   // a beállított zóna megmarad másnapra
+ const inn=l1InZone(d2);if(inn===L.inZ)return '';L.inZ=inn;
+ if(!inn){L.outN=(L.outN|0)+1;try{CAMP.log.push('[Szint1] D2 elhagyta a kísérőzónáját ('+turn+'. kör).')}catch(e){}return ' ⚠ D2 elhagyta a kísérőzónáját – a kíséret parancsnokának jelentened kell (jelentés: következő verzió).'}
+ return ' D2 visszatért a kísérőzónájába.'}
 function l1Scroll(){if(!L1W||L1W.cv)return;const d2=ships.find(q=>q.id==='D2'&&q.t=='E');if(!d2)return;const e=+CFG.l1Edge||15;
  const mx=(d2.x<=e||d2.x>N-e)?d2.x-Math.round(N/2):0,my=(d2.y<=e||d2.y>N-e)?d2.y-Math.round(N/2):0;if(!mx&&!my)return;
  L1W.ox+=mx;L1W.oy+=my;ships.forEach(q=>{q.x-=mx;q.y-=my});ships=ships.filter(q=>q===d2||(q.x>=1&&q.x<=N&&q.y>=1&&q.y<=N));
@@ -3687,7 +3704,8 @@ function l1FastNext(first){if(!L1FAST||typeof CAMP==='undefined'||!CAMP.mission|
  const d2=ships.find(q=>q.id==='D2'&&q.t=='E');if(!d2){L1FAST=0;return}
  setTimeout(()=>{try{if(!L1FAST||!CAMP.battle)return;
   /* a hajó a teljes napi sebességével halad a választott irányba (a szabad mozgás lépései), aztán kör-léptetés */
-  d2.dir=L1FAST;const v=DV[L1FAST];let n=Math.max(1,d2.spd||D[d2.c].spd||3);
+  d2.dir=L1FAST;d2.full=true;const v=DV[L1FAST];let n=Math.max(1,d2.spd||D[d2.c].spd||3);   /* v1.14.578: a gyorsított átkelés FULL sebesség (kopás, fogyasztás) */
+  if(d2.fu!=null){const fcc=fuelCell(d2)*n;d2.fu-=fcc;bst(d2.id).fc=(bst(d2.id).fc||0)+fcc}
   while(n-->0){const nx=d2.x+v[0],ny=d2.y+v[1];if(nx<1||nx>N||ny<1||ny>N)break;d2.x=nx;d2.y=ny}
   d2.done=true;draw();step()}catch(e){L1FAST=0;console.error('[L1 fast]',e)}},first?50:250)}
 // edge: belépési pont a pálya szélén (16 blokk; a legközelebbi széltől 2–7 cella).
@@ -4862,6 +4880,10 @@ function draw(){
  try{l1Grid()}catch(e){}   /* v1.14.574: szint1 – az OP cellák határai */
  g.fillStyle=storm?'#eef3f7':css('--fg');g.font='9px sans-serif';g.textAlign='center';
  for(let i=1;i<=N;i++){if(!(i>26&&S<18&&i%2==0))g.fillText(col(i),O+(i-.5)*S,O-8);g.fillText(i,O-12,O+(i-.5)*S+3)}
+ /* v1.14.578: szint1 – a D2 kísérőzónája mindig látszik (szaggatott zöld keret), akkor is, ha nincs kijelölve */
+ {const d2z=(typeof CAMP!=='undefined'&&CAMP.mission&&CAMP.mission.l1&&CAMP.mission.l1.joined)?ships.find(q=>q.id==='D2'&&q.t=='E'&&q.zid):null;
+  if(d2z&&sel!==d2z){const z=ZONE[d2z.zid],cm=cmd();if(z&&cm){g.save();g.setLineDash([6,4]);g.strokeStyle=l1InZone(d2z)?'rgba(46,125,50,.9)':'rgba(211,47,47,.9)';g.lineWidth=2.5;g.beginPath();
+   [[z[0]-.5,z[1]-.5],[z[2]+.5,z[1]-.5],[z[2]+.5,z[3]+.5],[z[0]-.5,z[3]+.5]].forEach(([p,q],i)=>{const o=toG(p,q,1),X=O+(cm.x+o[0]-.5)*S,Y=O+(cm.y+o[1]-.5)*S;i?g.lineTo(X,Y):g.moveTo(X,Y)});g.closePath();g.stroke();g.restore()}}}
  if(sel&&sel.t=='E'&&sel.zid){const z=ZONE[sel.zid],cm=cmd();g.fillStyle=bpOn()?'rgba(255,255,255,.10)':'rgba(40,160,90,.18)';g.beginPath();   // a zóna (elforgatva, ha a konvoj nem délnek halad)
   [[z[0]-.5,z[1]-.5],[z[2]+.5,z[1]-.5],[z[2]+.5,z[3]+.5],[z[0]-.5,z[3]+.5]].forEach(([p,q],i)=>{const o=toG(p,q,1),X=O+(cm.x+o[0]-.5)*S,Y=O+(cm.y+o[1]-.5)*S;i?g.lineTo(X,Y):g.moveTo(X,Y)});g.closePath();g.fill()}
  if(sel&&sel.c&&D[sel.c].gun&&D[sel.c].gun.length&&((sel.t=='E'&&(!$('fo').checked||sel.en||!sel.zid))||sel.t=='U')){const cs=[...new Set(D[sel.c].gun.map(q=>Math.min(q[1],CFG.calCap)))].sort((a,b)=>b-a);
@@ -5262,6 +5284,7 @@ function storageReport() {
 //   v1.14.418 (2026-11-09) – kézi kísérő iránya (manDir: 0 ki / 1 minden kézi kísérő / 2 csak a kijelölt): narancs szaggatott vonal a legközelebbi látható U-boat felé (az AI-vonal mintájára, az AI érzékelési sugarán belül)
 //   v1.14.417 (2026-11-09) – a napfény és a csillogás (W0–W1) a TELJES taktikai pályán (korábban csak a keretben); az időjárás-effektek (felhő, eső, villám, napfény, csillogás) mind az egész pályán
 //   v1.14.416 (2026-11-09) – a belső felhők kisebbek (3–6 cella) és szintenként sötétednek / szaporodnak: W2 fehér, W3 szürke, W4 sötét, összefüggő tömbökben (csoportok); a pályát nem borítják el
+//   v1.14.578 (2026-11-24) – SZINT1: KOPÁS körönként a hajó saját OP cellája szerint (vihar ageW / 30, FULL ageP / 30; az OP napi dobás elmarad); ÜZEMANYAG taktikai cellánként opFuel / l1Cell (egy OP cella = egy OP-lépés), a gyorsított átkelés FULL sebesség; KÍSÉRŐZÓNA a meglévő zóna-rendszerrel (L1Z, alap a konvoj mögött; te állítod be, másnapra megmarad), mindig látszik (zöld / piros keret), kilépéskor figyelmeztetés
 //   v1.14.577 (2026-11-24) – SZINT1: A KÖD / LÁTÁS az OP cellák szerint – a látás, a radar, a szonár és a hallás időjárás-levonása a megfigyelő és a cél cellája közül a rosszabb időjárás szerint (fogWP)
 //   v1.14.576 (2026-11-24) – SZINT1: a FELHŐK és a VIHAR-ESŐ OP cellánként (a cella saját időjárásával, a cellarészre vágva); EGYSÉGENKÉNTI IDŐJÁRÁS (wxS) a szabályokban: üzemanyag, szenzor-dobás (radar / szonár / HF-DF), a teherhajók megállása (a Commodore cellája)
 //   v1.14.575 (2026-11-24) – SZINT1: IDŐJÁRÁS OP CELLÁNKÉNT a mozgó ablakban – minden OP-cellarész a saját frontját kapja (rosszabb időben sötétebb tenger, W3–W4-nél hullámcsíkok, „P10 · W3” felirat, a part barna); a hajód cellájának időjárása a pálya időjárása (a határt átlépve vált); a löveg hullámzás-szabálya a lövő hajó cellája szerint; a rács határa pontosítva
@@ -5600,7 +5623,7 @@ function storageReport() {
 //   v1.14.239 (2026-10-26) – ÚJ: (1) LUT torpedó (lutOn, alap 1; 1944. januártól): az U-boat kártyán „LUT” jelölőnégyzet (az AI lutAiP %); a FAT utóda: lutLen 18 cella, lutRun 6 egyenes, lutLeg 3 fél-szélesség, találat teherhajón d6 ≤ lutHit (3), hadihajón ≤ lutHitE (1); ha FAT is be van jelölve, a LUT számít. (2) LÉGPERISZKÓP / SCHNORCHEL (schOn, alap 1; 1944. júniustól; csak szabad mozgásnál): 1/8-as mélységen a kártya „Légperiszkóp” jelölőnégyzetével a dízel hajt: az akku nem fogy, hanem schRech (2) cellát tölt körönként, max schSpd (2) lépés, kimerült akkuval is halad; kiesett dízelnél nem működik; az AI az akku fele alatt automatikusan használja.
 //   v1.14.238 (2026-10-26) – SZABAD MOZGÁS: az U-boat a belső játékterületen (pl. 80-as táblán az 50×50-esen) bárhol léphet be, nem csak a szélén (uInner, alapból BE; KI = a régi szél-belépés uEdge szerint).
 //   v1.14.237 (2026-10-26) – HEDGEHOG / SQUID ELLENŐRZÉS: az U-boat lépés utáni kiértékelésében a hedgehog / Squid „nincs találat” eredmény akkor is kiíródik, ha a vízibombák is hatottak (eddig ilyenkor csak a vízibomba-sor látszott, a hedgehog-ellenőrzés nem)
-const VER = 'v1.14.577';
+const VER = 'v1.14.578';
 // ===== MEGFIGYELŐ / TESZT MÓD (obsMode, v1.14.195) =====
 // Megfigyelő módban mindkét oldalt az AI vezérli (a kísérők is: NPC-logikával), a pálya mindent mutat (nincs köd), és a körök maguktól léptetődnek;
 // a lezárt csatákból statisztika készül (konvoj-, U-boat-, kísérő-veszteség, kimenetel), hogy látszódjon: sokféle csata születik-e, vagy egyoldalú lett a hangolás.
@@ -6543,7 +6566,7 @@ const CAMP = {
     if (u) { const r = Math.floor(L.wy / C), c = Math.floor(L.wx / C);
       if (r !== u.r || c !== u.c) {
         u.r = r; u.c = c; const a = OPG.addr(r, c); (u.route = u.route || []).push([a, '-', '-', OPG.day()]);
-        u.ships.forEach(id => { const f = this.get(id); if (f) f.fu -= Math.round((+CFG.opFuel || 160) / 3); });   // egy OP cella ≈ a napi fogyasztás harmada
+        /* v1.14.578: a fogyasztást a taktikai lap cellánként vonja le (opFuel / l1Cell), itt nincs külön levonás */
         this.log.push('[Szint1] A hajód a(z) ' + a + ' OP cellába ért.');
       } }
     /* a konvoj: ha CFG.l1JoinR cellán belül van, kontakt → csatlakozás (a nap hátralévő része a konvojjal) */
@@ -9322,7 +9345,7 @@ $('o_bw').onclick=async()=>{
  dayPay();   /* v1.14.552: napi díj a tengeren töltött napért (a nap lezárásakor, a régi nap adataival) */
  day++;if(day>yLen(year)){day=1;year++}today=0;try{CAMP.thrAdvance({hd:heading,w:(W[sel[0]]||[])[sel[1]]|0})}catch(e){}genEv();worldDay();CAMP.newDay();   /* v1.14.460: NPC-konvojok napi lépése */ /* új nap: a kikötőben álló hajók javítása/fejlesztése halad */    // minden nap új esemény-réteg (az Excel A31:AQ50 újraszámolása)
  wxAdvance();
- try{if(ECO.ageOn){CAMP.ageDay(CAMP.group().map(f=>f.id),W[sel[0]][sel[1]]);units.forEach(u=>CAMP.ageDay(u.ships,W[u.r][u.c]))}}catch(e){}
+ try{if(ECO.ageOn&&!(tut&&tut.l1)){CAMP.ageDay(CAMP.group().map(f=>f.id),W[sel[0]][sel[1]]);   /* v1.14.578: szint1-ben a taktikai lapon számol */units.forEach(u=>CAMP.ageDay(u.ships,W[u.r][u.c]))}}catch(e){}
  step=(!tut&&$('o_st').checked)?1:0;units.forEach(rollUnit);if(tut&&tut.l1)try{CAMP.l1Day()}catch(e){console.error('[L1]',e)}   /* v1.14.572: szint1 – a konvoj halad */try{CAMP.wreckOp()}catch(e){}rescuePend();nextAct();
  say((step?'A front lépett. Az „elindult” kapcsoló be van jelölve. Kattints a konvoj új pozíciójára.':'A front lépett. A konvoj még nem indult el.')+unitNote());
  draw()};
