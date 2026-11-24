@@ -1,6 +1,6 @@
 <!doctype html><html lang="hu" data-theme="light"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>CEG – Konvoj kísérő kampány v1.14.583</title>
+<title>CEG – Konvoj kísérő kampány v1.14.584</title>
 <style>
 /* Színek: világos/sötét téma változókkal; a gombok és táblázatok stílusa */
 :root{--bg:#f4f1ea;--fg:#1d2733;--pn:#fff;--ln:#c9c2b3;--ac:#b3261e;--sea:#d6ecf4;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -2191,7 +2191,7 @@ function aiNow(){const u=sel;if(!u||!aiOn(u)||u.done||aiAlliedPending())return;a
 const canLeave=s=>s.x<=eL()||s.x>=eH()||s.y<=eL()||s.y>=eH();
 // leaveOk: kiléphet-e a pályaszélről a gomb / az AI döntésével; uOutDie: szabad mozgásnál az U-boat csak a körönkénti kockával lép ki (lásd a kör eleji belépő / kilépő kockát)
 const leaveOk=s=>canLeave(s)&&!(s&&s.t=='U'&&CFG.uOutDie&&trOn(s));
-function leaveMap(s,why){if(!s||!leaveOk(s)&&s.t=='U'||!canLeave(s)||(s.t!='U'&&!(s.t=='E'&&(s.en||s.sup))))return;fxAdd('exit',s.x,s.y,0,s.id+' kilépett (nem süllyedt el)');ships=ships.filter(q=>q!==s);if(s.t=='U'){store[s.id]=s;uExitMark(s)}if(sel===s)sel=null;evAdd({t:'exit',id:s.id});say(s.id+' elhagyta a pályát ('+addr(s.x,s.y)+(why?', '+why:'')+'). Visszalépni a d'+uEnterDie(s.id)+' = '+uEnterDie(s.id)+' dobással lehet.');draw();card()}
+function leaveMap(s,why){if(!s||!leaveOk(s)&&s.t=='U'||!canLeave(s)||(s.t!='U'&&!(s.t=='E'&&(s.en||s.sup))))return;fxAdd('exit',s.x,s.y,0,s.id+' kilépett (nem süllyedt el)');ships=ships.filter(q=>q!==s);if(s.t=='U'){store[s.id]=s;uExitMark(s);if(typeof L1W!=='undefined'&&L1W)s._w={x:s.x+L1W.ox,y:s.y+L1W.oy}}if(sel===s)sel=null;evAdd({t:'exit',id:s.id});   /* v1.14.584: szint1 – a világhelyzetével vár */say(s.id+' elhagyta a pályát ('+addr(s.x,s.y)+(why?', '+why:'')+'). Visszalépni a d'+uEnterDie(s.id)+' = '+uEnterDie(s.id)+' dobással lehet.');draw();card()}
 // behind: lemaradt-e az egység a konvojtól (a konvoj közepétől a haladási iránnyal ellentétes oldalon, 12 cellánál messzebb)
 function behind(u){const Ms=ships.filter(q=>q.t=='M');if(!Ms.length)return false;const cx=Ms.reduce((a,q)=>a+q.x,0)/Ms.length,cy=Ms.reduce((a,q)=>a+q.y,0)/Ms.length,w=[u.x-cx,u.y-cy],cv=DV[+dr.value]||[0,1];return w[0]*cv[0]+w[1]*cv[1]<0&&Math.hypot(w[0],w[1])>12}
 // aiHurtU: az U-boat sérült-e annyira, hogy ki kell lépnie (torpedó nélkül, kormány / dízel 6/6, legénység ≥4)
@@ -3734,11 +3734,21 @@ function l1PlaceU(){if(!L1W||typeof CAMP==='undefined')return;const C=CAMP.l1C()
 function l1UTry(id){const s=store[id];if(!s||!s._w)return false;const x=s._w.x-L1W.ox,y=s._w.y-L1W.oy;if(x<1||x>N||y<1||y>N)return false;
  const u=uEnter(id);u.x=x;u.y=y;u.dep=0;u.ai=true;u.dir=R(1,8);try{turnFor(u)}catch(e){}return true}
 function l1Scroll(){if(!L1W||L1W.cv)return;const d2=ships.find(q=>q.id==='D2'&&q.t=='E');if(!d2)return;const e=+CFG.l1Edge||15;
- const mx=(d2.x<=e||d2.x>N-e)?d2.x-Math.round(N/2):0,my=(d2.y<=e||d2.y>N-e)?d2.y-Math.round(N/2):0;if(!mx&&!my)return;
- L1W.ox+=mx;L1W.oy+=my;ships.forEach(q=>{q.x-=mx;q.y-=my});
- ships=ships.filter(q=>{if(q===d2||(q.x>=1&&q.x<=N&&q.y>=1&&q.y<=N))return true;if(q.t=='U'){q._w={x:q.x+L1W.ox,y:q.y+L1W.oy};store[q.id]=q}return false});   /* v1.14.580: a kieső U-boat a világhelyzetével vár */
+ /* v1.14.584: eltolás – az ablak csak annyit csúszik, hogy a hajód a széltől e cellára maradjon (nem ugrik középre) */
+ const mx=d2.x<e?d2.x-e:d2.x>N-e+1?d2.x-(N-e+1):0,my=d2.y<e?d2.y-e:d2.y>N-e+1?d2.y-(N-e+1):0;if(!mx&&!my)return;
+ L1W.ox+=mx;L1W.oy+=my;ships.forEach(q=>{q.x-=mx;q.y-=my;if(q._v){q._v.x-=mx;q._v.y-=my}if(q.bm)q.bm.forEach(b=>{b[0]-=mx;b[1]-=my})});
+ l1ShiftFx(mx,my);
+ ships=ships.filter(q=>{if(q===d2||(q.x>=1&&q.x<=N&&q.y>=1&&q.y<=N))return true;if(q.t=='U'){q._w={x:q.x+L1W.ox,y:q.y+L1W.oy};store[q.id]=q}return false});   /* v1.14.580: a kieső U-boat a világhelyzetével vár (a világban nem mozdul – csak a kép tolódik) */
  UID.forEach(id=>{if(store[id])l1UTry(id)});
- try{if(typeof trails!=='undefined')trails.length=0}catch(e){}}
+ }
+/* v1.14.584 l1ShiftFx: az ablak eltolásakor a rajzolt nyomok is eltolódnak (hajónyom, útvonal-vonal, utolsó helyek, köd-emlék, vízibomba-jelek) – így a nyomvonal nem ugrik vissza */
+function l1ShiftFx(mx,my){try{
+ Object.values(trail).forEach(tr=>tr.forEach(p=>{p[0]-=mx;p[1]-=my}));
+ Object.values(lastPos).forEach(p=>{if(p){p[0]-=mx;p[1]-=my}});
+ Object.values(paths).forEach(p=>{(p.pts||[]).forEach(q=>{q[0]-=mx;q[1]-=my});if(Array.isArray(p.tl))p.tl.forEach(q=>{if(Array.isArray(q)){q[0]-=mx;q[1]-=my}})});
+ Object.values(FOGM).forEach(m=>{if(m){m.x-=mx;m.y-=my}});
+ (bombMarks||[]).forEach(b=>{if(Array.isArray(b)){b[0]-=mx;b[1]-=my}else if(b){b.x-=mx;b.y-=my}});
+}catch(e){console.error('[L1 shift]',e)}}
 /* v1.14.575 l1WxAt / l1WxOf: a szint1 mozgó ablakban az időjárás OP cellánként – a pálya (x, y) cellája melyik OP cellába esik, és ott mi a front (W0–W4) */
 function l1CellAt(x,y){if(!L1W||typeof CAMP==='undefined'||!CAMP.mission||!CAMP.mission.l1)return null;const C=CAMP.l1C();return [Math.floor((y+L1W.oy)/C),Math.floor((x+L1W.ox)/C)]}
 function l1WxAt(x,y){const rc=l1CellAt(x,y);if(!rc)return null;const[r,c]=rc;try{const row=OPG.W[r];return row&&row[c]!=null?Math.min(4,Math.max(0,+row[c]||0)):null}catch(e){return null}}
@@ -3759,9 +3769,7 @@ function l1Grid(){if(!L1W||typeof CAMP==='undefined'||!CAMP.mission||!CAMP.missi
   let w=0;try{w=Math.min(4,Math.max(0,+(OPG.W[r]||[])[c]||0))}catch(e){}
   const port_=Object.keys(OPG.ports()).find(k=>OPG.ports()[k]===OPG.addr(r,c));
   if(OPG.landAt(r,c)&&!port_)continue;   /* v1.14.582: a part a valódi partvonallal látszik (landMaskW) */
-  const dw=w-gw;if(dw!==0){g.fillStyle=dw>0?'rgba(10,30,60,'+(.08*dw)+')':'rgba(255,255,255,'+(.06*-dw)+')';g.fillRect(O+(x0-1)*S,O+(y0-1)*S,(x1-x0+1)*S,(y1-y0+1)*S)}
-  if(w>=3){g.strokeStyle='rgba(255,255,255,'+(w>=4?.55:.4)+')';g.lineWidth=1.5;g.beginPath();   // vihar: ferde hullámcsíkok
-   for(let k=y0;k<=y1;k+=4)for(let j=x0+((k*7)%5);j<=x1;j+=7){const px=O+(j-.5)*S,py=O+(k-.5)*S;g.moveTo(px-S,py+S*.3);g.quadraticCurveTo(px,py-S*.4,px+S,py+S*.3)}g.stroke()}}
+  /* v1.14.584: a tenger egyszínű – az időjárást a felhők mutatják */}
  /* v1.14.583: a kikötők mólói (⚓) */
  l1Piers().forEach(q=>{const X=O+(q.x-.5)*S,Y=O+(q.y-.5)*S;g.fillStyle='rgba(255,255,255,.85)';g.beginPath();g.arc(X,Y,S*1.3,0,6.283);g.fill();g.strokeStyle='#1565c0';g.lineWidth=2;g.stroke();
   g.fillStyle='#1565c0';g.font='bold '+Math.round(S*1.6)+'px sans-serif';g.textAlign='center';g.textBaseline='middle';g.fillText('⚓',X,Y+1);g.font='bold '+Math.round(S*.9)+'px sans-serif';g.fillText(q.port,X,Y+S*2)});
@@ -3781,7 +3789,11 @@ function l1FastUI(on){let el=$('l1fast');
  el.style.display='flex';el.innerHTML='<b style="margin-right:4px">Gyorsított átkelés:</b>'+[8,1,2,7,3,6,5,4].map(k=>'<button onclick="l1Fast('+k+')" title="'+AR[k]+' irányba, a pálya széléig">'+AR[k]+'</button>').join('')+'<button onclick="l1Fast(0)">■ Stop</button>'}
 function l1Fast(k){L1FAST=k|0;if(!L1FAST){say('Gyorsított átkelés leállítva.');return}l1FastNext(true)}
 /* l1AutoEnd: a nap utolsó köre után, ha nincs ellenség a pályán, a nap magától véget ér */
-function l1AutoEnd(){if(typeof CAMP==='undefined'||!CAMP.mission||!CAMP.mission.l1||!CAMP.battle||CAMP.mission.l1.contact)return;if(turn>=maxT&&!ships.some(l1Seen)){L1FAST=0;setTimeout(()=>{try{if(CAMP.battle)CAMP.end2({})}catch(e){}},400)}}
+function l1AutoEnd(){if(typeof CAMP==='undefined'||!CAMP.mission||!CAMP.mission.l1||!CAMP.battle||CAMP.mission.l1.contact)return;
+ /* v1.14.584: ha a nap utolsó körénél észlelt ellenség van a pályán, a csata ugyanott folytatódik a következő napon (a körhatár egy nappal nő) */
+ if(turn>=maxT&&ships.some(l1Seen)){const L=CAMP.mission.l1,dt=CAMP.l1DT();maxT+=dt;L.ext=(L.ext|0)+1;try{CAMP.log.push('[Szint1] Éjfél: a csata folytatódik a következő napon (+'+dt+' kör).')}catch(e){}
+  say('🌙 Éjfél – a csata folytatódik a következő napon (még '+dt+' kör).');try{$('tn').textContent=turn}catch(e){}return}
+ if(turn>=maxT&&!ships.some(l1Seen)){L1FAST=0;setTimeout(()=>{try{if(CAMP.battle)CAMP.end2({})}catch(e){}},400)}}
 function l1FastNext(first){if(!L1FAST||typeof CAMP==='undefined'||!CAMP.mission||!CAMP.mission.l1||CAMP.mission.l1.contact||CAMP.mission.l1.joined||!CAMP.battle)return;
  if(ships.some(l1Seen)){L1FAST=0;say('Kontakt! A gyorsított átkelés leállt.');return}   /* v1.14.580: csak az észlelt ellenség állítja meg */
  if(turn>=maxT){L1FAST=0;return}
@@ -4918,14 +4930,14 @@ const wxFx=(()=>{
   // napfény (W0 / W1): halvány meleg fény + lassan csillanó fehér pontok a TELJES pályán (v1.14.417; korábban csak a keretben)
   {fg.save();fg.beginPath();fg.rect(O,O,B,B);fg.clip();
    if(w==0){fg.fillStyle='rgba(255,244,200,'+(.09*A)+')';fg.fillRect(O,O,B,B)}
-   const ngB=Math.min(900,Math.ceil(N*N*lvl[3]));
+   const ngB=(typeof L1W!=='undefined'&&L1W)?0:Math.min(900,Math.ceil(N*N*lvl[3]));   /* v1.14.584: szint1 – nincs csillogás */
    for(let i=0;i<ngB;i++){const x=O+hash(i*17+3)*B,y=O+hash(i*17+8)*B,ph=hash(i*3+2)*6.28,a=Math.max(0,Math.sin(t*1.3+ph))*.8*A;if(a<.03)continue;
     fg.strokeStyle='rgba(255,255,255,'+a+')';fg.lineWidth=1.4;fg.beginPath();fg.moveTo(x-3,y);fg.lineTo(x+3,y);fg.moveTo(x,y-2.5);fg.lineTo(x,y+2.5);fg.stroke()}
    fg.restore()}
   // belső felhők (v1.14.413, wxCloud): kevés, lassan úszó OP-stílusú felhő; a hajók / repülők alatt kilyukasztva, így mindig láthatók
   /* v1.14.576: szint1 – a felhők OP cellánként, a cella saját időjárásával (a cellarészre vágva) */
   const RG_=(()=>{try{return l1Regions()}catch(e){return null}})();
-  if(RG_){if(cl2)RG_.forEach(q=>{if(q.wx>0){fg.save();fg.beginPath();fg.rect(q.x,q.y,q.w,q.h);fg.clip();innerClouds(t,A,q.wx,B);fg.restore()}})}
+  if(RG_){if(cl2)[1,2,3,4].forEach(wv=>{const rr=RG_.filter(q=>q.wx===wv);if(!rr.length)return;fg.save();fg.beginPath();rr.forEach(q=>fg.rect(q.x,q.y,q.w,q.h));fg.clip();innerClouds(t,A,wv,B);fg.restore()})}   /* v1.14.584: időjárásonként egy rajz (gyorsabb) */
   else if(cl2&&w>0)innerClouds(t,A,w,B);
   // vihar (W4): ferde eső-csíkok a TELJES pályán (v1.14.413; korábban csak a keretben) és ritka, rövid felvillanás
   if(RG_){RG_.forEach(q=>{if(q.wx<4)return;const n_=Math.min(600,Math.ceil(q.w*q.h/(S*S)*.1));fg.save();fg.beginPath();fg.rect(q.x,q.y,q.w,q.h);fg.clip();fg.strokeStyle='rgba(210,225,240,'+(.45*A)+')';fg.lineWidth=1;fg.beginPath();
@@ -4947,9 +4959,10 @@ function draw(){
  try{bfqFlush()}catch(e){}   // v1.14.211: a korábban elrejtett bomba-effektek lejátszása
  fogFrame();
  try{rlScan()}catch(e){}   // v1.14.221: rádiónapló
- const wxv=Math.min(4,Math.max(0,+$('wx').value||0)),wb=!!CFG.wxBg,dk=parseInt(css('--bg').slice(1,3),16)<96,storm=wb&&wxv>=3&&!dk;
+ const L1on=typeof L1W!=='undefined'&&!!L1W&&typeof CAMP!=='undefined'&&CAMP.mission&&CAMP.mission.l1;   /* v1.14.584: szint1 – egyszínű tenger, hullámjel nélkül (az időjárást a felhők adják) */
+ const wxv=L1on?1:Math.min(4,Math.max(0,+$('wx').value||0)),wb=!!CFG.wxBg,dk=parseInt(css('--bg').slice(1,3),16)<96,storm=wb&&wxv>=3&&!dk;
  g.fillStyle=wb?(CFG.white?['#ffffff','#fdfdfd','#f9f9f9','#f1f1f1','#e6e6e6']:dk?(CFG.blue?['#0f4f94','#0e4a8b','#0c4381','#0a3c75','#083466']:['#1b3f4d','#183746','#162f3d','#122633','#0d1c27']):['#9edcee','#86cde3','#6fb2cf','#5589a8','#3c607a'])[wxv]:css('--sea');g.fillRect(0,0,cv.width,cv.height);
- if(wb&&+CFG.wxWave){const wv2=+CFG.wxWave==2,pr=wv2?[.04,.10,.18,.30,.45][wxv]:[.03,.05,.05,.05,.05][wxv];   /* v1.14.415 (wxWave): 1 = kevés hullámjel, W2-től végig ugyanannyi (a vihart a felhők adják); 2 = a régi, az időjárással sűrűsödő; 0 = nincs */g.lineWidth=1.2;g.lineCap='round';   // hullámjelek: az időjárással sűrűsödnek (cellánként állandó minta, nem villog)
+ if(wb&&+CFG.wxWave&&!L1on){const wv2=+CFG.wxWave==2,pr=wv2?[.04,.10,.18,.30,.45][wxv]:[.03,.05,.05,.05,.05][wxv];   /* v1.14.415 (wxWave): 1 = kevés hullámjel, W2-től végig ugyanannyi (a vihart a felhők adják); 2 = a régi, az időjárással sűrűsödő; 0 = nincs */g.lineWidth=1.2;g.lineCap='round';   // hullámjelek: az időjárással sűrűsödnek (cellánként állandó minta, nem villog)
   for(let i=1;i<=N;i++)for(let j=1;j<=N;j++){let h=Math.imul(i*374761393+j*668265263,1274126177);h^=h>>>13;h=Math.imul(h,1274126177);h=(h^(h>>>16))>>>0;if((h%1000)/1000>=pr)continue;const x=O+(i-.5)*S+((h>>10)%9-4),y=O+(j-.5)*S+((h>>14)%9-4),w=(h>>18)%3+4;
    g.strokeStyle=dk?'rgba(255,255,255,.16)':'rgba(255,255,255,'+(wv2?.4+.12*wxv:.5)+')';g.beginPath();g.moveTo(x-w,y);g.quadraticCurveTo(x-w/2,y-3,x,y);g.quadraticCurveTo(x+w/2,y+3,x+w,y);g.stroke();
    if(wv2&&wxv>=3&&h%4==0){g.strokeStyle=dk?'rgba(255,255,255,.3)':'rgba(255,255,255,.85)';g.beginPath();g.moveTo(x+w+2,y-2);g.lineTo(x+w+5,y-3);g.stroke()}}g.lineCap='butt'}
@@ -5368,6 +5381,7 @@ function storageReport() {
 //   v1.14.418 (2026-11-09) – kézi kísérő iránya (manDir: 0 ki / 1 minden kézi kísérő / 2 csak a kijelölt): narancs szaggatott vonal a legközelebbi látható U-boat felé (az AI-vonal mintájára, az AI érzékelési sugarán belül)
 //   v1.14.417 (2026-11-09) – a napfény és a csillogás (W0–W1) a TELJES taktikai pályán (korábban csak a keretben); az időjárás-effektek (felhő, eső, villám, napfény, csillogás) mind az egész pályán
 //   v1.14.416 (2026-11-09) – a belső felhők kisebbek (3–6 cella) és szintenként sötétednek / szaporodnak: W2 fehér, W3 szürke, W4 sötét, összefüggő tömbökben (csoportok); a pályát nem borítják el
+//   v1.14.584 (2026-11-24) – SZINT1: az ablak ELTOLÓDIK (nem ugrik középre), a nyomvonalak / útvonal-vonalak / köd-emlék / vízibomba-jelek vele tolódnak; EGYSZÍNŰ TENGER hullámjel és csillogás nélkül, a felhők időjárásonként egy rajzzal (kevesebb szaggatás); A CSATA ÁTNYÚLIK A KÖVETKEZŐ NAPRA, ha a 30. körnél észlelt ellenség van a pályán (nincs új nap / új pálya – ugyanott folytatódik; az OP naptár utána lép); a pálya szélén kilépő U-boat a világhelyzetével vár (ha nem üldözik, megússza)
 //   v1.14.583 (2026-11-24) – SZINT1: a konvoj a legközelebbi TISZTA TENGEREN kezd (az OP cellája és a 8 szomszédja tenger), a konvojjal töltött napon a teherhajók körül nincs szárazföld; KIKÖTŐ MÓLÓJA (⚓ a pályán, a kikötő cellájának közepéhez legközelebbi vízcella): 2 cellán belül kikötsz – üzemanyag és vízibomba feltöltve, a nap véget ér
 //   v1.14.582 (2026-11-24) – SZINT1: AZ OP TÉRKÉP A TAKTIKAI PÁLYÁN – a mozgó ablak szárazföldje a térkép képéből (partvonal, szigetek, kikötő; a szárazföldre nem lehet hajózni), az ablak csúszásakor újraszámol; a kikötőből indulva a legközelebbi vízcellán kezdesz; GYAKORLÓ ELLENSÉG: 2 U-boat (l1Ub) járőrözik a konvoj útvonalán (a nyilvántartásban); a nap csak az észlelt ellenség miatt nem ér véget magától
 //   v1.14.581 (2026-11-24) – SZINT1: KÖD bekapcsolva (fog 1; kilépéskor visszaáll); A LEMARADÁS ÖRÖKLŐDIK: a nap végén a Commodore-hoz mért helyed megmarad, és ha 30 cellánál (l1LoseR) messzebb vagy, elveszted a kapcsolatot – másnap egyedül folytatod a valódi helyedről, és újra meg kell találnod a konvojt
@@ -5712,7 +5726,7 @@ function storageReport() {
 //   v1.14.239 (2026-10-26) – ÚJ: (1) LUT torpedó (lutOn, alap 1; 1944. januártól): az U-boat kártyán „LUT” jelölőnégyzet (az AI lutAiP %); a FAT utóda: lutLen 18 cella, lutRun 6 egyenes, lutLeg 3 fél-szélesség, találat teherhajón d6 ≤ lutHit (3), hadihajón ≤ lutHitE (1); ha FAT is be van jelölve, a LUT számít. (2) LÉGPERISZKÓP / SCHNORCHEL (schOn, alap 1; 1944. júniustól; csak szabad mozgásnál): 1/8-as mélységen a kártya „Légperiszkóp” jelölőnégyzetével a dízel hajt: az akku nem fogy, hanem schRech (2) cellát tölt körönként, max schSpd (2) lépés, kimerült akkuval is halad; kiesett dízelnél nem működik; az AI az akku fele alatt automatikusan használja.
 //   v1.14.238 (2026-10-26) – SZABAD MOZGÁS: az U-boat a belső játékterületen (pl. 80-as táblán az 50×50-esen) bárhol léphet be, nem csak a szélén (uInner, alapból BE; KI = a régi szél-belépés uEdge szerint).
 //   v1.14.237 (2026-10-26) – HEDGEHOG / SQUID ELLENŐRZÉS: az U-boat lépés utáni kiértékelésében a hedgehog / Squid „nincs találat” eredmény akkor is kiíródik, ha a vízibombák is hatottak (eddig ilyenkor csak a vízibomba-sor látszott, a hedgehog-ellenőrzés nem)
-const VER = 'v1.14.583';
+const VER = 'v1.14.584';
 // ===== MEGFIGYELŐ / TESZT MÓD (obsMode, v1.14.195) =====
 // Megfigyelő módban mindkét oldalt az AI vezérli (a kísérők is: NPC-logikával), a pálya mindent mutat (nincs köd), és a körök maguktól léptetődnek;
 // a lezárt csatákból statisztika készül (konvoj-, U-boat-, kísérő-veszteség, kimenetel), hogy látszódjon: sokféle csata születik-e, vagy egyoldalú lett a hangolás.
@@ -6640,6 +6654,7 @@ const CAMP = {
   // l1Day: az új napon (WEATHER) a te napod a taktikai lapon indul, onnan, ahol tegnap abbahagytad
   l1Day() {
     const L = this.mission && this.mission.l1; if (!L) return;
+    if (L.silent > 0) { L.silent--; L.days++; this.log.push('[Szint1] A csata napja az OP naptárban lezárva.'); const u = OPG.units().find(x => x.ships.includes('D2')); if (u) { u.moved = true; u.left = 0; } return; }   /* v1.14.584: az átnyúló csata napja */
     L.days++; L.used = 0; this.l1CvSync();
     if (L.late && L.late.length) { L.late.forEach(m => this.log.push('[Szint1] A tegnapi kódolt üzenet célba ért: „' + m + '.” – „Vettem, D2.”')); L.late = []; }
     const u = OPG.units().find(x => x.ships.includes('D2')); if (u) { u.moved = true; u.left = 0; }
@@ -6696,8 +6711,9 @@ const CAMP = {
     if (m.failed) { this.startMission(m.n); $('o_msg').textContent = 'Újrakezdés – elsüllyedtél. ' + MISSIONS[m.n].brief; return; }
     if (L.contact) { this.l1Join(L.contact); return; }
     if (L.docked) { const pt = L.docked; L.docked = null; L.T += this.l1DT(); this.l1CvSync(); this.l1DayEnd('Kikötöttél: ' + pt + ' (móló), üzemanyag és vízibomba feltöltve. A következő napon innen futsz ki.'); return; }
-    /* a nap vége: a teljes nap köreit hozzáadjuk a konvoj idejéhez (akkor is, ha korábban fejezted be) */
-    L.T += this.l1DT(); this.l1CvSync();
+    /* a nap vége: a teljes nap köreit hozzáadjuk a konvoj idejéhez (akkor is, ha korábban fejezted be); v1.14.584: az átnyúló csata napjai is */
+    const ext = L.ext | 0; L.ext = 0; L.T += this.l1DT() * (1 + ext); this.l1CvSync();
+    if (ext > 0) { L.silent = ext; setTimeout(async () => { try { for (let i = 0; i < ext; i++) await $('o_bw').onclick(); } catch (e) { console.error('[L1 ext]', e); } }, 200); }   // az OP naptár a csata napjaival lép (taktikai pálya nélkül)
     if (L.joined) { try { const d2 = ships.find(q => q.id === 'D2' && q.t == 'E'), cm = cmd(); if (d2 && cm) L.rel = { rx: d2.x - cm.x, ry: d2.y - cm.y, dir: d2.dir }; } catch (e) { } }
     /* v1.14.581: a távolság öröklődik – ha a nap végén CFG.l1LoseR (30) cellánál messzebb vagy a konvojtól, elveszted a kapcsolatot:
        másnap egyedül folytatod a valódi helyedről (a konvoj világhelyzete + a lemaradás), és újra meg kell találnod */
