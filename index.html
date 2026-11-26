@@ -1,6 +1,6 @@
 <!doctype html><html lang="hu" data-theme="light"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>CEG – Konvoj kísérő kampány v1.14.592</title>
+<title>CEG – Konvoj kísérő kampány v1.14.593</title>
 <style>
 /* Színek: világos/sötét téma változókkal; a gombok és táblázatok stílusa */
 :root{--bg:#f4f1ea;--fg:#1d2733;--pn:#fff;--ln:#c9c2b3;--ac:#b3261e;--sea:#d6ecf4;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -336,6 +336,9 @@ body.hintoff #vOP #o_msg:not(.open){white-space:normal;overflow:visible;text-ove
 #o_rep{margin:4px 0}
 #o_rep>summary{cursor:pointer;padding:4px 8px;border-radius:4px;background:var(--pn);font-size:14px;list-style-position:inside}
 body.noRep #o_rep>summary{display:none}
+#o_thrR{margin:4px 0;padding:4px 8px;border-radius:4px;background:var(--pn);font-size:13px}
+#o_thrR #o_thr{margin:0!important;color:inherit}
+#o_thrR:has(#o_thr:empty){display:none}
 /* ===== OP CETLIK (opNotes): a Konvoj kártya, az üzenet, a Kikötőben és a lépés-jelzés külön cetli; keskeny képernyőn egymás alatt, PC-n egymás mellett (a térkép följebb kerül), nagyon széles képernyőn (≥1800 px) a térkép jobb oldalán oszlopban ===== */
 body.opN #vOP #o_notes{display:flex;flex-wrap:wrap;gap:18px 16px;align-items:flex-start;margin:12px 0 16px}
 body.opN #vOP #o_notes>div:not(#zz){flex:1 1 300px;max-width:560px;margin:0;position:relative;box-sizing:border-box;padding:16px 12px 10px;border-radius:2px;box-shadow:2px 5px 12px rgba(0,0,0,.45);transform:rotate(-.6deg)}
@@ -396,7 +399,8 @@ body.opN #vOP #o_notes>div:not(#zz):nth-child(2n)::before{transform:rotate(2deg)
 <!-- ===== v1.14.592 NAPI JELENTÉS (CFG.opRep): összecsukva egy sor; lenyitva az állapot-táblázat (nap, dátum, évszak, konvoj, front, fogyasztás),
      a Konvoj / TF kártya (hajók, sérülések, 🔧 javítópontok) és a Hajónapló. A nyitott / zárt állapot megmarad (CFG.opRepOpen). opRep = 0: a régi elrendezés (mindig nyitva, sor nélkül) ===== -->
 <details id="o_rep" ontoggle="try{if(+CFG.opRep){CFG.opRepOpen=this.open?1:0;saveCfg()}}catch(e){}"><summary id="o_repS"><b>📋 Napi jelentés</b></summary>
-<table class="m top">
+<div id="o_thrR" class="note"></div>   <!-- v1.14.593: ide kerül a műveleti sávból a U-boat / küldetés-sor (#o_thr), ha opRep = 1 -->
+<table class="m top" id="o_ov">
 <tr><th>Nap</th><th>Dátum</th><th>Évszak</th><th>Konvoj</th><th>Front iránya</th><th id="o_fuh">Fogyasztás ma / Kalkulált</th></tr>
 <tr><td><b id="o_dn"></b></td><td><b id="o_dt"></b></td><td><b id="o_se"></b></td><td><b id="o_cv"></b></td><td><b id="o_wi">–</b></td><td><b id="o_fu">0 / 0</b></td></tr>
 </table>
@@ -5420,6 +5424,7 @@ function storageReport() {
 //   v1.14.418 (2026-11-09) – kézi kísérő iránya (manDir: 0 ki / 1 minden kézi kísérő / 2 csak a kijelölt): narancs szaggatott vonal a legközelebbi látható U-boat felé (az AI-vonal mintájára, az AI érzékelési sugarán belül)
 //   v1.14.417 (2026-11-09) – a napfény és a csillogás (W0–W1) a TELJES taktikai pályán (korábban csak a keretben); az időjárás-effektek (felhő, eső, villám, napfény, csillogás) mind az egész pályán
 //   v1.14.416 (2026-11-09) – a belső felhők kisebbek (3–6 cella) és szintenként sötétednek / szaporodnak: W2 fehér, W3 szürke, W4 sötét, összefüggő tömbökben (csoportok); a pályát nem borítják el
+//   v1.14.593 (2026-11-26) – NAPI JELENTÉS TÁBLÁZATOKBAN: úton / kikötőben, U-boat nyilvántartás, egyéb események, javítópontok; a nap U-boat / német hajó / repülő hírei („Mai hírek”) az üzenetsor helyett a jelentésbe kerülnek (opRep)
 //   v1.14.592 (2026-11-26) – NAPI JELENTÉS (opRep): az OP lap tetején csak a WEATHER sor, az üzenet, a lépés-jelzés és a küldetés-figyelmeztetés; az állapot-táblázat (nap, dátum, évszak, konvoj, front, fogyasztás), a Konvoj / TF kártya és a Hajónapló egy lenyitható sorban (összecsukva egy sor; az állapot megmarad)
 //   v1.14.591 (2026-11-25) – A LEGÉNYSÉG SÉRÜLÉSE mindenhol −10 % pontonként (xpCrewP; találat, felújítás, javítás, javítópont; a felderítésben −1 cella); a FELDERÍTÉSI BÓNUSZ csak az időjárás levonását kompenzálja, az alap hatótáv fölé nem visz
 //   v1.14.590 (2026-11-25) – EGYSÉGES TAPASZTALAT-SZABÁLY (xpUni): medálonként +10 %, TP-nként +1 % mindenhol (taktikai javítás, találat, felderítés, felújítás); NAPI JAVÍTÓPONTOK (dcOn): hajónként d10 + medál + TP/10 − legénység-sérülés, a sajátokat az OP lapon (Konvoj / TF kártya) te osztod szét a nem 6/6 modulokra, a maradékot napváltáskor a gép; NPC / U-boat / német hajó automatikusan; JAVÍTÁS: a taktikai hajón a TP külön mezőben (s.xp) – eddig a saját romboló torpedóinak számát írta felül
@@ -5773,7 +5778,7 @@ function storageReport() {
 //   v1.14.239 (2026-10-26) – ÚJ: (1) LUT torpedó (lutOn, alap 1; 1944. januártól): az U-boat kártyán „LUT” jelölőnégyzet (az AI lutAiP %); a FAT utóda: lutLen 18 cella, lutRun 6 egyenes, lutLeg 3 fél-szélesség, találat teherhajón d6 ≤ lutHit (3), hadihajón ≤ lutHitE (1); ha FAT is be van jelölve, a LUT számít. (2) LÉGPERISZKÓP / SCHNORCHEL (schOn, alap 1; 1944. júniustól; csak szabad mozgásnál): 1/8-as mélységen a kártya „Légperiszkóp” jelölőnégyzetével a dízel hajt: az akku nem fogy, hanem schRech (2) cellát tölt körönként, max schSpd (2) lépés, kimerült akkuval is halad; kiesett dízelnél nem működik; az AI az akku fele alatt automatikusan használja.
 //   v1.14.238 (2026-10-26) – SZABAD MOZGÁS: az U-boat a belső játékterületen (pl. 80-as táblán az 50×50-esen) bárhol léphet be, nem csak a szélén (uInner, alapból BE; KI = a régi szél-belépés uEdge szerint).
 //   v1.14.237 (2026-10-26) – HEDGEHOG / SQUID ELLENŐRZÉS: az U-boat lépés utáni kiértékelésében a hedgehog / Squid „nincs találat” eredmény akkor is kiíródik, ha a vízibombák is hatottak (eddig ilyenkor csak a vízibomba-sor látszott, a hedgehog-ellenőrzés nem)
-const VER = 'v1.14.592';
+const VER = 'v1.14.593';
 // ===== MEGFIGYELŐ / TESZT MÓD (obsMode, v1.14.195) =====
 // Megfigyelő módban mindkét oldalt az AI vezérli (a kísérők is: NPC-logikával), a pálya mindent mutat (nincs köd), és a körök maguktól léptetődnek;
 // a lezárt csatákból statisztika készül (konvoj-, U-boat-, kísérő-veszteség, kimenetel), hogy látszódjon: sokféle csata születik-e, vagy egyoldalú lett a hangolás.
@@ -7241,6 +7246,12 @@ const CAMP = {
     const n = $('o_note'), v = this.voy;
     if (n && v) {
       const sel = this.fleet.filter(f => f.sel).map(f => f.id), on = this.group().map(f => f.id);
+      /* v1.14.593 (opRep): táblázatban; opRep = 0: a régi szöveges sor */
+      if (+CFG.opRep) {
+        n.innerHTML = v.sailed
+          ? TB(['Állapot', 'Kíséret', 'Létszám'], [['Úton', on.length ? on.join(', ') : 'nincs', on.length + '/' + ECO.maxGroup]]) + (on.length < ECO.maxGroup ? '<div class="hint">Az üres helyekre a flotta d' + ECO.rentDie + ' = ' + ECO.rentDie + ' dobással bérelt hajót küldhet.</div>' : '')
+          : TB(['Állapot', 'Konvoj', 'Kíséret indulásra', 'Létszám'], [['Kikötőben: ' + v.from, v.m.length + ' hajó', sel.length ? sel.join(', ') : 'nincs', sel.length + '/' + ECO.maxGroup]]) + '<div class="hint">Itt cserélheted az útvonalhoz (kattints a hajóra; a Flotta fülön is módosítható); a WEATHER gomb elindítja a konvojt.</div>' + this.escChips() + this.strandHTML();
+      } else
       n.innerHTML = v.sailed ? '<b>Úton.</b> Kíséret: ' + (on.length ? on.join(', ') : 'nincs') + ' (' + on.length + '/' + ECO.maxGroup + ')' + (on.length < ECO.maxGroup ? '<span class="hint"> – az üres helyekre a flotta d' + ECO.rentDie + ' = ' + ECO.rentDie + ' dobással bérelt hajót küldhet.</span>' : '.')
         : '<b>Kikötőben: ' + v.from + '.</b> Konvoj: ' + v.m.length + ' hajó. A kíséret indulásra: ' + (sel.length ? sel.join(', ') : 'nincs') + ' (' + sel.length + '/' + ECO.maxGroup + ').<span class="hint"> Itt cserélheted az útvonalhoz (kattints a hajóra; a Flotta fülön is módosítható); a WEATHER gomb elindítja a konvojt.</span>' + this.escChips() + this.strandHTML();
       const ns = $('o_ns'); if (ns) ns.textContent = v.sailed ? '⚓ Úton – kíséret: ' + (on.length ? on.join(', ') : 'nincs') + ' (' + on.length + '/' + ECO.maxGroup + ')' : '⚓ Kikötőben: ' + v.from + ' – indulásra ' + sel.length + '/' + ECO.maxGroup + ' kísérő (nyisd le a cseréhez)';   // Hajónapló: a lényeg a fejlécben
@@ -7697,7 +7708,10 @@ function navApply(v) {
   const hm = !!CFG.homePage, nv = document.getElementById('nav'), nh = document.getElementById('nHOME');   // homePage: Főoldal (a ritkán használt gombok oda kerülnek)
   document.body.classList.toggle('hmOn', hm); document.body.classList.toggle('opN', !!CFG.opNotes);
   /* v1.14.592: Napi jelentés – opRep = 0: mindig nyitva, sor nélkül; különben a megjegyzett állapot */
-  try { document.body.classList.toggle('noRep', !+CFG.opRep); const rp = document.getElementById('o_rep'); if (rp) rp.open = !+CFG.opRep || !!+CFG.opRepOpen; } catch (e) { } document.body.classList.toggle('noFT', !CFG.floatTabs); try { opLogApply(); } catch (e) { } if (nv) nv.style.display = (v === 'HOME') ? 'none' : ''; if (nh) nh.style.display = hm ? '' : 'none';
+  try { document.body.classList.toggle('noRep', !+CFG.opRep); const rp = document.getElementById('o_rep'); if (rp) rp.open = !+CFG.opRep || !!+CFG.opRepOpen;
+    /* v1.14.593: a U-boat / küldetés-sor (#o_thr) a jelentésbe – opRep = 0: vissza a műveleti sávba (a térkép-gomb után) */
+    const th = document.getElementById('o_thr'), tr = document.getElementById('o_thrR'), mb = document.getElementById('o_mapth');
+    if (th && tr && mb) { if (+CFG.opRep) { if (th.parentNode !== tr) tr.appendChild(th); } else if (th.parentNode === tr) mb.after(th); } } catch (e) { } document.body.classList.toggle('noFT', !CFG.floatTabs); try { opLogApply(); } catch (e) { } if (nv) nv.style.display = (v === 'HOME') ? 'none' : ''; if (nh) nh.style.display = hm ? '' : 'none';
   const tac = v === 'TAC' || v === 'OP', k = v === 'OP' ? 'ceg_navhideOP' : 'ceg_navhide'; let h = false; try { h = localStorage.getItem(k) === '1'; } catch (e) {}   // a felső gombsor elrejthető a taktikai és az OP lapon (nézetenként külön megjegyzi)
   const x = document.getElementById('navx'), g = document.getElementById('nTG');
   if (x) x.style.display = (tac && h) ? 'none' : 'contents';
@@ -8899,7 +8913,7 @@ const UDAY=()=>Math.floor(dateMs()/864e5);
    Felderítés (a játékos oldaláról): naponta U-boatonként, a parttól mért távolság szerint (uDet), egy napig látszik.
    EZ A LÉPÉS CSAK MEGJELENÍTÉS: a csatákba továbbra is a mostani sorsolás hozza a U-boatokat.
    ===================================================================================== */
-const UT={day:-1,maps:{},land:null,msg:[]};
+const UT={day:-1,maps:{},land:null,msg:[],today:[]};   // today (v1.14.593): a nap U-boat / német hajó hírei a Napi jelentés táblázatához
 /* v1.14.524: a napi üzenet hírei (felderítés, légitámadás, elsüllyedés) – a nap végén az OP üzenetsorba */
 function utMsg(t){UT.msg.push(t)}
 
@@ -9126,13 +9140,14 @@ function dcUndo(id){const f=CAMP.get(id);if(!f||!f.dcU||!f.dcU.length)return;con
  if((f.dmg[i]|0)+1>=M[i][1])return;                         // ha közben 6/6 lett, nem állítjuk vissza
  f.dmg[i]++;f.dcP=(f.dcP|0)+1;try{CAMP.save()}catch(e){}renderCV()}
 /* dcHTML: a kártyák alatti 🔧 sor – hajónként a napi pont és a javítható modulok gombjai */
-function dcHTML(ids){if(!+ECO.dcOn)return'';let h='';
+function dcHTML(ids){if(!+ECO.dcOn)return'';const h=[];
  ids.map(id=>CAMP.get(id)).filter(Boolean).forEach(f=>{const M=D[vcls(f)].mod;
   if(!dcCan(f.dmg,M)&&!(f.dcU&&f.dcU.length))return;
   const p=f.dcP|0,b=M.map((m,i)=>{const v=f.dmg[i]|0;if(v<=0||v>=m[1])return'';
    return '<button '+(p>0?'':'disabled ')+'onclick="OPG.dcSpend(\''+f.id+'\','+i+')" title="1 javítópont: '+m[0]+' '+v+'/'+m[1]+' → '+(v-1)+'/'+m[1]+'">'+m[0]+' '+v+'/'+m[1]+'</button>'}).join(' ');
-  h+='<div style="margin:2px 0">🔧 <b>'+f.id+'</b>: '+p+' javítópont '+b+(f.dcU&&f.dcU.length?' <button onclick="OPG.dcUndo(\''+f.id+'\')" title="Az utolsó kiosztott pont visszavonása">↶</button>':'')+'</div>'});
- return h?'<div class="hint" style="margin:2px 0">Javítópontok (naponta d10 + medál + TP/10 − legénység-sérülés; a ki nem osztottat napváltáskor a gép osztja szét):</div>'+h:''}
+  /* v1.14.593: táblázat-sor (Hajó | Pont | Javítható modulok | Vissza) */
+  h.push(['🔧 <b>'+f.id+'</b>',p,b||'–',f.dcU&&f.dcU.length?'<button onclick="OPG.dcUndo(\''+f.id+'\')" title="Az utolsó kiosztott pont visszavonása">↶</button>':''])});
+ return h.length?'<div style="margin-top:4px"><b>Javítópontok</b> <span class="hint">(naponta d10 + medál + TP/10 − legénység-sérülés; a ki nem osztottat napváltáskor a gép osztja szét)</span></div>'+TB(['Hajó','Pont','Javítható modulok (kattintás = 1 pont)','Vissza'],h):''}
 /* dcPortHTML (v1.14.590): a kikötőben álló (nem szervizben lévő) saját hajók 🔧 sora */
 function dcPortHTML(){if(!+ECO.dcOn)return'';const ids=(CAMP.fleet||[]).filter(f=>f.loc!=='lost'&&f.st!=='repair'&&CAMP.inPort(f)).map(f=>f.id);
  const h=dcHTML(ids);return h?'<details open><summary><b>Kikötőben – javítás</b></summary>'+h+'</details>':''}
@@ -9151,7 +9166,12 @@ function seaRepairDay(){
   const L=seaFix(f.dmg,M);if(L.length)out.push(f.id+' ('+L.join(', ')+')')});
  if(out.length)utLog('Javítás a tengeren: '+out.join('; ')+'.');
  /* v1.14.524: a nap hírei az OP üzenetsorba (a részletek a kampánynaplóban és a Tengely lapon) */
+ /* v1.14.593 (opRep): a hírek a Napi jelentés „Mai hírek” táblázatába; opRep = 0: a régi módon az üzenetsor végére */
+ if(+CFG.opRep){UT.today=UT.msg.splice(0);try{repNewsRender()}catch(e){}return}
  if(UT.msg.length){const t=UT.msg.splice(0).join(' ');setTimeout(()=>{try{const m=$('o_msg');if(m)m.textContent=(m.textContent?m.textContent+' ':'')+t}catch(e){}},10)}}
+/* repNewsRender (v1.14.593): a Napi jelentés „Mai hírek” táblázata (U-boatok, német hajók, repülőtámadások) */
+function repNewsRender(){const e=$('o_ubn');if(!e)return;const L=UT.today||[];
+ e.innerHTML='<div style="margin-top:4px"><b>Mai hírek</b></div>'+(L.length?TB(['#','Hír'],L.map((t,i)=>[i+1,t])):'<div class="hint">Ma nincs hír.</div>')}
 
 /* ===== v1.14.516: NÉMET FELSZÍNI HAJÓK NYILVÁNTARTÁSA (az uTrack-kel) =====
    CAMP.sf = { HIPPER: {c:'HIPPER', base, st:'base'|'out'|'raid'|'home', r,c, ready, pc:[3 cella], pi, dmg[], vis, days, tgt}, Z1…Z4: {c:'Z', …} }
@@ -9732,8 +9752,11 @@ function genEv(){zAuto();evMulCalc();const ZE=zEff();evmap=ZE.map((row,r)=>row.m
  const c=$('o_evc');
  /* v1.14.515: az új rendszerben (uTrack) a valódi U-boat helyzet a nyilvántartásból – a régi görbe nem számít */
  if(c&&+ECO.uTrack){const u=uTrackSum(),sea=u.out+u.pat+u.home,front=sea+u.base;
-  c.innerHTML='<b>U-boat nyilvántartás:</b> '+front+' frontboat – a tengeren '+sea+' (kifut '+u.out+', járőr '+u.pat+', hazaút '+u.home+'), a bázison '+u.base+(u.trn?', kiképzésen '+u.trn:'')+' &nbsp;|&nbsp; ma felderítve: '+u.vis
-   +' &nbsp;|&nbsp; <b>Események az OP-térképen</b> (U-boat nélkül – azt a találkozás dönti el): ma '+tot+' (H '+n.H+', R '+n.R+') &nbsp;|&nbsp; részletek: Tengely lap';
+  /* v1.14.593: táblázatokban (U-boat nyilvántartás, egyéb események) + a Mai hírek (#o_ubn) */
+  c.innerHTML='<b>U-boat nyilvántartás</b>'+TB(['Frontboat','Tengeren','Kifut','Járőr','Hazaút','Bázison','Kiképzés','Ma felderítve'],[[front,sea,u.out,u.pat,u.home,u.base,u.trn||0,u.vis]])
+   +'<div style="margin-top:4px"><b>Egyéb események az OP-térképen ma</b> <span class="hint">(U-boat nélkül – azt a találkozás dönti el)</span></div>'+TB(['Összesen','Repülő (H)','Felszíni (R)'],[[tot,n.H,n.R]])
+   +'<div id="o_ubn"></div><div class="hint">Részletek: Tengely lap.</div>';
+  try{repNewsRender()}catch(e){}
   const es=$('o_es');if(es)es.textContent='⚠ U-boatok: '+sea+' a tengeren (járőr '+u.pat+'), ma felderítve '+u.vis+' · ma '+tot+' egyéb esemény'}
  else if(c){const x=evStats();const th=thrAt(dateOf(day,year).getTime());c.innerHTML=(CFG.thrOn?'<b>Fenyegetés:</b> '+th.toFixed(0)+' operatív U-boat → cél '+(th*CFG.thrK).toFixed(0)+' esemény/nap (szorzó ×'+evM.toFixed(2)+') &nbsp;|&nbsp; ':'<b>Fenyegetés-görbe: ki</b> &nbsp;|&nbsp; ')+'<b>Események az OP-térképen:</b> ma '+tot+' (U '+n.U+', H '+n.H+', R '+n.R+', K '+n.K+') &nbsp;|&nbsp; <b>várható naponta: '+x.tot.toFixed(1)+'</b> (U '+x.e.U.toFixed(1)+', H '+x.e.H.toFixed(1)+', R '+x.e.R.toFixed(1)+', K '+x.e.K.toFixed(1)+') '+x.cells+' cellán'+(x.exT>0?' (+ A-zóna: '+x.exT.toFixed(1)+'/nap, a görbétől független)':'')+'<br>'+threatSvg();const es=$('o_es');if(es)es.textContent='⚠ '+(CFG.thrOn?'Fenyegetés: '+th.toFixed(0)+' U-boat, cél '+(th*CFG.thrK).toFixed(0)+'/nap · ':'Események: ')+'ma '+tot+' esemény'}}
 // evAt: egy cella eseménye a mai rétegből
