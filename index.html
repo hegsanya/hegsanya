@@ -1,6 +1,6 @@
 <!doctype html><html lang="hu" data-theme="light"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>CEG – Konvoj kísérő kampány v1.14.598</title>
+<title>CEG – Konvoj kísérő kampány v1.14.599</title>
 <style>
 /* Színek: világos/sötét téma változókkal; a gombok és táblázatok stílusa */
 :root{--bg:#f4f1ea;--fg:#1d2733;--pn:#fff;--ln:#c9c2b3;--ac:#b3261e;--sea:#d6ecf4;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -434,7 +434,7 @@ body.opN #vOP #o_notes>div:not(#zz):nth-child(2n)::before{transform:rotate(2deg)
 </div></div>
 <div id="o_thrR" class="note"></div>   <!-- v1.14.593: ide kerül a műveleti sávból a U-boat / küldetés-sor (#o_thr), ha opRep = 1 -->
 <table class="m top" id="o_ov">
-<tr><th>Nap</th><th>Dátum</th><th>Évszak</th><th>Konvoj</th><th>Front iránya</th><th id="o_fuh">Fogyasztás ma / Kalkulált</th></tr>
+<tr><th title="1939-09-01 = 1. nap">A háború napja</th><th>Dátum</th><th>Évszak</th><th>Konvoj</th><th>Front iránya</th><th id="o_fuh">Fogyasztás ma / Kalkulált</th></tr>
 <tr><td><b id="o_dn"></b></td><td><b id="o_dt"></b></td><td><b id="o_se"></b></td><td><b id="o_cv"></b></td><td><b id="o_wi">–</b></td><td><b id="o_fu">0 / 0</b></td></tr>
 </table>
 <!-- #o_notes (opNotes): a szövegek cetliként a térkép mellett / felett; opNotes=0: egymás alatti sávok -->
@@ -5462,6 +5462,7 @@ function storageReport() {
 //   v1.14.418 (2026-11-09) – kézi kísérő iránya (manDir: 0 ki / 1 minden kézi kísérő / 2 csak a kijelölt): narancs szaggatott vonal a legközelebbi látható U-boat felé (az AI-vonal mintájára, az AI érzékelési sugarán belül)
 //   v1.14.417 (2026-11-09) – a napfény és a csillogás (W0–W1) a TELJES taktikai pályán (korábban csak a keretben); az időjárás-effektek (felhő, eső, villám, napfény, csillogás) mind az egész pályán
 //   v1.14.416 (2026-11-09) – a belső felhők kisebbek (3–6 cella) és szintenként sötétednek / szaporodnak: W2 fehér, W3 szürke, W4 sötét, összefüggő tömbökben (csoportok); a pályát nem borítják el
+//   v1.14.599 (2026-11-26) – Napi jelentés: a „Nap” oszlop helyett „A háború napja” (1939-09-01 = 1.)
 //   v1.14.598 (2026-11-26) – CSIPTETŐS NAPI JELENTÉS: fa tábla, papírlap, öt lapfül (Összefoglaló: idő, konvoj, kíséret, pénz, figyelmeztetések; Konvoj: teherhajók, elszámolás; Kíséret: hajók, javítópontok, úton / kikötőben; Ellenség; Hírek); összecsukva egy sor dátummal és a figyelmeztetések számával; csak a saját hajók
 //   v1.14.597 (2026-11-26) – Tengely lap, felszíni hajók: „Süllyesztett (t)” oszlop – a taktikai csatában elsüllyesztett tonna, NPC gyors számításnál a támadásban való rész aránya szerint
 //   v1.14.596 (2026-11-26) – Megfigyelt NPC-konvoj felszíni csatája: egy véletlen támogató hajó (supNpc: Admiral romboló 40 % / Town CL 30 % / County CA 30 %), d25 belépés; supOwn = 1 mellett nincs
@@ -5821,7 +5822,7 @@ function storageReport() {
 //   v1.14.239 (2026-10-26) – ÚJ: (1) LUT torpedó (lutOn, alap 1; 1944. januártól): az U-boat kártyán „LUT” jelölőnégyzet (az AI lutAiP %); a FAT utóda: lutLen 18 cella, lutRun 6 egyenes, lutLeg 3 fél-szélesség, találat teherhajón d6 ≤ lutHit (3), hadihajón ≤ lutHitE (1); ha FAT is be van jelölve, a LUT számít. (2) LÉGPERISZKÓP / SCHNORCHEL (schOn, alap 1; 1944. júniustól; csak szabad mozgásnál): 1/8-as mélységen a kártya „Légperiszkóp” jelölőnégyzetével a dízel hajt: az akku nem fogy, hanem schRech (2) cellát tölt körönként, max schSpd (2) lépés, kimerült akkuval is halad; kiesett dízelnél nem működik; az AI az akku fele alatt automatikusan használja.
 //   v1.14.238 (2026-10-26) – SZABAD MOZGÁS: az U-boat a belső játékterületen (pl. 80-as táblán az 50×50-esen) bárhol léphet be, nem csak a szélén (uInner, alapból BE; KI = a régi szél-belépés uEdge szerint).
 //   v1.14.237 (2026-10-26) – HEDGEHOG / SQUID ELLENŐRZÉS: az U-boat lépés utáni kiértékelésében a hedgehog / Squid „nincs találat” eredmény akkor is kiíródik, ha a vízibombák is hatottak (eddig ilyenkor csak a vízibomba-sor látszott, a hedgehog-ellenőrzés nem)
-const VER = 'v1.14.598';
+const VER = 'v1.14.599';
 // ===== MEGFIGYELŐ / TESZT MÓD (obsMode, v1.14.195) =====
 // Megfigyelő módban mindkét oldalt az AI vezérli (a kísérők is: NPC-logikával), a pálya mindent mutat (nincs köd), és a körök maguktól léptetődnek;
 // a lezárt csatákból statisztika készül (konvoj-, U-boat-, kísérő-veszteség, kimenetel), hogy látszódjon: sokféle csata születik-e, vagy egyoldalú lett a hangolás.
@@ -8391,7 +8392,8 @@ setInterval(()=>{try{if(CFG.wxSm&&CFG.wxSmAnim&&!document.hidden&&$('vOP')&&$('v
 function draw(){applyMap();try{renderCV()}catch(e){}
  const season=seasonOf(day);
  $('o_dt').textContent=dateOf(day,year).toISOString().slice(0,10);
- $('o_dn').textContent=day;
+ /* v1.14.599: a háború napja (1939-09-01 = 1.) – az év napja helyett */
+ $('o_dn').textContent=Math.floor((dateOf(day,year).getTime()-Date.UTC(1939,8,1))/864e5)+1;
  $('o_se').textContent=SEAS[season]+(CFG.wxDaily?' (csökken '+wxNow().dec+'% / nő '+wxNow().inc+'%)':'');
  /* v1.14.565: a 2-es szinten (WAC) nincs saját konvoj – amíg nem fut ki, a fejléc a WAC-parancsot és a hajóid NPC-konvoját mutatja, a térképen nincs saját konvoj-zászló */
  const noOwn=!tut&&noOwnCv();
