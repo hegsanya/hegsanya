@@ -1,6 +1,6 @@
 <!doctype html><html lang="hu" data-theme="light"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>CEG – Konvoj kísérő kampány v1.14.606</title>
+<title>CEG – Konvoj kísérő kampány v1.14.607</title>
 <style>
 /* Színek: világos/sötét téma változókkal; a gombok és táblázatok stílusa */
 :root{--bg:#f4f1ea;--fg:#1d2733;--pn:#fff;--ln:#c9c2b3;--ac:#b3261e;--sea:#d6ecf4;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -5571,6 +5571,7 @@ function storageReport() {
 //   v1.14.418 (2026-11-09) – kézi kísérő iránya (manDir: 0 ki / 1 minden kézi kísérő / 2 csak a kijelölt): narancs szaggatott vonal a legközelebbi látható U-boat felé (az AI-vonal mintájára, az AI érzékelési sugarán belül)
 //   v1.14.417 (2026-11-09) – a napfény és a csillogás (W0–W1) a TELJES taktikai pályán (korábban csak a keretben); az időjárás-effektek (felhő, eső, villám, napfény, csillogás) mind az egész pályán
 //   v1.14.416 (2026-11-09) – a belső felhők kisebbek (3–6 cella) és szintenként sötétednek / szaporodnak: W2 fehér, W3 szürke, W4 sötét, összefüggő tömbökben (csoportok); a pályát nem borítják el
+//   v1.14.607 (2026-11-27) – AXIS ÉRINTKEZÉS: ha a saját U-boat konvojt talál, a BdU dönt: „Jelentse rádión?” (igen: a hely és a konvoj ismert, 1942-től HF/DF-kockázat; nem: rádiócsend) → „Támadhatok?” (taktikai csata, az U-boatokat te vezényled, aiU = 0) / „Kövesse?” (a következő napon biztos érintkezés, a falka odaküldhető) / nem támad; a kombinált esemény nem U-boat része AI-val zajlik
 //   v1.14.606 (2026-11-27) – AXIS TÉRKÉP-KÖD: a saját U-boat az utolsó jelentett helyén (zöld, sorszámmal, halványodik), az NPC-konvoj csak a felderítés napján (U-boat a cellájában / mellette – jelentés a Hírekbe), utána „?”; NÉMET KIKÖTŐK A TÉRKÉPEN (axPorts, minden szinten): Wilhelmshaven, Narvik, Lorient (U-boat), Brest (felszíni) – a még nem működő halványan, dátummal; új bázis megnyílásakor hír; Axis: hazahívás / ÁTTELEPÍTÉS a választott bázisra (pl. Lorient) az U-flottilla lapon
 //   v1.14.605 (2026-11-27) – AXIS OLDAL (1. lépés): oldalválasztó gyorsbeállítás (új kampánytól); Axis: nincs saját brit flotta és WAC, a napok a 2-es szint „nincs saját konvoj” útján telnek; a Tengely lap Axis oldalon U-FLOTTILLA lap: Kész / tengeren / elveszett összesítő, U-boatonként bázis, állapot (a tengeren csak a jelentésből), parancs, utolsó ismert hely, torpedó, tonna
 //   v1.14.604 (2026-11-27) – TUDÁS-RÉTEG (3. lépés, CAMP.know): oldalanként ki miről tud (hely, nap, forrás: megfigyelés / HF/DF / jelentés); az OP térképen a ma nem látott, de nemrég felderített U-boat / német hajó halvány „?” jele (knowOn, knowDays 3); a német oldal: a saját U-boat utolsó jelentett helye (érkezés, felderítették)
@@ -5938,7 +5939,7 @@ function storageReport() {
 //   v1.14.239 (2026-10-26) – ÚJ: (1) LUT torpedó (lutOn, alap 1; 1944. januártól): az U-boat kártyán „LUT” jelölőnégyzet (az AI lutAiP %); a FAT utóda: lutLen 18 cella, lutRun 6 egyenes, lutLeg 3 fél-szélesség, találat teherhajón d6 ≤ lutHit (3), hadihajón ≤ lutHitE (1); ha FAT is be van jelölve, a LUT számít. (2) LÉGPERISZKÓP / SCHNORCHEL (schOn, alap 1; 1944. júniustól; csak szabad mozgásnál): 1/8-as mélységen a kártya „Légperiszkóp” jelölőnégyzetével a dízel hajt: az akku nem fogy, hanem schRech (2) cellát tölt körönként, max schSpd (2) lépés, kimerült akkuval is halad; kiesett dízelnél nem működik; az AI az akku fele alatt automatikusan használja.
 //   v1.14.238 (2026-10-26) – SZABAD MOZGÁS: az U-boat a belső játékterületen (pl. 80-as táblán az 50×50-esen) bárhol léphet be, nem csak a szélén (uInner, alapból BE; KI = a régi szél-belépés uEdge szerint).
 //   v1.14.237 (2026-10-26) – HEDGEHOG / SQUID ELLENŐRZÉS: az U-boat lépés utáni kiértékelésében a hedgehog / Squid „nincs találat” eredmény akkor is kiíródik, ha a vízibombák is hatottak (eddig ilyenkor csak a vízibomba-sor látszott, a hedgehog-ellenőrzés nem)
-const VER = 'v1.14.606';
+const VER = 'v1.14.607';
 // ===== MEGFIGYELŐ / TESZT MÓD (obsMode, v1.14.195) =====
 // Megfigyelő módban mindkét oldalt az AI vezérli (a kísérők is: NPC-logikával), a pálya mindent mutat (nincs köd), és a körök maguktól léptetődnek;
 // a lezárt csatákból statisztika készül (konvoj-, U-boat-, kísérő-veszteség, kimenetel), hogy látszódjon: sokféle csata születik-e, vagy egyoldalú lett a hangolás.
@@ -8906,10 +8907,40 @@ function npcDay(){
     rw=' Saját hajók ('+mm.map(f=>f.id+' '+fHp(f)+'%').join(', ')+') '+u.to+'ban. Besegítés: rakomány '+npcValue(u)+' EGp / '+tot+' nap / '+nE+' kísérő = '+per.toFixed(1)+' EGp hajónként naponta × '+(u.mineSD|0)+' hajó-nap = +'+egp+' EGp.';}NPCSOS.push('✅ '+u.id+' célba ért ('+u.to+'), '+u.m+' teherhajóval.'+rw)}
    CAMP.log.push('[NPC '+u.code+'] megérkezett: '+u.to+' – '+u.m+'/'+u.m0+' teherhajó, kíséret: '+(u.esc.length?u.esc.map(e=>e.c+' '+e.hp+'%').join(', '):'nincs')+'.'+rw);NPC.splice(i,1);continue}
   delete u.utIds;delete u.sfIds;const e=utEv(evAt(u.r,u.c),u.r,u.c,{npc:u,key:u.code,esc:u.esc.length,m:u.m,w:(W[u.r]||[])[u.c]|0});const tfN_=+ECO.tfSupport&&units.some(t=>!t.tow&&Math.max(Math.abs(t.r-u.r),Math.abs(t.c-u.c))<=1);   /* v1.14.518: a közeli saját kötelék (TF) – a csatát te vezényled */
+  /* v1.14.607 (Axis): követett konvoj – a követő U-boat a következő napon biztosan érintkezik */
+  let e_=e;if(ECO.side==='X'&&u.axShadow&&u.axShadow.until>=UDAY()&&CAMP.ub[u.axShadow.ub]&&!CAMP.ub[u.axShadow.ub].dead){if(!e_||e_=='-')e_='U';else if(e_.indexOf('U')<0)e_='U'+e_;if(!u.utIds)u.utIds=[u.axShadow.ub];else if(u.utIds.indexOf(u.axShadow.ub)<0)u.utIds.push(u.axShadow.ub)}
+  /* v1.14.607 (Axis): ha a saját U-boatod érintkezik, előbb te döntesz (axRunPend) – jelentés, támadás / követés / nem */
+  if(ECO.side==='X'&&!tut&&!CAMP.mission&&e_&&e_!='-'&&e_.indexOf('U')>=0&&u.utIds&&u.utIds.length){u.axQ=e_;continue}
   if(e&&e!='-'){if((+ECO.npcAsk&&npcMine(u).length)||tfN_)u.pend=e;else if(+ECO.npcSim&&CAMP.canSim())u.simQ=e;else npcFight(u,e)}}   /* v1.14.469: AI-csata (npcSim) – a nap végén, sorban */   /* v1.14.462: saját hajókkal – kérdés (npcRunPend) */
+ if(NPC.some(u=>u.axQ))setTimeout(()=>{try{axRunPend()}catch(e){console.error('[axRunPend]',e)}},40);   // v1.14.607
  if(NPC.some(u=>u.simQ))setTimeout(()=>{try{npcRunSim()}catch(e){console.error(e)}},60);
  if(NPC.some(u=>u.pend))setTimeout(()=>{try{npcRunPend()}catch(e){console.error(e)}},120);
  if(NPCSOS.length)setTimeout(()=>{try{const m=$('o_msg');if(m)m.textContent=(m.textContent?m.textContent+' ':'')+NPCSOS.join(' ')}catch(e){}},0)}   // a vészjelzés / érkezés a napi üzenet végére
+/* ===== v1.14.607 AXIS: ÉRINTKEZÉS – A BdU DÖNTÉSE =====
+   Egy saját U-boat konvojt talált (az NPC-nap eseménye, u.axQ). Sorban:
+   1. „Jelentse rádión?” – igen: a konvoj és az U-boat helye ismert lesz (tudás-réteg, Hírek); 1942-től uHfdf % eséllyel a britek bemérik.
+      Nem: rádiócsend – nem tudod meg, hol van és melyik konvoj.
+   2. „Támadhatok?” – OK: taktikai csata, az U-boatokat te vezényled (aiU = 0), a kísérők, a német repülők és hajók AI-k.
+      Mégse → „Kövesse?” – OK: követés (a következő napon biztos érintkezés, a falka odaküldhető); Mégse: nem támad.
+   A kombinált esemény nem U-boat része (repülő, felszíni) a szokásos módon (AI) zajlik le. */
+function axRunPend(){if(CAMP.battle||CAMP.mission||tut)return;const u=NPC.find(x=>x.axQ);if(!u){try{npcRunSim()}catch(e){}return}
+ const t=u.axQ;delete u.axQ;const ids=(u.utIds||[]).filter(id=>CAMP.ub[id]&&!CAMP.ub[id].dead),ub=ids[0];if(!ub){axRunPend();return}
+ const p=CAMP.ub[ub],o=p.op||{},od=ordOf(ub),where=o.st==='pat'?'a járőrterületén':'úton'+(od&&od.cell?' a kijelölt helyre ('+od.cell+')':'');
+ const radio=confirm('📡 BdU – '+ub+(ids.length>1?' (és '+(ids.length-1)+' másik U-boat)':'')+' '+where+' célpontot talált.\n\nJelentse rádión?\nOK = igen: megtudod, hol van és mit talált (a többi U-boat odaküldhető), de a britek bemérhetik\nMégse = rádiócsend: nem tudod meg, hol van és melyik konvoj');
+ if(radio){ids.forEach(id=>{const q=CAMP.ub[id].op;knowSet('X',id,q.r,q.c,'radio')});knowSet('X',u.id,u.r,u.c,'radio');
+  repAdd({u:ub,side:'X',ev:'contact',cell:addr(u.r,u.c),how:'radio',kn:{X:'sure'},tx:'📡 '+ub+': konvoj '+addr(u.r,u.c)+'-ben ('+u.m+' teherhajó, '+u.esc.length+' kísérő).'});
+  if(year>=1942&&Math.random()*100<(+ECO.uHfdf||0)){o.vis=UDAY();knowSet('A',ub,o.r,o.c,'hfdf');repAdd({u:ub,side:'X',ev:'hfdf',cell:addr(o.r,o.c),how:'hfdf',kn:{A:'sure'},tx:'HF/DF: a britek bemérték '+ub+'-t ('+addr(o.r,o.c)+').'})}}
+ const info=radio?'konvoj '+addr(u.r,u.c)+'-ben, '+u.m+' teherhajó, '+u.esc.length+' kísérő':'rádió nélkül: ismeretlen konvoj, ismeretlen hely';
+ const rest=t.replace(/U/g,'');   // a nem U-boat rész (repülő / felszíni)
+ if(confirm('⚔ '+ub+': támadhatok? ('+info+')\n\nOK = támadás – a taktikai csatában te vezényled az U-boatokat\nMégse = nem támad most (a következő kérdés: követés)')){
+  CFG.aiU=0;CFG.aiZ=1;CFG.aiA=1;delete u.axShadow;CAMP.log.push('[BdU] '+ub+' támad ('+info+').');CAMP.npcBattle(u,t);return}
+ if(confirm('👁 '+ub+': kövesse a konvojt?\n\nOK = követés: tartja a kapcsolatot, a következő napon biztosan újra érintkezik (a falka odaküldhető)\nMégse = nem követi, folytatja a parancsát')){
+  u.axShadow={ub,until:UDAY()+1};o.shadow=u.id;CAMP.log.push('[BdU] '+ub+' követi a konvojt'+(radio?' ('+addr(u.r,u.c)+')':'')+'.');
+  repAdd({u:ub,side:'X',ev:'follow',cell:radio?addr(u.r,u.c):'',how:radio?'radio':'silent',kn:{X:radio?'sure':'pres'},tx:'👁 '+ub+' követi a konvojt'+(radio?' ('+addr(u.r,u.c)+')':' (rádiócsend – helye ismeretlen)')+'.'})}
+ else{delete u.axShadow;CAMP.log.push('[BdU] '+ub+' nem támad.')}
+ if(rest){if(+ECO.npcSim&&CAMP.canSim())u.simQ=rest;else npcFight(u,rest)}
+ setTimeout(()=>{try{axRunPend()}catch(e){console.error(e)}},60)}
+
 /* ===== VEZÉNYELT NPC-CSATA (v1.14.462, ECO npcAsk) =====
    npcRunPend: ha egy saját hajóidat kísérő NPC-konvoj eseménybe került (u.pend), megkérdezi: taktikai csata (CAMP.npcBattle) vagy gyors számítás (npcFight).
    npcMer / npcEscPF: a taktikai pálya felállításához (reset): a konvoj teherhajói (legfeljebb 50) és a saját kísérői (NPC-AI) – az épségből becsült sérüléssel.
@@ -9376,6 +9407,8 @@ function uTrackDay(){
    else return}
   /* v1.14.537: torpedó-őr – a tengeren (kifelé / járőr / hazafelé) a készlet csak fogyhat; ha valami visszaállítaná, a legkisebb érték marad, és a naplóba kerül */
   if(o.st!='base'&&o.st!='trn'){const t=p.tp==null?14:p.tp;if(p.tpLow==null)p.tpLow=t;if(t>p.tpLow){utLog(id+': a torpedókészlet '+p.tpLow+' → '+t+' nőtt volna a tengeren – visszaállítva '+p.tpLow+'-re (hibajelzés).');p.tp=p.tpLow}else p.tpLow=t}
+  /* v1.14.607 (Axis): követés – az U-boat a konvoj cellájában marad (a konvojjal halad), amíg a követés tart */
+  if(o.shadow){const cu=(typeof NPC!=='undefined'?NPC:[]).find(x=>x.id===o.shadow);if(cu&&cu.axShadow&&cu.axShadow.ub===id&&cu.axShadow.until>=UDAY()&&(o.st==='out'||o.st==='pat')){o.r=cu.r;o.c=cu.c;return}delete o.shadow}
   /* v1.14.605: a játékos parancsa a tengeren – hazahívás, vagy új járőrcella (átirányítás); v1.14.606: a cél-bázis is választható */
   {const pp=ordOf(id);
    if(pp&&pp.by==='player'&&(o.st==='out'||o.st==='pat')){
