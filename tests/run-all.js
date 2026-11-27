@@ -7,12 +7,14 @@ const sl=ms=>new Promise(r=>setTimeout(r,ms));
 const results=[];
 // T: egy teszt = név + a lapon futó függvény (evaluate); a függvény {ok:bool, info:...} értéket ad
 async function T(browser,name,fn,arg){
- const page=await browser.newPage(),errs=[];page.on('pageerror',e=>errs.push(e.message));page.on('dialog',d=>d.accept());
+ /* rendrakás: rögzített magú véletlenszám (mulberry32) – a tesztek így megismételhetők, nem „néha” buknak */
+ const ctx=await browser.newContext();await ctx.addInitScript(`(()=>{let a=12345;Math.random=function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}})();`);
+ const page=await ctx.newPage(),errs=[];page.on('pageerror',e=>errs.push(e.message));page.on('dialog',d=>d.accept());
  try{await page.goto('file://'+file);await page.waitForTimeout(400);
   const r=await page.evaluate(fn,arg);
   const ok=!!(r&&r.ok)&&errs.length===0;results.push({name,ok,info:(r&&r.info)||'',errs});
  }catch(e){results.push({name,ok:false,info:'KIVÉTEL: '+e.message.split('\n')[0],errs})}
- await page.close()}
+ await page.close();await ctx.close()}
 (async()=>{const b=await chromium.launch();
 // 1) a lap hibák nélkül betölt, a verzió látszik
 await T(b,'Indulás, nincs JS-hiba',()=>({ok:typeof reset==='function'&&typeof CAMP==='object'&&typeof OPG==='object',info:document.title}));
