@@ -1,6 +1,6 @@
 <!doctype html><html lang="hu" data-theme="light"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>CEG – Konvoj kísérő kampány v1.14.605</title>
+<title>CEG – Konvoj kísérő kampány v1.14.606</title>
 <style>
 /* Színek: világos/sötét téma változókkal; a gombok és táblázatok stílusa */
 :root{--bg:#f4f1ea;--fg:#1d2733;--pn:#fff;--ln:#c9c2b3;--ac:#b3261e;--sea:#d6ecf4;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -5571,6 +5571,7 @@ function storageReport() {
 //   v1.14.418 (2026-11-09) – kézi kísérő iránya (manDir: 0 ki / 1 minden kézi kísérő / 2 csak a kijelölt): narancs szaggatott vonal a legközelebbi látható U-boat felé (az AI-vonal mintájára, az AI érzékelési sugarán belül)
 //   v1.14.417 (2026-11-09) – a napfény és a csillogás (W0–W1) a TELJES taktikai pályán (korábban csak a keretben); az időjárás-effektek (felhő, eső, villám, napfény, csillogás) mind az egész pályán
 //   v1.14.416 (2026-11-09) – a belső felhők kisebbek (3–6 cella) és szintenként sötétednek / szaporodnak: W2 fehér, W3 szürke, W4 sötét, összefüggő tömbökben (csoportok); a pályát nem borítják el
+//   v1.14.606 (2026-11-27) – AXIS TÉRKÉP-KÖD: a saját U-boat az utolsó jelentett helyén (zöld, sorszámmal, halványodik), az NPC-konvoj csak a felderítés napján (U-boat a cellájában / mellette – jelentés a Hírekbe), utána „?”; NÉMET KIKÖTŐK A TÉRKÉPEN (axPorts, minden szinten): Wilhelmshaven, Narvik, Lorient (U-boat), Brest (felszíni) – a még nem működő halványan, dátummal; új bázis megnyílásakor hír; Axis: hazahívás / ÁTTELEPÍTÉS a választott bázisra (pl. Lorient) az U-flottilla lapon
 //   v1.14.605 (2026-11-27) – AXIS OLDAL (1. lépés): oldalválasztó gyorsbeállítás (új kampánytól); Axis: nincs saját brit flotta és WAC, a napok a 2-es szint „nincs saját konvoj” útján telnek; a Tengely lap Axis oldalon U-FLOTTILLA lap: Kész / tengeren / elveszett összesítő, U-boatonként bázis, állapot (a tengeren csak a jelentésből), parancs, utolsó ismert hely, torpedó, tonna
 //   v1.14.604 (2026-11-27) – TUDÁS-RÉTEG (3. lépés, CAMP.know): oldalanként ki miről tud (hely, nap, forrás: megfigyelés / HF/DF / jelentés); az OP térképen a ma nem látott, de nemrég felderített U-boat / német hajó halvány „?” jele (knowOn, knowDays 3); a német oldal: a saját U-boat utolsó jelentett helye (érkezés, felderítették)
 //   v1.14.603 (2026-11-27) – KÖZÖS PARANCS-SZERKEZET (2. lépés, CAMP.ord): egység + fajta (kíséret / járőr / odamenés / haza / követés) + cella + ki adta (AI / játékos); a WAC-parancsok és az átvétel ide kerülnek; az U-boatok kifutása és hazaindulása AI-parancsként; a megérkezés a járőrterületre jelentés (a német oldalnak); a Napi jelentés Összefoglalója mutatja a saját élő parancsot; a német oldal előkészítése: a játékos járőr- / hazahívó parancsát az U-boat AI követi; a jelentés-napló és a parancsok a mentésbe kerülnek
@@ -5937,7 +5938,7 @@ function storageReport() {
 //   v1.14.239 (2026-10-26) – ÚJ: (1) LUT torpedó (lutOn, alap 1; 1944. januártól): az U-boat kártyán „LUT” jelölőnégyzet (az AI lutAiP %); a FAT utóda: lutLen 18 cella, lutRun 6 egyenes, lutLeg 3 fél-szélesség, találat teherhajón d6 ≤ lutHit (3), hadihajón ≤ lutHitE (1); ha FAT is be van jelölve, a LUT számít. (2) LÉGPERISZKÓP / SCHNORCHEL (schOn, alap 1; 1944. júniustól; csak szabad mozgásnál): 1/8-as mélységen a kártya „Légperiszkóp” jelölőnégyzetével a dízel hajt: az akku nem fogy, hanem schRech (2) cellát tölt körönként, max schSpd (2) lépés, kimerült akkuval is halad; kiesett dízelnél nem működik; az AI az akku fele alatt automatikusan használja.
 //   v1.14.238 (2026-10-26) – SZABAD MOZGÁS: az U-boat a belső játékterületen (pl. 80-as táblán az 50×50-esen) bárhol léphet be, nem csak a szélén (uInner, alapból BE; KI = a régi szél-belépés uEdge szerint).
 //   v1.14.237 (2026-10-26) – HEDGEHOG / SQUID ELLENŐRZÉS: az U-boat lépés utáni kiértékelésében a hedgehog / Squid „nincs találat” eredmény akkor is kiíródik, ha a vízibombák is hatottak (eddig ilyenkor csak a vízibomba-sor látszott, a hedgehog-ellenőrzés nem)
-const VER = 'v1.14.605';
+const VER = 'v1.14.606';
 // ===== MEGFIGYELŐ / TESZT MÓD (obsMode, v1.14.195) =====
 // Megfigyelő módban mindkét oldalt az AI vezérli (a kísérők is: NPC-logikával), a pálya mindent mutat (nincs köd), és a körök maguktól léptetődnek;
 // a lezárt csatákból statisztika készül (konvoj-, U-boat-, kísérő-veszteség, kimenetel), hogy látszódjon: sokféle csata születik-e, vagy egyoldalú lett a hangolás.
@@ -6007,7 +6008,7 @@ async function obsBatch(n){if(OBS.batch)return;n=Math.max(1,Math.min(500,n|0||20
 
 
 // ===== BEÁLLÍTÁSOK (Beállítások fül): gazdaság, flotta, javítás, fejlesztés, bérelt hajó =====
-const ECO0 = { side: 'A', knowOn: 1, knowDays: 3, xpUni: 1, xpMedP: 10, xpTpP: 1, xpCrewP: 10, dcOn: 1, dcDie: 10, dcDiv: 1, cpDaily: 1, detachOn: 1, detachUntil: '1940-06-25', adoptOn: 1, adoptMaxE: 2, npcVia: 'ON:O8|O9|O10|O11', npcEMin: 2, grpOn: 1, grpCap: '1939:4,1941:5,1942:6', grpRepl: 1, grpReplTab: '1:FL,2:FL,3:FM,4:RV,5:BS,6:H,7:T', grpFrom: 'FM:1940-06-01,RV:1942-01-01,BS:1942-01-01', grpReplEgp: 1000, grpReplXp: 10, tpOn: 1, tpSea: 10, tpBtl: 1, tpAir: 1, tpUb: 1, tpResc: 1, tpMax: 20, tpLog: 1, tpHit: 1, tpDet: 1, tpDetDiv: 5, svcFree: 1, svcP: 50, svcMedP: 5, svcTpP: 1, svcLog: 0, scrapAt: 40, supXp: 1, supXpDiv: 2, wacOwn: 1, wacMinLeft: 5, joinRng: 0, wacAutoJoin: 1, ageCap: 1, ageCapDrop: 10, replOn: 1, replAt: 75, replMon: 12, replMerit: 1500, replRank: 'FL,FM,RV,BS', replUsed: '70-90', replDays: 5, epWear: '2-5', epRetire: 40, etfOn: 1, etfSpd: 2, etfAtk: 15, wacWant: 3, freeOn: 0, rescNpc: 1, rescNpcP: 70, rescNoneP: 30, rescMinEsc: 2, wacOn: 1, wacReach: 12, wacDead: 3, wacLossPen: 500, wacNewCls: 'FL', worldWait: 1, npcEscTorp: 100, ePool: 0, ePortShare: 'Liverpool:60,Halifax:20,Gibraltár:15,Reykjavík:5', midUntil: '', midCol: 'M', escOver: 'allow', dayEgp: 20, dayWx: '0,0,0,10,20', dayBtl: 50, waOn: 1, waPool: '1939:40,1940:70,1941:120,1942:150,1943:160,1944:180,1945:180', waSea: 35, cvLead: '3-7', sfZRng: 'Z:12,Z36:16,Z36A:16', sfHipReal: 1, sfBases: 'BR:Brest:W14:1940-12-01:1942-02-12', sfZGrp: '1-3', sfTrain: 90, sfReg: 1, sfHist: 1, sfZMax: 6, basePts: 1, basePtsLog: 0, sfRest: '7-14', sfZRest: '3-7', noBattle: 'X12,X13,W11,V12', sfHomeAtk: 1, npcPath: 'Liverpool-Gibraltár:W12-V11-U11-T12-T13-T14-T15-T16-T17-U18-V18-W18;Halifax-Liverpool:D15-E14-F14-G15-H14-I13-J12-K11-L10-M9-N9-O9-P8-Q8-R9-S8-T9-U10-V11-W12', seaRepP: 50, tfSupport: 1, tfSupDie: 25, supOwn: 0, supNpc: 'T:40,TOWN:30,COUNTY:30', supStart: 'TOWN:Jamaica,TOWN:Sheffield,COUNTY:Norfolk', sfHipP: 50, sfRange: 18, sfDays: 0, sfGap: 'T5', sfRep: '30-60', sfZP: 7, sfFind: 70, sfHipEgp: 300, uPop: 'build', uStart: 40, uBuild: '1939:0,0,0,0,0,0,0,0,2,5,5,6;1940:2,2,2,3,3,3,4,5,6,6,7,7;1941:10,12,14,15,16,16,17,18,19,20,21,21;1942:18,18,19,19,20,20,21,21,21,21,19,21;1943:22,22,23,23,24,24,24,24,24,24,26,26;1944:21,21,20,20,20,20,19,19,18,18,17,16;1945:16,15,14,13,12,10,8,3,0,0,0,0', uTrainD: '120-180', uOther: '1939:0,1941:10,1942:15', uLossExt: '1939:1,1942:2,1943:3', npcFlag: 0, npcQuota: 'HX:3,ON:2,HG:3,OG:2,PQ:3,QP:2,LR+RL:1', uTrack: 0, uTrackShow: 1, uPatLoops: 2, uSpd2: 50, uRest: '7-14', uDet: '2:30,5:15,99:5', uAirAtt: '1939:5,1941:10,1942:20,1943:40,1944:50', uAirHi: 12, uRepP: 50, uSink6: 10, uSinkMax: 50, uScuttle: 10, uSurfDet: 150, uRep6: 3, uConvDet: 25, uWxMod: '10,0,-5,-10,-20', uBigConv: 10, uKeep: 70, uRadioNear: 20, uHfdf: 20, uPackMax: 6, uSweep: 5, seaBlock: 'V17,W17,X17', npcEscType: 1, npcAvoid: 60, uBases: 'W:Wilhelmshaven:AA12:1939-09-01,N:Narvik:AC5:1940-06-10,L:Lorient:W15:1940-08-01', uRangeOn: 1, uRange: '1939:11,1941:16,1942:35', uPackOn: 1, uPackLo: 40, uPackHi: 90, uHomeOn: 1, uHomeSpd: 1, uRepDays: 0, npcWatch: 1, npcSim: 1, cvMinE40: 1, cvMinE41: 2, cvMinEsc: 4, npcAsk: 1, npcHelpR: 6, npcHelpK: 1, npcUbP: 2, npcOn: 1, npcMax: 4, npcMLo: 15, npcMHi: 40, npcELo: 2, npcEHi: 5, npcSpawnP: 50, owP: 40, owEgp: 100, evSkipEGp: 0, startD1: 1, startAsk: 1, misP: 25, misMax: 4, misDays: 10, misN: 3, misRad: 7, misEGp: 60, misShips: 6, sqFx: 1, sqSalvo: 6, sqCost: 250, sqYear: 1943, sqDmg: 6, sqMax: 2, hhFx: 1, hhSalvo: 6, hhDmg: 6, hhMax: 1, hhPrice: 5, hhCls: 'FL,FM,RV,BB,BS', hhFitCost: 150, hhFitDays: 5, hhFrom: 1941, rfBombAA: 50, rfOneCal: 1, rfG5tw: 1, rfAA4: 1, rfTorp: 1, rfTorpBomb: 30, rfTorpFuel: 240, rfTubes1: 3, fleetDesel: 1, startEgp: 0, tutEgp: 200, tutAll: 0, startFleet: 'T,FL,FL,FL', startRand: 1, startPool: 'FL,FM,RV', maxGroup: 6, bombPrice: 1, decPen: 50, decNew: 1, decScale: 60, cvP: 100, stragDie: 30, sensFloor: '4,3,2,1,1', newLuck: 40, newWorse: 2, newMax: 4, shopDaily: 1, upgCost: 100, upgP: 50, hfCls: 'T,H,BS,BB,RV,FL,FM', hfStart: 4, hfBest: 2, hfFrom: '1941-07-01', hfNew: '1942-01-01', hfFitCost: 100, hfFitDays: 5, thrDyn: 1, thrScout: 20, thrDeep: 20, thrShadowDie: 20, thrLoseBase: 25, thrLoseWx: 10, thrLoseTurn: 15, thrLoseHit: 15, thrSink1: 35, thrSink2: 45, thrTele: 1, uAttOn: 1, uAttCut: 1, uAttRec: 0.2, uAttMin: 30, shortP: 30, shortEgp: 100, vipOn: 1, vipP: 30, vipEgp: 100, rescueOn: 1, rescueSpd: 1, shopCnt: 1, shopLo: 1, shopHi: 3, crewOn: 1, crewEgp: 50, crewMed: 1, wreckDays: 2, rfShowCost: 1,
+const ECO0 = { side: 'A', axPorts: 1, knowOn: 1, knowDays: 3, xpUni: 1, xpMedP: 10, xpTpP: 1, xpCrewP: 10, dcOn: 1, dcDie: 10, dcDiv: 1, cpDaily: 1, detachOn: 1, detachUntil: '1940-06-25', adoptOn: 1, adoptMaxE: 2, npcVia: 'ON:O8|O9|O10|O11', npcEMin: 2, grpOn: 1, grpCap: '1939:4,1941:5,1942:6', grpRepl: 1, grpReplTab: '1:FL,2:FL,3:FM,4:RV,5:BS,6:H,7:T', grpFrom: 'FM:1940-06-01,RV:1942-01-01,BS:1942-01-01', grpReplEgp: 1000, grpReplXp: 10, tpOn: 1, tpSea: 10, tpBtl: 1, tpAir: 1, tpUb: 1, tpResc: 1, tpMax: 20, tpLog: 1, tpHit: 1, tpDet: 1, tpDetDiv: 5, svcFree: 1, svcP: 50, svcMedP: 5, svcTpP: 1, svcLog: 0, scrapAt: 40, supXp: 1, supXpDiv: 2, wacOwn: 1, wacMinLeft: 5, joinRng: 0, wacAutoJoin: 1, ageCap: 1, ageCapDrop: 10, replOn: 1, replAt: 75, replMon: 12, replMerit: 1500, replRank: 'FL,FM,RV,BS', replUsed: '70-90', replDays: 5, epWear: '2-5', epRetire: 40, etfOn: 1, etfSpd: 2, etfAtk: 15, wacWant: 3, freeOn: 0, rescNpc: 1, rescNpcP: 70, rescNoneP: 30, rescMinEsc: 2, wacOn: 1, wacReach: 12, wacDead: 3, wacLossPen: 500, wacNewCls: 'FL', worldWait: 1, npcEscTorp: 100, ePool: 0, ePortShare: 'Liverpool:60,Halifax:20,Gibraltár:15,Reykjavík:5', midUntil: '', midCol: 'M', escOver: 'allow', dayEgp: 20, dayWx: '0,0,0,10,20', dayBtl: 50, waOn: 1, waPool: '1939:40,1940:70,1941:120,1942:150,1943:160,1944:180,1945:180', waSea: 35, cvLead: '3-7', sfZRng: 'Z:12,Z36:16,Z36A:16', sfHipReal: 1, sfBases: 'BR:Brest:W14:1940-12-01:1942-02-12', sfZGrp: '1-3', sfTrain: 90, sfReg: 1, sfHist: 1, sfZMax: 6, basePts: 1, basePtsLog: 0, sfRest: '7-14', sfZRest: '3-7', noBattle: 'X12,X13,W11,V12', sfHomeAtk: 1, npcPath: 'Liverpool-Gibraltár:W12-V11-U11-T12-T13-T14-T15-T16-T17-U18-V18-W18;Halifax-Liverpool:D15-E14-F14-G15-H14-I13-J12-K11-L10-M9-N9-O9-P8-Q8-R9-S8-T9-U10-V11-W12', seaRepP: 50, tfSupport: 1, tfSupDie: 25, supOwn: 0, supNpc: 'T:40,TOWN:30,COUNTY:30', supStart: 'TOWN:Jamaica,TOWN:Sheffield,COUNTY:Norfolk', sfHipP: 50, sfRange: 18, sfDays: 0, sfGap: 'T5', sfRep: '30-60', sfZP: 7, sfFind: 70, sfHipEgp: 300, uPop: 'build', uStart: 40, uBuild: '1939:0,0,0,0,0,0,0,0,2,5,5,6;1940:2,2,2,3,3,3,4,5,6,6,7,7;1941:10,12,14,15,16,16,17,18,19,20,21,21;1942:18,18,19,19,20,20,21,21,21,21,19,21;1943:22,22,23,23,24,24,24,24,24,24,26,26;1944:21,21,20,20,20,20,19,19,18,18,17,16;1945:16,15,14,13,12,10,8,3,0,0,0,0', uTrainD: '120-180', uOther: '1939:0,1941:10,1942:15', uLossExt: '1939:1,1942:2,1943:3', npcFlag: 0, npcQuota: 'HX:3,ON:2,HG:3,OG:2,PQ:3,QP:2,LR+RL:1', uTrack: 0, uTrackShow: 1, uPatLoops: 2, uSpd2: 50, uRest: '7-14', uDet: '2:30,5:15,99:5', uAirAtt: '1939:5,1941:10,1942:20,1943:40,1944:50', uAirHi: 12, uRepP: 50, uSink6: 10, uSinkMax: 50, uScuttle: 10, uSurfDet: 150, uRep6: 3, uConvDet: 25, uWxMod: '10,0,-5,-10,-20', uBigConv: 10, uKeep: 70, uRadioNear: 20, uHfdf: 20, uPackMax: 6, uSweep: 5, seaBlock: 'V17,W17,X17', npcEscType: 1, npcAvoid: 60, uBases: 'W:Wilhelmshaven:AA12:1939-09-01,N:Narvik:AC5:1940-06-10,L:Lorient:W15:1940-08-01', uRangeOn: 1, uRange: '1939:11,1941:16,1942:35', uPackOn: 1, uPackLo: 40, uPackHi: 90, uHomeOn: 1, uHomeSpd: 1, uRepDays: 0, npcWatch: 1, npcSim: 1, cvMinE40: 1, cvMinE41: 2, cvMinEsc: 4, npcAsk: 1, npcHelpR: 6, npcHelpK: 1, npcUbP: 2, npcOn: 1, npcMax: 4, npcMLo: 15, npcMHi: 40, npcELo: 2, npcEHi: 5, npcSpawnP: 50, owP: 40, owEgp: 100, evSkipEGp: 0, startD1: 1, startAsk: 1, misP: 25, misMax: 4, misDays: 10, misN: 3, misRad: 7, misEGp: 60, misShips: 6, sqFx: 1, sqSalvo: 6, sqCost: 250, sqYear: 1943, sqDmg: 6, sqMax: 2, hhFx: 1, hhSalvo: 6, hhDmg: 6, hhMax: 1, hhPrice: 5, hhCls: 'FL,FM,RV,BB,BS', hhFitCost: 150, hhFitDays: 5, hhFrom: 1941, rfBombAA: 50, rfOneCal: 1, rfG5tw: 1, rfAA4: 1, rfTorp: 1, rfTorpBomb: 30, rfTorpFuel: 240, rfTubes1: 3, fleetDesel: 1, startEgp: 0, tutEgp: 200, tutAll: 0, startFleet: 'T,FL,FL,FL', startRand: 1, startPool: 'FL,FM,RV', maxGroup: 6, bombPrice: 1, decPen: 50, decNew: 1, decScale: 60, cvP: 100, stragDie: 30, sensFloor: '4,3,2,1,1', newLuck: 40, newWorse: 2, newMax: 4, shopDaily: 1, upgCost: 100, upgP: 50, hfCls: 'T,H,BS,BB,RV,FL,FM', hfStart: 4, hfBest: 2, hfFrom: '1941-07-01', hfNew: '1942-01-01', hfFitCost: 100, hfFitDays: 5, thrDyn: 1, thrScout: 20, thrDeep: 20, thrShadowDie: 20, thrLoseBase: 25, thrLoseWx: 10, thrLoseTurn: 15, thrLoseHit: 15, thrSink1: 35, thrSink2: 45, thrTele: 1, uAttOn: 1, uAttCut: 1, uAttRec: 0.2, uAttMin: 30, shortP: 30, shortEgp: 100, vipOn: 1, vipP: 30, vipEgp: 100, rescueOn: 1, rescueSpd: 1, shopCnt: 1, shopLo: 1, shopHi: 3, crewOn: 1, crewEgp: 50, crewMed: 1, wreckDays: 2, rfShowCost: 1,
 refitCost: 150, refitHH: 250, refitDay: 5, refitMax: 0, refitYear: 1939, hhYear: 1941, rfBombTw: 20, rfBombG5: 50, upgLo: 2, upgHi: 12,
   ageOn: 0, ageThr: 50, ageP: 50, ageStep: 1, ageW0: 5, ageW1: 7, ageW2: 10, ageW3: 15, ageW4: 25, svcCost: 100, repMode: 'points', repPts: '0-2', repOrder: 'Legénység,Kormány,Engine,Diesel', repP: 50, repLo: 2, repHi: 12, rentDie: 25, rentCls: 'T', rentMax: 6, startU: 'U1,U2,U3', startRaid: 'Z1,Z2,HIPPER1' };
 const ECO = Object.assign({}, ECO0);
@@ -6049,6 +6050,7 @@ const ECO_L = {
   grpFrom: 'Pótlás: az osztályok elérhetősége dátum szerint (osztály:ÉÉÉÉ-HH-NN, vesszővel); előtte egy kisebb eredmény jön',
   tpOn: 'Tapasztalati pont (TP; 0/1; v1.14.570): hajónként gyűlik a tengeren és a csatában; minden TP +1% esély (felújítás, támogatás belépése, pótlás); a megmentett legénység viszi',
   tpSea: 'TP: ennyi tengeren töltött nap = +1 TP', tpBtl: 'TP: csatánként (ha a hajó a pályán volt)', tpAir: 'TP: lelőtt repülőnként', tpUb: 'TP: elsüllyesztett / megsérült U-boatonként', tpResc: 'TP: mentésenként (a mentő hajónak)', tpMax: 'TP: legfeljebb ennyi', tpLog: 'TP: a növekedés a Kampánynaplóba (0/1)',
+  axPorts: 'Német kikötők a térképen (0/1; v1.14.606): az U-boat bázisok (uBases) és a felszíni bázisok (sfBases) – a még nem működő halványan, a kezdő dátummal; minden szinten',
   knowOn: 'Utolsó ismert hely (0/1; v1.14.604): a ma nem látott, de nemrég felderített U-boat / német hajó halvány „?” jele az OP térképen (a tudás-rétegből)',
   knowDays: 'Utolsó ismert hely: ennyi napig látszik a jel',
   side: 'A játékos oldala (v1.14.602): A = Allied (brit). X = Axis (német) – előkészítés, még nem játszható',
@@ -7581,7 +7583,7 @@ const CAMP = {
     const ecoRow = k => [ECO_L[k] + cfgKeyHint(k), '<input ' + (typeof ECO0[k] === 'number' ? 'type="number"' : 'type="text"') + ' value="' + ECO[k] + '" style="width:' + (typeof ECO0[k] === 'number' ? 80 : 160) + 'px" onchange="CAMP.setEco(\'' + k + '\',this.value)">', ECO0[k]];
     const ECO_GROUPS = [
       ['Kampány és kezdőállapot', ['startAsk', 'startD1', 'startEgp', 'tutEgp', 'tutAll', 'startFleet', 'startU', 'startRaid']],
-      ['Konvoj és indulás', ['maxGroup', 'escOver', 'cpDaily', 'detachOn', 'detachUntil', 'adoptOn', 'adoptMaxE', 'npcVia', 'npcEMin', 'grpOn', 'grpCap', 'grpRepl', 'grpReplTab', 'grpReplEgp', 'grpReplXp', 'grpFrom', 'side', 'knowOn', 'knowDays', 'xpUni', 'xpMedP', 'xpTpP', 'xpCrewP', 'dcOn', 'dcDie', 'dcDiv', 'tpOn', 'tpSea', 'tpBtl', 'tpAir', 'tpUb', 'tpResc', 'tpMax', 'tpLog', 'tpHit', 'tpDet', 'tpDetDiv', 'svcFree', 'svcP', 'svcMedP', 'svcTpP', 'svcLog', 'scrapAt', 'supXp', 'supXpDiv', 'wacOwn', 'wacMinLeft', 'joinRng', 'wacAutoJoin', 'ageCap', 'ageCapDrop', 'replOn', 'replAt', 'replMon', 'replMerit', 'replRank', 'replUsed', 'replDays', 'epWear', 'epRetire', 'etfOn', 'etfSpd', 'etfAtk', 'wacWant', 'freeOn', 'rescNpc', 'rescNpcP', 'rescNoneP', 'rescMinEsc', 'wacOn', 'wacReach', 'wacDead', 'wacLossPen', 'wacNewCls', 'worldWait', 'npcEscTorp', 'ePool', 'ePortShare', 'midUntil', 'midCol', 'cvP', 'cvLead', 'dayEgp', 'dayWx', 'dayBtl', 'decPen', 'decNew', 'decScale', 'stragDie', 'shortP', 'shortEgp', 'vipOn', 'vipP', 'vipEgp', 'owP', 'owEgp']],
+      ['Konvoj és indulás', ['maxGroup', 'escOver', 'cpDaily', 'detachOn', 'detachUntil', 'adoptOn', 'adoptMaxE', 'npcVia', 'npcEMin', 'grpOn', 'grpCap', 'grpRepl', 'grpReplTab', 'grpReplEgp', 'grpReplXp', 'grpFrom', 'side', 'axPorts', 'knowOn', 'knowDays', 'xpUni', 'xpMedP', 'xpTpP', 'xpCrewP', 'dcOn', 'dcDie', 'dcDiv', 'tpOn', 'tpSea', 'tpBtl', 'tpAir', 'tpUb', 'tpResc', 'tpMax', 'tpLog', 'tpHit', 'tpDet', 'tpDetDiv', 'svcFree', 'svcP', 'svcMedP', 'svcTpP', 'svcLog', 'scrapAt', 'supXp', 'supXpDiv', 'wacOwn', 'wacMinLeft', 'joinRng', 'wacAutoJoin', 'ageCap', 'ageCapDrop', 'replOn', 'replAt', 'replMon', 'replMerit', 'replRank', 'replUsed', 'replDays', 'epWear', 'epRetire', 'etfOn', 'etfSpd', 'etfAtk', 'wacWant', 'freeOn', 'rescNpc', 'rescNpcP', 'rescNoneP', 'rescMinEsc', 'wacOn', 'wacReach', 'wacDead', 'wacLossPen', 'wacNewCls', 'worldWait', 'npcEscTorp', 'ePool', 'ePortShare', 'midUntil', 'midCol', 'cvP', 'cvLead', 'dayEgp', 'dayWx', 'dayBtl', 'decPen', 'decNew', 'decScale', 'stragDie', 'shortP', 'shortEgp', 'vipOn', 'vipP', 'vipEgp', 'owP', 'owEgp']],
       ['NPC-konvojok', ['npcOn', 'npcMax', 'npcSpawnP', 'npcMLo', 'npcMHi', 'npcELo', 'npcEHi', 'npcHelpR', 'npcUbP', 'npcAsk', 'npcSim', 'npcWatch', 'npcAvoid', 'npcEscType', 'seaBlock', 'noBattle', 'waOn', 'waPool', 'waSea', 'npcFlag', 'npcQuota', 'npcPath', 'cvMinE40', 'cvMinE41', 'cvMinEsc']],
       ['Hajóbolt és fejlesztés', ['fleetDesel', 'sensFloor', 'newLuck', 'newWorse', 'newMax', 'shopDaily', 'bombPrice', 'upgCost', 'upgP', 'upgLo', 'upgHi']],
       ['Elöregedés', ['ageOn', 'ageThr', 'ageP', 'ageStep', 'ageW0', 'ageW1', 'ageW2', 'ageW3', 'ageW4']],
@@ -8103,7 +8105,7 @@ function uFlotView() {
   h += '<p class="hint">A német parancsnokság tudása: a tengeren lévő U-boat helye csak a jelentéséből ismert. A parancsok kiadása a következő lépésben kerül ide.</p>';
   h += TB(['Kész', 'Tengeren', 'Bázison összesen', 'Elveszett / nem jelentkezik'], [[ready, sea, live.length - sea, ids.length - live.length]]);
   /* parancs: a kijelölt U-boatok (jelölőnégyzet) – járőrcella megadása vagy hazahívás */
-  h += '<div class="note" style="margin:6px 0">Kijelöltek: <input id="ufCell" placeholder="cella, pl. P11" style="width:90px"> <button onclick="ufOrder(\'patrol\')">⚓→ Járőrre</button> <button onclick="ufOrder(\'home\')">↩ Hazahív</button> <span id="ufMsg" class="hint"></span></div>';
+  h += '<div class="note" style="margin:6px 0">Kijelöltek: <input id="ufCell" placeholder="cella, pl. P11" style="width:90px"> <button onclick="ufOrder(\'patrol\')">⚓→ Járőrre</button> <button onclick="ufOrder(\'home\')">↩ Hazahív / áttelepít:</button> <select id="ufBase">' + B.map(b => '<option value="' + b.id + '">' + b.name + '</option>').join('') + '</select> <span id="ufMsg" class="hint"></span></div>';
   h += TB(['', 'U-boat', 'Bázis', 'Állapot', 'Parancs', 'Utolsó ismert hely', 'Torpedó', 'Süllyesztett (t)'], ids.map(id => [ub[id].dead ? '' : '<input type="checkbox" class="ufSel" value="' + id + '">'].concat(row(id))));
   $('vAX').innerHTML = h; showView('AX');
 }
@@ -8113,10 +8115,11 @@ function ufOrder(kind) {
   if (!ids.length) { if (m) m.textContent = 'Jelölj ki legalább egy U-boatot.'; return; }
   let cell = '';
   if (kind === 'patrol') { cell = String(($('ufCell') || {}).value || '').trim().toUpperCase(); if (!/^[A-Z]{1,2}\d{1,2}$/.test(cell)) { if (m) m.textContent = 'Adj meg egy cellát (pl. P11).'; return; } }
-  ids.forEach(id => OPG.ordSet({ u: id, side: 'X', kind, cell: kind === 'home' ? 'bázis' : cell, by: 'player' }));
-  CAMP.log.push('[BdU parancs] ' + ids.join(', ') + ': ' + (kind === 'home' ? 'hazahívva' : 'járőr ' + cell) + '.');
+  const bs = kind === 'home' ? String(($('ufBase') || {}).value || '') : '', bn = (((() => { try { return OPG.ubBases(); } catch (e) { return []; } })()).find(b => b.id === bs) || {}).name || 'bázis';
+  ids.forEach(id => OPG.ordSet({ u: id, side: 'X', kind, cell: kind === 'home' ? bn : cell, base: bs || undefined, by: 'player' }));
+  CAMP.log.push('[BdU parancs] ' + ids.join(', ') + ': ' + (kind === 'home' ? 'haza / áttelepítés: ' + bn : 'járőr ' + cell) + '.');
   try { CAMP.save(); } catch (e) { }
-  uFlotView(); const m2 = $('ufMsg'); if (m2) m2.textContent = ids.join(', ') + ': ' + (kind === 'home' ? 'hazahívva' : 'járőrre ' + cell) + ' – a következő napon indulnak.';
+  uFlotView(); const m2 = $('ufMsg'); if (m2) m2.textContent = ids.join(', ') + ': ' + (kind === 'home' ? 'haza / áttelepítés: ' + bn : 'járőrre ' + cell) + ' – a következő napon indulnak.';
 }
 function axisView() {
   if (ECO.side === 'X' && !CAMP.mission) return uFlotView();   // v1.14.605: Axis oldalon a Tengely lap = U-flottilla
@@ -8603,7 +8606,7 @@ function draw(){applyMap();try{renderCV()}catch(e){}
    +'<text x="'+(x+3)+'" y="'+(yt+13)+'" font-size="11.5" font-weight="800" fill="#fff">'+u.id+'</text></g>'};
  const lab=all.map((u,i)=>{if(+CFG.opFlags)return opFlag(u,cols[i%cols.length],u.k===act);
   const x=(u.c+.5)*32,y=(u.r+.5)*rh()-rh()*.62,on=u.k===act;return '<g><rect x="'+(x-20)+'" y="'+(y-9)+'" width="40" height="15" rx="3" fill="'+cols[i%cols.length]+'" stroke="'+(on?'#000':'#fff')+'" stroke-width="'+(on?2.5:1)+'"/><text x="'+x+'" y="'+(y+3)+'" text-anchor="middle" font-size="10" font-weight="800" fill="#fff">'+u.id+'</text></g>'}).join('');
- $('o_tr').innerHTML=uRangeSvg()+shalMarks()+hz+evs+xs+all.map((u,i)=>u.k==='C'&&$('o_cl')&&!$('o_cl').checked?'':pl(u.route,cols[i%cols.length])).join('')+lab+npcMarks()+etfMarks()+knowMarks()+uTrackMarks()+sfMarks()+tutRing()+MIS.opMarks(px)+viaMarks(px);try{npcPanel()}catch(e){}   // útvonalak és az egységek nevei a térképen (v1.14.460: + NPC-konvojok)
+ $('o_tr').innerHTML=uRangeSvg()+shalMarks()+hz+evs+xs+all.map((u,i)=>u.k==='C'&&$('o_cl')&&!$('o_cl').checked?'':pl(u.route,cols[i%cols.length])).join('')+lab+npcMarks()+etfMarks()+axPortMarks()+knowMarks()+uTrackMarks()+sfMarks()+tutRing()+MIS.opMarks(px)+viaMarks(px);try{npcPanel()}catch(e){}   // útvonalak és az egységek nevei a térképen (v1.14.460: + NPC-konvojok)
  $('o_rt').innerHTML=routeTable(all,cols);uiUnits();
 }
 /* ===== NPC-KONVOJOK (v1.14.460, ECO npcOn …) =====
@@ -9181,6 +9184,17 @@ function repAdd(o){if(!CAMP)return;const L=CAMP.rep||(CAMP.rep=[]);
  L.push(Object.assign({d:day,y:year,side:'X',ev:'report',how:'obs',kn:{A:'sure'}},o));
  if(L.length>400)L.splice(0,L.length-400)}
 function repKnown(side,d){side=side||SIDE_();return(CAMP.rep||[]).filter(r=>r.kn&&r.kn[side]&&(d==null||(r.d===d&&r.y===year)))}
+/* ===== v1.14.606 NÉMET KIKÖTŐK A TÉRKÉPEN (ECO.axPorts) – közös, minden szinten =====
+   Az U-boat bázisok (ECO.uBases: Wilhelmshaven, Narvik, Lorient) és a felszíni bázisok (ECO.sfBases: Brest).
+   A működő bázis sötétpiros horgony + név; a még nem működő halványan, a kezdő dátummal. */
+function axPortMarks(){if(!+ECO.axPorts||tut)return '';const t=dateMs();
+ const L=ubBasesAll().map(b=>Object.assign({u:1},b)).concat(String(ECO.sfBases||'').split(',').map(x=>x.trim().split(':')).filter(a=>a.length>=4).map(([id,name,cell,from,to])=>({id,name,cell,ms:Date.parse(from+'T00:00:00Z')||0,me:to?Date.parse(to+'T00:00:00Z'):Infinity})));
+ const seen={};return L.filter(b=>!seen[b.cell]&&(seen[b.cell]=1)).map(b=>{let r,c;try{[r,c]=parse(b.cell)}catch(e){return ''}
+  const on=b.ms<=t&&t<(b.me||Infinity),x=(c+.5)*32,y=(r+.5)*rh(),dt=new Date(b.ms).toISOString().slice(0,10);
+  return '<g opacity="'+(on?1:.45)+'" style="pointer-events:auto"><title>'+b.name+' ('+b.cell+') – német '+(b.u?'U-boat':'felszíni')+' bázis'+(on?'':' – '+dt+'-től')+'</title>'
+   +'<text x="'+x+'" y="'+(y+9)+'" text-anchor="middle" font-size="26" font-weight="900" fill="#7f0000" stroke="#fff" stroke-width="3" paint-order="stroke">⚓</text>'
+   +'<text x="'+(x+15)+'" y="'+(y+4)+'" font-size="13" font-weight="800" fill="#7f0000" stroke="#fff" stroke-width="3" paint-order="stroke">'+b.name+(on?'':' ('+dt.slice(0,7)+')')+'</text></g>'}).join('')}
+
 /* ===== v1.14.604 TUDÁS-RÉTEG (CAMP.know) – ki miről tud az OP térképen =====
    know[oldal][egység] = {r, c, cell, d, y, how, q}: az oldal utolsó ismerete az egységről
      how: 'obs' (megfigyelés: repülő, hajó) | 'hfdf' (rádió-bemérés) | 'radio' (a saját egység jelentése) | 'battle'
@@ -9191,7 +9205,7 @@ function knowSet(side,u,r,c,how,q){if(!CAMP)return;const K=CAMP.know||(CAMP.know
  S[u]={r,c,cell:addr(r,c),d:day,y:year,ud:UDAY(),how:how||'obs',q:q||'sure'}}
 function knowOf(side,u){const K=CAMP&&CAMP.know;return K&&K[side]?K[side][u]||null:null}
 /* knowMarks: a brit oldal térképén a ma NEM látott, de nemrég (knowDays napon belül) felderített ellenséges egységek utolsó ismert helye */
-function knowMarks(){if(!+ECO.uTrack||!+ECO.knowOn||tut||!CAMP||!CAMP.know)return '';const S=CAMP.know[SIDE_()]||{},now=UDAY(),lim=+ECO.knowDays||3;
+function knowMarks(){if(!+ECO.uTrack||!+ECO.knowOn||tut||!CAMP||!CAMP.know||ECO.side==='X')return '';const S=CAMP.know[SIDE_()]||{},now=UDAY(),lim=+ECO.knowDays||3;
  const HOW={obs:'megfigyelés',hfdf:'rádió-bemérés (HF/DF)',radio:'jelentés',battle:'csata'};
  return Object.keys(S).map(id=>{const k=S[id],age=now-k.ud;if(age<1||age>lim)return '';
   const p=CAMP.ub&&CAMP.ub[id],q=CAMP.sf&&Object.keys(CAMP.sf).find(z=>sfName(z)===id);
@@ -9200,6 +9214,22 @@ function knowMarks(){if(!+ECO.uTrack||!+ECO.knowOn||tut||!CAMP||!CAMP.know)retur
   return '<g opacity="'+(1-age/(lim+1)*.6).toFixed(2)+'" style="pointer-events:auto"><title>'+id+' – utoljára '+k.cell+'-ben ('+HOW[k.how]+', '+age+' napja)</title>'
    +'<circle cx="'+x+'" cy="'+y+'" r="8" fill="rgba(255,255,255,.75)" stroke="#b71c1c" stroke-width="1.6" stroke-dasharray="3,2"/>'
    +'<text x="'+x+'" y="'+(y+4)+'" text-anchor="middle" font-size="10" font-weight="900" fill="#b71c1c">?</text></g>'}).join('')}
+
+/* ===== v1.14.606 AXIS TÉRKÉP (köd a német oldalon) =====
+   – a saját, tengeren lévő U-boat az UTOLSÓ JELENTETT helyén (halványodik a jelentés korával; jelentés nélkül nem látszik);
+   – az NPC-konvoj csak a felderítés napján látszik (npcMarks), utána knowDays napig „?” jellel;
+   – a felderítés: egy tengeren lévő saját U-boat a konvoj cellájában vagy mellette (axSpot, naponta). */
+function axSpot(){if(ECO.side!=='X'||!CAMP||!CAMP.ub||typeof NPC==='undefined')return;
+ const sea=Object.keys(CAMP.ub).filter(id=>{const p=CAMP.ub[id];return !p.dead&&p.op&&!['base','trn'].includes(p.op.st)});
+ NPC.forEach(u=>{const by=sea.find(id=>{const o=CAMP.ub[id].op;return Math.max(Math.abs(o.r-u.r),Math.abs(o.c-u.c))<=1});
+  if(by&&!(knowOf('X',u.id)&&knowOf('X',u.id).ud===UDAY())){knowSet('X',u.id,u.r,u.c,'radio');repAdd({u:by,side:'X',ev:'sight',cell:addr(u.r,u.c),how:'radio',kn:{X:'sure'},tx:by+': konvoj '+addr(u.r,u.c)+'-ben ('+(u.m||'?')+' teherhajó, '+((u.esc||[]).length)+' kísérő).'})}})}
+function axMarks(){if(!CAMP||!CAMP.ub)return '';const now=UDAY(),lim=+ECO.knowDays||3,S=(CAMP.know&&CAMP.know.X)||{};let h='';
+ Object.keys(CAMP.ub).forEach(id=>{const p=CAMP.ub[id],o=p.op,k=S[id];if(p.dead||!o||['base','trn'].includes(o.st)||!k)return;const age=now-k.ud;if(age>lim*3)return;
+  const x=(k.c+.5)*32,y=(k.r+.5)*rh();
+  h+='<g opacity="'+Math.max(.35,1-age*.15).toFixed(2)+'" style="pointer-events:auto"><title>'+id+' – utoljára jelentett hely: '+k.cell+' ('+age+' napja)</title><circle cx="'+x+'" cy="'+y+'" r="9" fill="#2e7d32" stroke="#fff" stroke-width="1.5"/><text x="'+x+'" y="'+(y+4)+'" text-anchor="middle" font-size="9" font-weight="900" fill="#fff">'+id.slice(1)+'</text></g>'});
+ (typeof NPC!=='undefined'?NPC:[]).forEach(u=>{const k=S[u.id];if(!k)return;const age=now-k.ud;if(age<1||age>lim)return;const x=(k.c+.5)*32,y=(k.r+.5)*rh();
+  h+='<g opacity="'+(1-age/(lim+1)*.6).toFixed(2)+'" style="pointer-events:auto"><title>Konvoj – utoljára '+k.cell+'-ben ('+age+' napja)</title><circle cx="'+x+'" cy="'+y+'" r="8" fill="rgba(255,255,255,.75)" stroke="#424242" stroke-width="1.6" stroke-dasharray="3,2"/><text x="'+x+'" y="'+(y+4)+'" text-anchor="middle" font-size="10" font-weight="900" fill="#424242">?</text></g>'});
+ return h}
 
 /* ===== v1.14.603 KÖZÖS PARANCS-SZERKEZET (CAMP.ord) – egy szabály mindenhová =====
    Egy parancs: {id, side, u: egység, kind, cell, code (konvoj), ref (pl. a WAC-parancs azonosítója), by: 'ai' | 'player', d0 / y0: kiadva, st: 'active' | 'done', end}
@@ -9310,6 +9340,8 @@ function uTrackDay(){
  if(!+ECO.uTrack||!CAMP||!CAMP.ub)return;
  UT.maps={};UT.day=UDAY();
  const B=ubBases();if(!B.length)return;
+ /* v1.14.606: ma nyílt bázis – hír (mindkét oldal tudja, a német oldal áttelepíthet) */
+ {const t0=dateMs();ubBasesAll().filter(b=>b.ms&&b.ms<=t0&&t0-b.ms<864e5).forEach(b=>{repAdd({u:b.name,side:'X',ev:'base',cell:b.cell,how:'admiralty',kn:{A:'sure',X:'sure'},tx:'⚓ Új német U-boat bázis működik: '+b.name+' ('+b.cell+').'+(ECO.side==='X'?' Az U-boatok áttelepíthetők (U-flottilla lap: Hazahív → '+b.name+').':'')});CAMP.log.push('[BdU] Új bázis: '+b.name+' ('+b.cell+').')})}
  const bOf=p=>B.find(b=>b.id===(p.base||'W'))||B[0];
  const restLH=String(ECO.uRest||'7-14').split('-').map(Number);
  /* pihenő a bázison = a javítás ideje (6/6-os modulonként +uRep6 nap) */
@@ -9329,6 +9361,9 @@ function uTrackDay(){
   if(!p.op)p.op={st:'base',r:br,c:bc,ready:UDAY()+nrnd(0,14),pc:null,pi:0,lp:0,vis:-1};   // új: a bázison, szétszórt indulással
   const o=p.op;
   if(p.away){o.st='base';o.r=br;o.c=bc;o.ready=Math.max(o.ready||0,p.away);return}   // javítás alatt (a csata utáni hazaküldés)
+  /* v1.14.606: hazahívás / áttelepítés egy másik bázisra (a parancs base mezője) – a bázis innentől az új; a bázison álló U-boat útnak indul */
+  {const pp=ordOf(id);if(pp&&pp.by==='player'&&pp.kind==='home'&&pp.base&&pp.base!==(p.base||'W')&&B.some(x=>x.id===pp.base)&&o.ordId!==pp.id){p.base=pp.base;o.ordId=pp.id;
+    if(o.st==='base'&&!p.away){o.st='home';utLog(id+' áttelepül: '+(B.find(x=>x.id===pp.base)||{}).name+'.')}}}
   if(o.st=='trn'){if(UDAY()>=(p.train||0)){o.st='base';o.ready=UDAY();utLog(id+' befejezte a kiképzést, frontszolgálatba áll ('+b.name+').')}return}   // v1.14.514: kiképzés a Balti-tengeren
   if(o.st=='base'){
    o.r=br;o.c=bc;
@@ -9341,12 +9376,13 @@ function uTrackDay(){
    else return}
   /* v1.14.537: torpedó-őr – a tengeren (kifelé / járőr / hazafelé) a készlet csak fogyhat; ha valami visszaállítaná, a legkisebb érték marad, és a naplóba kerül */
   if(o.st!='base'&&o.st!='trn'){const t=p.tp==null?14:p.tp;if(p.tpLow==null)p.tpLow=t;if(t>p.tpLow){utLog(id+': a torpedókészlet '+p.tpLow+' → '+t+' nőtt volna a tengeren – visszaállítva '+p.tpLow+'-re (hibajelzés).');p.tp=p.tpLow}else p.tpLow=t}
-  /* v1.14.605: a játékos parancsa a tengeren – hazahívás, vagy új járőrcella (átirányítás) */
-  {const pp=ordOf(id);if(pp&&pp.by==='player'&&(o.st==='out'||o.st==='pat')){
+  /* v1.14.605: a játékos parancsa a tengeren – hazahívás, vagy új járőrcella (átirányítás); v1.14.606: a cél-bázis is választható */
+  {const pp=ordOf(id);
+   if(pp&&pp.by==='player'&&(o.st==='out'||o.st==='pat')){
     if(pp.kind==='home')o.st='home';
     else if(pp.kind==='patrol'&&o.ordId!==pp.id){const pc=ordPatrolPc(pp.cell);if(pc){o.pc=pc;o.st='out';o.pi=0;o.lp=0;o.ordId=pp.id}}}}
   if(o.st!='base'&&o.st!='trn'&&ut66(p,'Diesel')){/* áll: nincs mozgás (vészjavítás a napi javításban) */}
-  else if(o.st=='home'&&o.slow){if(UDAY()%2==0&&utStep(o,br,bc,br,bc)){o.st='base';o.slow=0;o.ready=UDAY()+utRest(p)}}   // félgőz: 2 naponta 1 cella
+  else if(o.st=='home'&&o.slow){const[hr,hc]=parse(bOf(p).cell);if(UDAY()%2==0&&utStep(o,hr,hc,hr,hc)){   /* v1.14.606: a (talán épp átállított) bázis felé */o.st='base';o.slow=0;o.ready=UDAY()+utRest(p)}}   // félgőz: 2 naponta 1 cella
   else if(o.st=='out'){const[tr,tc]=o.pc[0];for(let i=utSpd();i>0;i--)if(utStep(o,tr,tc,br,bc)){o.st='pat';o.pi=0;o.lp=0;
     /* v1.14.603: megérkezett a járőrterületre – jelentés a saját (német) parancsnokságnak */
     repAdd({u:id,side:'X',ev:'arrive',cell:addr(o.r,o.c),how:'radio',kn:{X:'sure'},tx:id+' megérkezett a járőrterületre ('+addr(o.r,o.c)+').'});knowSet('X',id,o.r,o.c,'radio');break}}
@@ -9355,7 +9391,7 @@ function uTrackDay(){
    /* v1.14.603: hazaindul – a járőrkörök után, vagy ha a játékos hazahívta (német oldal) */
    const ho=ordOf(id);if(o.lp>=(+ECO.uPatLoops||2)||(ho&&ho.by==='player'&&ho.kind==='home')){o.st='home';if(!(ho&&ho.kind==='home'))ordSet({u:id,side:'X',kind:'home',cell:b.name,by:'ai'})}
    else{const[tr,tc]=o.pc[o.pi];utStep(o,tr,tc,null,null)}}
-  else if(o.st=='home'){for(let i=utSpd();i>0;i--)if(utStep(o,br,bc,br,bc)){o.st='base';o.ready=UDAY()+utRest(p);break}}
+  else if(o.st=='home'){const[hr,hc]=parse(bOf(p).cell);for(let i=utSpd();i>0;i--)if(utStep(o,hr,hc,hr,hc)){o.st='base';o.ready=UDAY()+utRest(p);break}}
   /* felderítés: a tengeren lévő U-boat aznap látszik, ha a dobás sikerül (a csak a felszínen haladó – merülés / akku 6/6 – könnyebben: ×uSurfDet) */
   if(o.st!='base'&&o.st!='trn'){o.sea=(o.sea|0)+1;p.seaTot=(p.seaTot|0)+1;   /* v1.14.521: összes tengeri nap */
    const surf=ut66(p,'Merül')||ut66(p,'Akku'),pd=utDetP(o.r,o.c)*(surf?(+ECO.uSurfDet||150)/100:1);
@@ -9844,6 +9880,7 @@ function utSeaRepair(id,p,o){
 
 /* az OP-térkép jelei: cellánként egy U-boat jel és a darabszám (uTrackShow: 1 = csak a ma felderítettek, 2 = mind – próba) */
 function uTrackMarks(){
+ if(ECO.side==='X'&&!CAMP.mission)return axMarks();   // v1.14.606: Axis oldalon a saját U-boatok a jelentéseik alapján
  if(!+ECO.uTrack||!+ECO.uTrackShow||tut||!CAMP||!CAMP.ub)return '';
  const all=+ECO.uTrackShow==2,G={};
  Object.keys(CAMP.ub).forEach(id=>{const p=CAMP.ub[id],o=p.op;if(p.dead||!o||o.st=='base'||o.st=='trn')return;if(!all&&o.vis!==UDAY())return;
@@ -9869,6 +9906,9 @@ function uTrackSum(){const s={base:0,out:0,pat:0,home:0,trn:0,vis:0};if(!CAMP||!
  Object.values(CAMP.ub).forEach(p=>{if(p.dead||!p.op)return;s[p.op.st]++;if(p.op.st!='base'&&p.op.vis===UDAY())s.vis++});return s}
 
 function npcMarks(){if(!+ECO.npcOn||tut)return '';
+ if(ECO.side==='X'&&!CAMP.mission){const now=UDAY(),NP=NPC;return npcMarksOf(NP.filter(u=>{const k=knowOf('X',u.id);return k&&k.ud===now}))}   // v1.14.606: Axis köd
+ return npcMarksOf(NPC)}
+function npcMarksOf(NPC){
  /* v1.14.511 (npcFlag = 0): zászló nélküli kis jel – szürke hajó-ellipszis; a név rámutatásra; bajban / vészjelzésnél piros gyűrű; kattintásra az NPC-panel */
  if(!+ECO.npcFlag)return NPC.map(u=>{const x=(u.c+.5)*32,y=(u.r+.5)*rh(),bad=npcTrouble(u);
   return '<g style="pointer-events:auto;cursor:pointer" onclick="event.stopPropagation();OPG.npcShow(\''+u.id+'\')"><title>'+u.code+' ('+u.from+' → '+u.to+'): '+u.m+'/'+u.m0+' teherhajó, '+u.esc.length+' kísérő'+(bad?' – BAJBAN: '+bad:'')+(u.sos?' – VÉSZJELZÉS: kell még '+Math.max(1,npcNeed(u))+' kísérő':'')+'</title>'
@@ -10035,7 +10075,7 @@ function cpDay(){if(!+ECO.cpDaily||tut||CAMP.mission)return;const v=CAMP.voy;if(
  if(pay<=0)return;v.cpPaid=(v.cpPaid|0)+pay;CAMP.egp+=pay;CAMP.earned+=pay;
  CAMP.log.push('[Napi elszámolás] '+v.code+': '+Math.round(frac*100)+'% az útból, '+v.m.filter(m=>!m.gone).length+' teherhajó → +'+pay+' EGp konvojpont.')}
 /* v1.14.557: worldDay – a világ napja (U-boatok, NPC-konvojok, WAC, német hajók, javítás a tengeren); a hajózó és a várakozó napon is */
-function worldDay(){try{uTrackDay()}catch(e){console.error('[uTrack]',e)}try{npcDay()}catch(e){console.error('[NPC]',e)}try{wacDay()}catch(e){console.error('[WAC]',e)}try{sfDay()}catch(e){console.error('[sf]',e)}try{seaRepairDay()}catch(e){console.error('[seaRep]',e)}}
+function worldDay(){try{uTrackDay()}catch(e){console.error('[uTrack]',e)}try{npcDay()}catch(e){console.error('[NPC]',e)}try{axSpot()}catch(e){console.error('[axSpot]',e)}try{wacDay()}catch(e){console.error('[WAC]',e)}try{sfDay()}catch(e){console.error('[sf]',e)}try{seaRepairDay()}catch(e){console.error('[seaRep]',e)}}
 function waitDay(msg,after){
  if(!wind)wind=2+R(2);dayPay();try{cpDay()}catch(e){console.error('[cpDay]',e)}day++;if(day>yLen(year)){day=1;year++}today=0;try{CAMP.thrAdvance({hd:heading,w:(W[sel[0]]||[])[sel[1]]|0})}catch(e){}genEv();if(+ECO.worldWait)worldDay();CAMP.newDay();wxAdvance();   /* v1.14.557: a világ a várakozó napon is halad (worldWait) */
  try{if(ECO.ageOn)units.forEach(u=>CAMP.ageDay(u.ships,W[u.r][u.c]))}catch(e){}
