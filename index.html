@@ -1,6 +1,6 @@
 <!doctype html><html lang="hu" data-theme="light"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>CEG – Konvoj kísérő kampány v1.14.613</title>
+<title>CEG – Konvoj kísérő kampány v1.14.614</title>
 <style>
 /* Színek: világos/sötét téma változókkal; a gombok és táblázatok stílusa */
 :root{--bg:#f4f1ea;--fg:#1d2733;--pn:#fff;--ln:#c9c2b3;--ac:#b3261e;--sea:#d6ecf4;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -1138,7 +1138,38 @@ function secApply(){
   for(let e=h.nextElementSibling;e&&!stop.test(e.tagName);e=e.nextElementSibling)e.classList.add('shut')})}
 /* secAll: minden szakasz kinyitása (1) / becsukása (0) */
 function secAll(on){const root=document.getElementById('vSET');if(!root)return;const st=secLoad();root.querySelectorAll('h3,h4').forEach(h=>{st[secKey(h)]=on?1:0});secSave();secApply()}
+/* ===== v1.14.614 FEJLESZTŐI KAPCSOLÓK (rendrakás) =====
+   Ezek a csoportok (AI-hangolás, finomhangolás, régi / próba-rétegek) a Beállítások végére kerülnek egy összecsukott részbe.
+   Semmi nem törlődik, az értékek ugyanúgy hatnak, a kereső ezeket is megtalálja. A lista a csoportok címével (taktikai SETUP és kampány ECO) dolgozik. */
+const DEVG=new Set([
+ 'AI ellenséges felszíni hajó (Z, CA): kemény mód (v1.14.175)',
+ 'AI U-boat',
+ 'AI U-boat (kísérők ellen)',
+ 'AI U-boat: veszély-küszöbök szabad mozgásban (v1.14.163)',
+ 'AI kísérő (szenzor + vadászat)',
+ 'AI kísérő: járőrözés a zónában (v1.14.162, szabad mozgás)',
+ 'Ellenség AI (U-boat, felszíni hajó, repülő)',
+ 'NPC kísérők (tutorial, AI)',
+ 'Kísérő hallása (szabad mozgás)',
+ 'Mozdulatlan kísérő (szabad mozgás)',
+ 'U-boat: csali (v1.14.157)',
+ 'Ütközés',
+ 'Ellenség belépése / kilépése',
+ 'Felszíni torpedó és páncél',
+ 'Dobás-animáció',
+ 'Időjárás-effekt a pálya szélén (v1.14.354)',
+ 'Forró zónák sodródása (v1.14.343)',
+ 'Szint1 – Hajó parancsnok (gyakorló, v1.14.572)',
+ 'U-boat nyilvántartás az OP-térképen (próba)',
+ 'Követés',
+ 'Konvojfenyegetés',
+ 'U-boat veszteség'
+]);
 // renderCfg: a taktikai beállítások táblázatai csoportonként (leírás, érték, alapérték)
+/* devMove (v1.14.614): a taktikai fejlesztői csoportok (.cfgG) áthelyezése a Fejlesztői kapcsolók szakaszba – a renderCfg után is */
+function devMove(){const D_=document.getElementById('setDevBody');if(!D_)return;
+ D_.querySelectorAll('.devT').forEach(g=>g.remove());   // a korábban áthelyezett (régi értékű) példányok ki – a renderCfg újakat rajzolt
+ document.querySelectorAll('#cfg .cfgG').forEach(g=>{const t=g.querySelector('h4');if(t&&DEVG.has(t.textContent)){g.classList.add('devT');D_.appendChild(g)}})}
 function renderCfg(){
  let h=SETUP.map(([g,rows])=>
   '<div class="cfgG"><h4 style="margin:8px 0 2px">'+g+'</h4><table class="m">'
@@ -1148,6 +1179,7 @@ function renderCfg(){
   +'</table></div>').join('');
  h+=tabUI()+'<p><button onclick="Object.assign(CFG,CFG0);saveCfg();tabApply();renderCfg()">Alapértékek visszaállítása</button></p>'+cfgFileUI();
  $('cfg').innerHTML=h;
+ devMove();   // v1.14.614
  cfgRefilter()}
 // cfgFileUI: a beállítások külön JSON-fájlba mentése / betöltése (nem része a kampány-JSON-nak)
 function cfgFileUI(){return '<p><button onclick="cfgExport()">Beállítások mentése fájlba</button> <button onclick="$(\'cfgFile\').click()">Beállítások betöltése fájlból</button><input type="file" id="cfgFile" accept=".json,application/json" style="display:none" onchange="cfgImport(this)"></p>'}
@@ -5571,6 +5603,7 @@ function storageReport() {
 //   v1.14.418 (2026-11-09) – kézi kísérő iránya (manDir: 0 ki / 1 minden kézi kísérő / 2 csak a kijelölt): narancs szaggatott vonal a legközelebbi látható U-boat felé (az AI-vonal mintájára, az AI érzékelési sugarán belül)
 //   v1.14.417 (2026-11-09) – a napfény és a csillogás (W0–W1) a TELJES taktikai pályán (korábban csak a keretben); az időjárás-effektek (felhő, eső, villám, napfény, csillogás) mind az egész pályán
 //   v1.14.416 (2026-11-09) – a belső felhők kisebbek (3–6 cella) és szintenként sötétednek / szaporodnak: W2 fehér, W3 szürke, W4 sötét, összefüggő tömbökben (csoportok); a pályát nem borítják el
+//   v1.14.614 (2026-11-27) – RENDRAKÁS: a Beállítások végén új, összecsukható „🔧 Fejlesztői kapcsolók” szakasz – 22 csoport (AI-hangolás, finomhangolás, régi / próba-rétegek) került ide; az értékek és a hatásuk változatlan, a kereső ezeket is megtalálja
 //   v1.14.613 (2026-11-27) – RENDRAKÁS (nincs szabály- és megjelenés-változás): halott kód törölve – etfPos(); soha nem olvasott beállítás-kulcsok: ECO npcHelpK, uRepP; CFG capLbl, evTypeDie, tU, tH, tR, l1Turns
 //   v1.14.612 (2026-11-27) – A tervezett érkezés SÁVKÉNT (napi 1–2 cella): „még 3–6 nap (6–11 napos út)”, „mostanra oda kellett érnie”; a kis térképen is „11 cella, 6–11 nap”
 //   v1.14.611 (2026-11-27) – U-FLOTTILLA KIS TÉRKÉP: a hatótávon (uRange) kívüli tenger szürke, rámutatva a tervezett útvonal a bázistól (zöld / piros) és a távolság, napok; NAPI JELENTÉS AXIS TARTALOMMAL (Kriegstagebuch): Összefoglaló (Kész / tengeren / pihen / elveszett / tonna, mai SOS-ok, hazatérések, parancsra váró U-boatok), Parancsok, U-flottilla (a tengeren lévők), Ellenség (felderített konvojok), Hírek
@@ -5945,7 +5978,7 @@ function storageReport() {
 //   v1.14.239 (2026-10-26) – ÚJ: (1) LUT torpedó (lutOn, alap 1; 1944. januártól): az U-boat kártyán „LUT” jelölőnégyzet (az AI lutAiP %); a FAT utóda: lutLen 18 cella, lutRun 6 egyenes, lutLeg 3 fél-szélesség, találat teherhajón d6 ≤ lutHit (3), hadihajón ≤ lutHitE (1); ha FAT is be van jelölve, a LUT számít. (2) LÉGPERISZKÓP / SCHNORCHEL (schOn, alap 1; 1944. júniustól; csak szabad mozgásnál): 1/8-as mélységen a kártya „Légperiszkóp” jelölőnégyzetével a dízel hajt: az akku nem fogy, hanem schRech (2) cellát tölt körönként, max schSpd (2) lépés, kimerült akkuval is halad; kiesett dízelnél nem működik; az AI az akku fele alatt automatikusan használja.
 //   v1.14.238 (2026-10-26) – SZABAD MOZGÁS: az U-boat a belső játékterületen (pl. 80-as táblán az 50×50-esen) bárhol léphet be, nem csak a szélén (uInner, alapból BE; KI = a régi szél-belépés uEdge szerint).
 //   v1.14.237 (2026-10-26) – HEDGEHOG / SQUID ELLENŐRZÉS: az U-boat lépés utáni kiértékelésében a hedgehog / Squid „nincs találat” eredmény akkor is kiíródik, ha a vízibombák is hatottak (eddig ilyenkor csak a vízibomba-sor látszott, a hedgehog-ellenőrzés nem)
-const VER = 'v1.14.613';
+const VER = 'v1.14.614';
 // ===== MEGFIGYELŐ / TESZT MÓD (obsMode, v1.14.195) =====
 // Megfigyelő módban mindkét oldalt az AI vezérli (a kísérők is: NPC-logikával), a pálya mindent mutat (nincs köd), és a körök maguktól léptetődnek;
 // a lezárt csatákból statisztika készül (konvoj-, U-boat-, kísérő-veszteség, kimenetel), hogy látszódjon: sokféle csata születik-e, vagy egyoldalú lett a hangolás.
@@ -7616,9 +7649,11 @@ const CAMP = {
     const used = new Set(ECO_GROUPS.flatMap(g => g[1])), rest = Object.keys(ECO_L).filter(k => !used.has(k));
     if (rest.length) ECO_GROUPS.push(['Egyéb', rest]);
     h += '<h3 id="setEco">Gazdaság és flotta</h3>';
+    let devEco = '';   // v1.14.614: a fejlesztői csoportok a lap végére
     ECO_GROUPS.forEach(g => {
       const ks = g[1].filter(k => ECO_L[k] !== undefined); if (!ks.length) return;
-      h += '<h4 style="margin:16px 0 4px;padding-top:6px;border-top:2px solid var(--ln)">' + g[0] + '</h4>' + TB(['Beállítás', 'Érték', 'Alap'], ks.map(ecoRow));
+      const blk = '<h4 style="margin:16px 0 4px;padding-top:6px;border-top:2px solid var(--ln)">' + g[0] + '</h4>' + TB(['Beállítás', 'Érték', 'Alap'], ks.map(ecoRow));
+      if (DEVG.has(g[0])) devEco += '<div class="cfgG">' + blk + '</div>'; else h += blk;
     });
     h += '<h3 id="setCls">Hajóosztályok</h3>' + TB(['Kód', 'Osztály', 'Ár (EGp)', 'Elérhetőségi ráta', 'Ingyenes ettől (ÉÉÉÉ-HH-NN)', 'Sebesség', 'Hatótáv', 'Bomba', 'Radar q', 'Szonár q'], FLEET_CLS.map(c => [c, D[c].n].concat(CLS_F.slice(0, 2).map(f => '<input type="number" value="' + D[c][f] + '" style="width:70px" onchange="CAMP.setCls(\'' + c + '\',\'' + f + '\',this.value)">'),
       ['<input type="text" value="' + (D[c].freeFrom || '') + '" placeholder="–" style="width:100px" onchange="CAMP.setCls(\'' + c + '\',\'freeFrom\',this.value)">'], CLS_F.slice(2).map(f => '<input type="number" value="' + D[c][f] + '" style="width:70px" onchange="CAMP.setCls(\'' + c + '\',\'' + f + '\',this.value)">'))));
@@ -7626,8 +7661,11 @@ const CAMP = {
     h += '<h3 id="setPort">Kikötők</h3>' + TB(['Kikötő', 'Javíthat (0/1)', 'Javítás esélye (0–1)', 'Fejleszthet (0/1)', 'Vásárolhat (0/1)'], Object.keys(PORTS_T).map(p => [p].concat(['rep', 'repQ', 'upg', 'shop'].map(f => '<input type="number" step="0.1" value="' + PORTS_T[p][f] + '" style="width:70px" onchange="CAMP.setPort(\'' + p + '\',\'' + f + '\',this.value)">'))));
     h += '<p><button onclick="CAMP.resetSetup()">Alapértékek visszaállítása</button></p>';
     h += '<h3 id="setTac">Taktikai csata – dobások, üzenetek, pálya, grafika</h3><div id="setHostTac"></div><h3 id="setOp">OP térkép – események és térkép</h3><div id="setHostOp"></div>';
+    /* v1.14.614: FEJLESZTŐI KAPCSOLÓK – a lap végén, összecsukható szakasz (a kampány-csoportok itt, a taktikaiak alább kerülnek bele) */
+    h += '<h3 id="setDev">🔧 Fejlesztői kapcsolók</h3><div id="setDevBody"><p class="hint">AI-hangolás, finomhangolás, régi és próba-rétegek. Az értékek ugyanúgy hatnak, mint eddig.</p>' + devEco + '</div>';
     $('vSET').innerHTML = h;
     { const a = document.getElementById('cfg'), b = document.getElementById('o_cfg'), ha = document.getElementById('setHostTac'), hb = document.getElementById('setHostOp'); if (a && ha) ha.appendChild(a); if (b && hb) hb.appendChild(b); }   // a két doboz ide költözik (a „mehet vissza” a cfgBack)
+    devMove();   // v1.14.614: a taktikai fejlesztői csoportok a Fejlesztői kapcsolók szakaszba
     showView('SET');try{qbRender();secApply()}catch(e){}
     cfgRefilter();   // v1.14.429: a keresés az újraépítés után is érvényben marad
   },
