@@ -1,6 +1,6 @@
 <!doctype html><html lang="hu" data-theme="light"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>CEG – Konvoj kísérő kampány v1.14.604</title>
+<title>CEG – Konvoj kísérő kampány v1.14.605</title>
 <style>
 /* Színek: világos/sötét téma változókkal; a gombok és táblázatok stílusa */
 :root{--bg:#f4f1ea;--fg:#1d2733;--pn:#fff;--ln:#c9c2b3;--ac:#b3261e;--sea:#d6ecf4;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -389,7 +389,7 @@ body.opN #vOP #o_notes>div:not(#zz):nth-child(2n)::before{transform:rotate(2deg)
 </style></head><body>
 <!-- Felső sáv: verzió, nézetváltó, EGp, mentés/betöltés -->
 <div class="bar" id="nav"><b>⚓ CEG – Konvoj kísérő <span id="ver"></span></b>
-<select id="nDK" data-hm="1" onchange="setTheme(this.value)" title="Téma: normál / sötét / fehér (Excel)"><option value="light">◐ Normál</option><option value="orig">◐ Világoskék</option><option value="navy">◐ Eredeti (sötétkék)</option><option value="dark">◐ Sötét</option><option value="white">◐ Fehér</option><option value="blue">◐ Tervrajz</option></select><button id="nHOME" onclick="showView('HOME')" title="Főoldal: mentés, betöltés, beállítások, tutorial" style="display:none">⌂ Főoldal</button><button id="nOP" onclick="showView('OP')">OP térkép</button><button id="nTAC" onclick="showView('TAC')">Taktikai csata</button><button id="nFLT" onclick="CAMP.fleetView()">Flotta</button><button id="nNPC" onclick="npcView()" title="Az NPC-konvojok: teherhajók (tonna, rakomány, légvédelem, sérülés) és kísérők (épség, sérült modulok, vízibomba, üzemanyag)">NPC</button><button id="nAX" onclick="axisView()" title="A német egységek: U-boatok (flottillák, állapot, sérülés) és a német hajóosztályok">Tengely</button><button id="nMIS" onclick="MIS.view()" title="Küldetések: járőr célcellákkal, jutalommal">Küldetések</button><button id="nTG" onclick="navToggle()" style="display:none" title="A felső gombsor elrejtése / megjelenítése (az OP és a taktikai lapon)">▲ Menü</button><span id="navx" style="display:contents"><button id="nHT" onclick="hintToggle()" title="Súgó-szövegek megjelenítése / elrejtése (OP, Taktikai, hajókártya)">ⓘ Súgó</button><button id="nXT" onclick="xtToggle()" title="Az OP és a Taktikai lap összes extra beállítása (rétegek, zónák, csata-beállítások, OP / taktikai beállítások) egyszerre kinyílik / becsukódik">⚙ Extrák</button><button id="nVW" data-hm="1" onclick="simpleToggle()" title="Egyszerű nézet (kezdőknek) / Teljes nézet (hangolás): elrejti vagy megmutatja a hangolási elemeket">Nézet: Egyszerű</button><button id="nTUT" data-hm="1" onclick="CAMP.tutView()">Tutorial</button><button id="nSET" data-hm="1" onclick="CAMP.setupView()">Beállítások</button><button id="nLEG" onclick="legView()" title="A térkép jelöléseinek magyarázata">Jelmagyarázat</button><button id="nSUM" onclick="CAMP.summary()">Összegzés</button>
+<select id="nDK" data-hm="1" onchange="setTheme(this.value)" title="Téma: normál / sötét / fehér (Excel)"><option value="light">◐ Normál</option><option value="orig">◐ Világoskék</option><option value="navy">◐ Eredeti (sötétkék)</option><option value="dark">◐ Sötét</option><option value="white">◐ Fehér</option><option value="blue">◐ Tervrajz</option></select><button id="nHOME" onclick="showView('HOME')" title="Főoldal: mentés, betöltés, beállítások, tutorial" style="display:none">⌂ Főoldal</button><button id="nOP" onclick="showView('OP')">OP térkép</button><button id="nTAC" onclick="showView('TAC')">Taktikai csata</button><button id="nFLT" onclick="CAMP.fleetView()">Flotta</button><button id="nNPC" onclick="npcView()" title="Az NPC-konvojok: teherhajók (tonna, rakomány, légvédelem, sérülés) és kísérők (épség, sérült modulok, vízibomba, üzemanyag)">NPC</button><button id="nAX" onclick="axisView()" title="A német egységek: U-boatok (flottillák, állapot, sérülés) és a német hajóosztályok; Axis oldalon: U-flottilla">Tengely</button><button id="nMIS" onclick="MIS.view()" title="Küldetések: járőr célcellákkal, jutalommal">Küldetések</button><button id="nTG" onclick="navToggle()" style="display:none" title="A felső gombsor elrejtése / megjelenítése (az OP és a taktikai lapon)">▲ Menü</button><span id="navx" style="display:contents"><button id="nHT" onclick="hintToggle()" title="Súgó-szövegek megjelenítése / elrejtése (OP, Taktikai, hajókártya)">ⓘ Súgó</button><button id="nXT" onclick="xtToggle()" title="Az OP és a Taktikai lap összes extra beállítása (rétegek, zónák, csata-beállítások, OP / taktikai beállítások) egyszerre kinyílik / becsukódik">⚙ Extrák</button><button id="nVW" data-hm="1" onclick="simpleToggle()" title="Egyszerű nézet (kezdőknek) / Teljes nézet (hangolás): elrejti vagy megmutatja a hangolási elemeket">Nézet: Egyszerű</button><button id="nTUT" data-hm="1" onclick="CAMP.tutView()">Tutorial</button><button id="nSET" data-hm="1" onclick="CAMP.setupView()">Beállítások</button><button id="nLEG" onclick="legView()" title="A térkép jelöléseinek magyarázata">Jelmagyarázat</button><button id="nSUM" onclick="CAMP.summary()">Összegzés</button>
 <span>EGp: <input id="egp" type="number" step="1" style="width:84px;font-weight:700" title="Szerkeszthető: javítsd, ha a félbehagyott CL/CA támogatás árát újra levonta" onchange="CAMP.setEgp(this.value)"></span><button data-hm="1" onclick="CAMP.exportFile()">Mentés fájlba</button><button data-hm="1" onclick="document.getElementById('imp').click()">Betöltés</button>
 <input type="file" id="imp" accept=".json" style="display:none" onchange="CAMP.importFile(this.files[0])"><button data-hm="1" onclick="CAMP.newCamp()">Új kampány</button></span></div>
 <div class="bar" id="qb" title="Gyorsbeállítók: egy kattintás a csoport összes beállítását átállítja (a Beállítások lapon látszik)"></div>
@@ -1228,6 +1228,8 @@ const QS=[
  /* v1.14.550: JÁTÉKSZINT – 1 = hajóparancsnok (egy hajó a kíséretből; az alapok fejlesztés alatt), 2 = kíséret-parancsnok (a mostani játék),
     3 = Western Approaches parancsnok – v1.14.551: MINDEN szinten a nyilvántartásos U-boat rendszer és az NPC-konvojok (a sorsolás a „U-boat rendszer” kapcsolóval még választható);
     a saját cirkálók külön kapcsolón (Támogatás) – csak tesztre */
+ /* v1.14.605: OLDAL – az új kampánytól érvényes (Axis: a német U-flottilla vezetése a 2-es szinten; saját brit flotta nincs) */
+ {t:'Oldal (új kampány)',o:[['Allied (brit)',{side:'A'}],['Axis (német)',{side:'X'}]]},
  {t:'Játékszint',o:[['1 Hajó parancsnok',{gLevel:1,turnRule:1,uTrack:1,npcOn:1}],['2 Kíséret parancsnok',{gLevel:2,uTrack:1,npcOn:1}],['3 Útvonal parancsnok',{gLevel:3,uTrack:1,npcOn:1}]]},
  {t:'Irányítás',later:1,o:[['Irány-kocka',{turnRule:0,diceMode:0}],['Kanyar-kocka',{turnRule:0,diceMode:1}],['Szabad mozgás',{turnRule:1}]]},
  {t:'Láthatóság',o:[['Mindent lát',{fog:0}],['Köd',{fog:1,fogView:0}]]},
@@ -5569,6 +5571,7 @@ function storageReport() {
 //   v1.14.418 (2026-11-09) – kézi kísérő iránya (manDir: 0 ki / 1 minden kézi kísérő / 2 csak a kijelölt): narancs szaggatott vonal a legközelebbi látható U-boat felé (az AI-vonal mintájára, az AI érzékelési sugarán belül)
 //   v1.14.417 (2026-11-09) – a napfény és a csillogás (W0–W1) a TELJES taktikai pályán (korábban csak a keretben); az időjárás-effektek (felhő, eső, villám, napfény, csillogás) mind az egész pályán
 //   v1.14.416 (2026-11-09) – a belső felhők kisebbek (3–6 cella) és szintenként sötétednek / szaporodnak: W2 fehér, W3 szürke, W4 sötét, összefüggő tömbökben (csoportok); a pályát nem borítják el
+//   v1.14.605 (2026-11-27) – AXIS OLDAL (1. lépés): oldalválasztó gyorsbeállítás (új kampánytól); Axis: nincs saját brit flotta és WAC, a napok a 2-es szint „nincs saját konvoj” útján telnek; a Tengely lap Axis oldalon U-FLOTTILLA lap: Kész / tengeren / elveszett összesítő, U-boatonként bázis, állapot (a tengeren csak a jelentésből), parancs, utolsó ismert hely, torpedó, tonna
 //   v1.14.604 (2026-11-27) – TUDÁS-RÉTEG (3. lépés, CAMP.know): oldalanként ki miről tud (hely, nap, forrás: megfigyelés / HF/DF / jelentés); az OP térképen a ma nem látott, de nemrég felderített U-boat / német hajó halvány „?” jele (knowOn, knowDays 3); a német oldal: a saját U-boat utolsó jelentett helye (érkezés, felderítették)
 //   v1.14.603 (2026-11-27) – KÖZÖS PARANCS-SZERKEZET (2. lépés, CAMP.ord): egység + fajta (kíséret / járőr / odamenés / haza / követés) + cella + ki adta (AI / játékos); a WAC-parancsok és az átvétel ide kerülnek; az U-boatok kifutása és hazaindulása AI-parancsként; a megérkezés a járőrterületre jelentés (a német oldalnak); a Napi jelentés Összefoglalója mutatja a saját élő parancsot; a német oldal előkészítése: a játékos járőr- / hazahívó parancsát az U-boat AI követi; a jelentés-napló és a parancsok a mentésbe kerülnek
 //   v1.14.602 (2026-11-27) – KÖZÖS ALAP A KÉT OLDALHOZ (1. lépés): oldal-segédfüggvények (ECO.side, sideOf / own / foe), KÖZÖS JELENTÉS-NAPLÓ (CAMP.rep: egység, esemény, hely, forrás, ki mit tud – biztos / feltételezett); a Napi jelentés Hírek lapja ebből olvas; források: német hajók észlelése, repülőtámadás, U-boat elsüllyedése, saját veszteség, konvoj érkezése, szint1 jelentés
@@ -5934,7 +5937,7 @@ function storageReport() {
 //   v1.14.239 (2026-10-26) – ÚJ: (1) LUT torpedó (lutOn, alap 1; 1944. januártól): az U-boat kártyán „LUT” jelölőnégyzet (az AI lutAiP %); a FAT utóda: lutLen 18 cella, lutRun 6 egyenes, lutLeg 3 fél-szélesség, találat teherhajón d6 ≤ lutHit (3), hadihajón ≤ lutHitE (1); ha FAT is be van jelölve, a LUT számít. (2) LÉGPERISZKÓP / SCHNORCHEL (schOn, alap 1; 1944. júniustól; csak szabad mozgásnál): 1/8-as mélységen a kártya „Légperiszkóp” jelölőnégyzetével a dízel hajt: az akku nem fogy, hanem schRech (2) cellát tölt körönként, max schSpd (2) lépés, kimerült akkuval is halad; kiesett dízelnél nem működik; az AI az akku fele alatt automatikusan használja.
 //   v1.14.238 (2026-10-26) – SZABAD MOZGÁS: az U-boat a belső játékterületen (pl. 80-as táblán az 50×50-esen) bárhol léphet be, nem csak a szélén (uInner, alapból BE; KI = a régi szél-belépés uEdge szerint).
 //   v1.14.237 (2026-10-26) – HEDGEHOG / SQUID ELLENŐRZÉS: az U-boat lépés utáni kiértékelésében a hedgehog / Squid „nincs találat” eredmény akkor is kiíródik, ha a vízibombák is hatottak (eddig ilyenkor csak a vízibomba-sor látszott, a hedgehog-ellenőrzés nem)
-const VER = 'v1.14.604';
+const VER = 'v1.14.605';
 // ===== MEGFIGYELŐ / TESZT MÓD (obsMode, v1.14.195) =====
 // Megfigyelő módban mindkét oldalt az AI vezérli (a kísérők is: NPC-logikával), a pálya mindent mutat (nincs köd), és a körök maguktól léptetődnek;
 // a lezárt csatákból statisztika készül (konvoj-, U-boat-, kísérő-veszteség, kimenetel), hogy látszódjon: sokféle csata születik-e, vagy egyoldalú lett a hangolás.
@@ -6267,6 +6270,8 @@ const CAMP = {
     this.cnt = { D: (+ECO.startD1 && !this.mission) ? 1 : 2, S: 1, C: 1, CL: 1, CA: 1 }; this.fleet = [];   /* startD1: a kezdő romboló D1 (a tutorial D2-vel marad) */ this.shop = { port: '', av: {} };
     this.thrInit(); this.medQ = []; this.crewQ = []; this.wrecks = []; this.ub = {}; this.ubPop = null; this.ubMon = []; this.sf = null; ECO.startU.split(',').map(x => x.trim()).filter(x => /^U\d+$/.test(x)).forEach(id => this.ub[id] = { ton: 0, dmg: D.VIIC.mod.map(() => 0), tp: 14, dead: false }); this.initRaid();
     /* startRand (v1.14.392): az FL elemek helyett véletlen hajó a startPool-ból (Flower / Flower mod. / River); a tutorial (mission) fix marad */
+    /* v1.14.605: Axis oldal – nincs saját brit flotta (a kísérők és a konvojok mind NPC-k); a játékos az U-flottillát vezeti */
+    if (ECO.side === 'X' && !this.mission) { this.log.push('[Axis] Új kampány a német oldalon: az U-flottilla vezetése (U-flottilla lap). A brit kísérők és a konvojok NPC-k.'); return; }
     const pool = String(ECO.startPool || 'FL,FM,RV').split(',').map(x => x.trim()).filter(x => D[x] && D[x].pre);
     ECO.startFleet.split(',').map(x => x.trim()).map(c => (+ECO.startRand && !this.mission && c === 'FL' && pool.length) ? pool[Math.floor(Math.random() * pool.length)] : c).filter(x => D[x] && D[x].pre).forEach(c => this.addShip(c, 'Liverpool', 'start'));
     /* v1.14.517 (supOwn): a három saját támogató cirkáló a kampány kezdetén */
@@ -7873,7 +7878,8 @@ function navApply(v) {
   cardFadeApply();   // cardFade: átlátszó kártya
   document.body.classList.toggle('cardCmp', !!+CFG.cardCmp);   // cardCmp: tömör Hajókártya
   const hm = !!CFG.homePage, nv = document.getElementById('nav'), nh = document.getElementById('nHOME');   // homePage: Főoldal (a ritkán használt gombok oda kerülnek)
-  document.body.classList.toggle('hmOn', hm); document.body.classList.toggle('opN', !!CFG.opNotes && !+CFG.opRep);   /* v1.14.594: a Napi jelentés (opRep) mellett nincs cetlis megjelenítés – egymás alatti sávok */
+  document.body.classList.toggle('hmOn', hm); document.body.classList.toggle('opN', !!CFG.opNotes && !+CFG.opRep);
+  try { const ax = document.getElementById('nAX'); if (ax) ax.textContent = ECO.side === 'X' ? 'U-flottilla' : 'Tengely'; } catch (e) { }   /* v1.14.605: Axis oldalon a Tengely lap neve */   /* v1.14.594: a Napi jelentés (opRep) mellett nincs cetlis megjelenítés – egymás alatti sávok */
   /* v1.14.592: Napi jelentés – opRep = 0: mindig nyitva, sor nélkül; különben a megjegyzett állapot */
   try { document.body.classList.toggle('noRep', !+CFG.opRep); const rp = document.getElementById('o_rep'); if (rp) rp.open = !+CFG.opRep || !!+CFG.opRepOpen;
     /* v1.14.593: a U-boat / küldetés-sor (#o_thr) a jelentésbe – opRep = 0: vissza a műveleti sávba (a térkép-gomb után) */
@@ -8066,7 +8072,54 @@ function npcView() {
 // axisView: a német egységek külön lapon (a Flotta lap a saját hajóké):
 //   1. U-boat flottillák bázisonként (bázison / tengeren / elsüllyedt), 2. U-boat lista (állapot, cella, járőrcellák, torpedó, sérülés),
 //   3. a német hajóosztályok adatlapja (korábban a Flotta lap „Egyéb hajók” táblázatában)
+/* ===== v1.14.605 U-FLOTTILLA LAP (Axis oldal; a Tengely lap átalakítva) =====
+   Csak azt mutatja, amit a német parancsnokság TUD (tudás-réteg, parancsok, jelentések):
+   – a bázison lévő U-boat állapota pontos (Kész / pihen / javul / kiképzés);
+   – a tengeren lévő U-boat helye csak a jelentéséből ismert (utolsó ismert hely, hány napja); különben „úton – ismeretlen”;
+   – a parancs (járőr / haza; AI vagy saját); a torpedó csak a bázison ismert.
+   A parancsok kiadása a következő lépés (gombok ide kerülnek). */
+function uFlotView() {
+  const ub = CAMP.ub || {}, now = OPG.uDay(), ids = Object.keys(ub).sort((a, b) => (+a.slice(1)) - (+b.slice(1)));
+  const B = (() => { try { return OPG.ubBases(); } catch (e) { return []; } })(), bName = id => (B.find(b => b.id === id) || {}).name || id || '–';
+  const KIND = { patrol: 'járőr', home: 'haza', goto: 'odamenés', follow: 'követés' };
+  const lostKn = id => (CAMP.rep || []).some(r => r.u === id && r.ev === 'sunk' && r.kn && r.kn.X);
+  const row = id => {
+    const p = ub[id], o = p.op || {}, k = OPG.knowOf('X', id), od = OPG.ordOf(id);
+    let st, where = '–', tp = '–';
+    if (p.dead) { st = lostKn(id) ? 'elveszett' : 'nem jelentkezik'; }
+    else if (p.away) st = 'javítás (csata után)';
+    else if (o.st === 'trn') st = 'kiképzés (' + Math.max(0, (p.train || 0) - now) + ' nap)';
+    else if (!o.st || o.st === 'base') { st = now < (o.ready || 0) ? 'pihen / javul (' + ((o.ready || 0) - now) + ' nap)' : '<b>Kész</b>'; tp = (p.tp == null ? 14 : p.tp) + ''; where = bName(p.base || 'W'); }
+    else {   /* csak a tudás alapján: a parancs óta érkezett jelentés = járőrön; különben úton – ismeretlen */
+      const rep_ = (CAMP.rep || []).filter(r => r.u === id && r.ev === 'arrive' && r.kn && r.kn.X).pop();
+      st = od && od.kind === 'patrol' && rep_ && (rep_.y > od.y0 || (rep_.y === od.y0 && rep_.d >= od.d0)) ? 'járőrön (jelentett)' : od && od.kind === 'home' ? 'hazaúton' : 'úton – ismeretlen'; }
+    if (!p.dead && o.st && o.st !== 'base' && o.st !== 'trn' && k) where = k.cell + ' <small>(' + (now - k.ud) + ' napja)</small>';
+    const ord = od ? (KIND[od.kind] || od.kind) + (od.cell ? ' ' + od.cell : '') + (od.by === 'player' ? '' : ' <small>(AI)</small>') : '–';
+    return [id, bName(p.base || 'W'), st, ord, where, tp, Math.round(p.ton || 0).toLocaleString('hu-HU')];
+  };
+  const live = ids.filter(id => !ub[id].dead), ready = live.filter(id => { const o = ub[id].op || {}; return (!o.st || o.st === 'base') && !ub[id].away && now >= (o.ready || 0); }).length;
+  const sea = live.filter(id => { const o = ub[id].op || {}; return o.st && o.st !== 'base' && o.st !== 'trn'; }).length;
+  let h = '<h2>U-flottilla</h2>';
+  h += '<p class="hint">A német parancsnokság tudása: a tengeren lévő U-boat helye csak a jelentéséből ismert. A parancsok kiadása a következő lépésben kerül ide.</p>';
+  h += TB(['Kész', 'Tengeren', 'Bázison összesen', 'Elveszett / nem jelentkezik'], [[ready, sea, live.length - sea, ids.length - live.length]]);
+  /* parancs: a kijelölt U-boatok (jelölőnégyzet) – járőrcella megadása vagy hazahívás */
+  h += '<div class="note" style="margin:6px 0">Kijelöltek: <input id="ufCell" placeholder="cella, pl. P11" style="width:90px"> <button onclick="ufOrder(\'patrol\')">⚓→ Járőrre</button> <button onclick="ufOrder(\'home\')">↩ Hazahív</button> <span id="ufMsg" class="hint"></span></div>';
+  h += TB(['', 'U-boat', 'Bázis', 'Állapot', 'Parancs', 'Utolsó ismert hely', 'Torpedó', 'Süllyesztett (t)'], ids.map(id => [ub[id].dead ? '' : '<input type="checkbox" class="ufSel" value="' + id + '">'].concat(row(id))));
+  $('vAX').innerHTML = h; showView('AX');
+}
+/* ufOrder (v1.14.605): parancs a kijelölt U-boatoknak – járőr (cella) vagy haza; az AI hajtja végre (a közös parancs-szerkezet, by: 'player') */
+function ufOrder(kind) {
+  const ids = [...document.querySelectorAll('.ufSel:checked')].map(x => x.value), m = $('ufMsg');
+  if (!ids.length) { if (m) m.textContent = 'Jelölj ki legalább egy U-boatot.'; return; }
+  let cell = '';
+  if (kind === 'patrol') { cell = String(($('ufCell') || {}).value || '').trim().toUpperCase(); if (!/^[A-Z]{1,2}\d{1,2}$/.test(cell)) { if (m) m.textContent = 'Adj meg egy cellát (pl. P11).'; return; } }
+  ids.forEach(id => OPG.ordSet({ u: id, side: 'X', kind, cell: kind === 'home' ? 'bázis' : cell, by: 'player' }));
+  CAMP.log.push('[BdU parancs] ' + ids.join(', ') + ': ' + (kind === 'home' ? 'hazahívva' : 'járőr ' + cell) + '.');
+  try { CAMP.save(); } catch (e) { }
+  uFlotView(); const m2 = $('ufMsg'); if (m2) m2.textContent = ids.join(', ') + ': ' + (kind === 'home' ? 'hazahívva' : 'járőrre ' + cell) + ' – a következő napon indulnak.';
+}
 function axisView() {
+  if (ECO.side === 'X' && !CAMP.mission) return uFlotView();   // v1.14.605: Axis oldalon a Tengely lap = U-flottilla
   const ub = CAMP.ub || {}, ids = Object.keys(ub), live = ids.filter(id => !ub[id].dead), dead = ids.length - live.length;
   const B = (() => { try { return OPG.ubBases(); } catch (e) { return []; } })(), bName = id => (B.find(b => b.id === id) || {}).name || id || '–';
   const stN = { base: 'bázison', out: 'kifut', pat: 'járőr', home: 'hazaút' }, on = !!+ECO.uTrack;
@@ -8931,7 +8984,7 @@ function npcMakeRoom(u,add,nid){const mx=+ECO.maxGroup||6,have=u.esc.length+npcM
    - HA MINDEN HAJÓD ELSÜLLYEDT: a WAC új hajót vezényel hozzád Liverpoolban (a kísérő-állományból), pontlevonással (wacLossPen).
    A parancsok a Flotta lapon (Parancsok) és a kampánynaplóban. */
 let WAC=null;
-const wacOn=()=>+ECO.wacOn&&+CFG.gLevel===2&&!tut&&!CAMP.mission;
+const wacOn=()=>+ECO.wacOn&&+CFG.gLevel===2&&!tut&&!CAMP.mission&&ECO.side!=='X';   // v1.14.605: Axis oldalon nincs WAC
 /* ===== v1.14.567 (ECO.wacOwn): A WAC-PARANCS KONVOJA A TIÉD =====
    A 2-es szinten, ha a WAC-parancsod konvojához csatlakozol (OP lap, vagy automatikusan a szomszédos cellából), a konvoj a saját konvojod lesz:
    – te lépteted naponta, a taktikai csatát te vezényled (mint a régi konvojkísérő játékban);
@@ -8996,7 +9049,7 @@ function selfAdoptOk(u){return +ECO.adoptOn&&!tut&&!CAMP.mission&&!(CAMP.voy&&CA
 function selfAdopt(u){wacInit();WAC.cur={id:'S'+(++WAC.n),kind:'escort',conv:u.id,code:u.code,st:'open',self:1,txt:'saját döntés: '+u.code+' átvétele'};
  try{ordSet({u:'EG',side:'A',kind:'escort',code:u.code,cell:addr(u.r,u.c),ref:WAC.cur.id,by:'player',tx:WAC.cur.txt})}catch(e){}wacAdopt(u)}
 /* v1.14.565 noOwnCv: 2-es szint (WAC), és a saját konvoj nem futott ki – nincs saját konvoj a térképen */
-function noOwnCv(){try{return wacOn()&&!(CAMP.voy&&CAMP.voy.sailed)}catch(e){return false}}
+function noOwnCv(){try{return (wacOn()||(ECO.side==='X'&&!tut&&!CAMP.mission))&&!(CAMP.voy&&CAMP.voy.sailed)}catch(e){return false}}
 function wacSelfClose(o){if(o&&o.self){try{ordEnd('EG',o.id)}catch(e){}WAC.cur=null;CAMP.log.push('[Átvétel '+o.id+'] lezárva: '+o.code+'.');return true}return false}
 function wacInit(){if(!WAC)WAC={n:0,cur:null,L:[]};return WAC}
 const wacMid=()=>!!(ECO.midUntil&&dateMs()<Date.parse(ECO.midUntil+'T00:00:00Z'));
@@ -9284,10 +9337,14 @@ function uTrackDay(){
    if(bp){const L=repPtsDmg(p.dmg,utMods(),1);if(L&&+ECO.basePtsLog)utLog(id+' javítás ('+b.name+'): '+L+'.')}
    /* v1.14.603: ha a játékos (német oldal) adott járőrparancsot, azt követi – a „want” korlát nélkül; különben az AI választ */
    const po=ordOf(id),pl=po&&po.by==='player'&&po.kind==='patrol';
-   if(UDAY()>=o.ready&&(pl||out<want)&&!(+ECO.basePts&&p.dmg&&p.dmg.some(v=>v>0))){const pc=pl?ordPatrolPc(po.cell):utPatrol(b);if(pc){if(!pl)ordSet({u:id,side:'X',kind:'patrol',cell:addr(pc[0][0],pc[0][1]),by:'ai'});o.pc=pc;o.pi=0;o.lp=0;o.st='out';o.sea=0;o.slow=0;o.stuck=0;if(!+ECO.basePts)p.dmg=p.dmg.map(()=>0);p.tp=14;p.tpLow=14;p.sorties=(p.sorties|0)+1;out++}}   // kifutás: kijavítva, teli torpedókészlettel
+   if(UDAY()>=o.ready&&(pl||(out<want&&ECO.side!=='X'))&&   /* v1.14.605: Axis oldalon parancs nélkül a bázison várnak (Kész) */!(+ECO.basePts&&p.dmg&&p.dmg.some(v=>v>0))){const pc=pl?ordPatrolPc(po.cell):utPatrol(b);if(pc){if(pl)o.ordId=po.id;if(!pl)ordSet({u:id,side:'X',kind:'patrol',cell:addr(pc[0][0],pc[0][1]),by:'ai'});o.pc=pc;o.pi=0;o.lp=0;o.st='out';o.sea=0;o.slow=0;o.stuck=0;if(!+ECO.basePts)p.dmg=p.dmg.map(()=>0);p.tp=14;p.tpLow=14;p.sorties=(p.sorties|0)+1;out++}}   // kifutás: kijavítva, teli torpedókészlettel
    else return}
   /* v1.14.537: torpedó-őr – a tengeren (kifelé / járőr / hazafelé) a készlet csak fogyhat; ha valami visszaállítaná, a legkisebb érték marad, és a naplóba kerül */
   if(o.st!='base'&&o.st!='trn'){const t=p.tp==null?14:p.tp;if(p.tpLow==null)p.tpLow=t;if(t>p.tpLow){utLog(id+': a torpedókészlet '+p.tpLow+' → '+t+' nőtt volna a tengeren – visszaállítva '+p.tpLow+'-re (hibajelzés).');p.tp=p.tpLow}else p.tpLow=t}
+  /* v1.14.605: a játékos parancsa a tengeren – hazahívás, vagy új járőrcella (átirányítás) */
+  {const pp=ordOf(id);if(pp&&pp.by==='player'&&(o.st==='out'||o.st==='pat')){
+    if(pp.kind==='home')o.st='home';
+    else if(pp.kind==='patrol'&&o.ordId!==pp.id){const pc=ordPatrolPc(pp.cell);if(pc){o.pc=pc;o.st='out';o.pi=0;o.lp=0;o.ordId=pp.id}}}}
   if(o.st!='base'&&o.st!='trn'&&ut66(p,'Diesel')){/* áll: nincs mozgás (vészjavítás a napi javításban) */}
   else if(o.st=='home'&&o.slow){if(UDAY()%2==0&&utStep(o,br,bc,br,bc)){o.st='base';o.slow=0;o.ready=UDAY()+utRest(p)}}   // félgőz: 2 naponta 1 cella
   else if(o.st=='out'){const[tr,tc]=o.pc[0];for(let i=utSpd();i>0;i--)if(utStep(o,tr,tc,br,bc)){o.st='pat';o.pi=0;o.lp=0;
@@ -9918,6 +9975,7 @@ $('o_bw').onclick=async()=>{
  if(CAMP.bt&&!CAMP.battle){CAMP.resumeBt();return}if(CAMP.battle){say('Folyamatban lévő taktikai csata: előbb fejezd be (Csata vége → OP).');return}
  {const pu=pending();if(pu.length){say('Még nem léptek: '+pu.join(', ')+'. A nap addig nem fejezhető be.');return}}   // a nap akkor ér véget, ha minden egység mozgott
  if(wacOn()&&!(CAMP.voy&&CAMP.voy.sailed)){const o=WAC&&WAC.cur;waitDay(o?'WAC parancs ('+o.id+'): '+o.txt:'Várakozás a WAC parancsára.');return}   /* v1.14.557: 2-es szint – nincs saját konvoj, a WAC parancsai */
+ if(ECO.side==='X'&&!tut&&!CAMP.mission&&!(CAMP.voy&&CAMP.voy.sailed)){const n=(CAMP.ord||[]).filter(x=>x.st==='active'&&x.side==='X'&&x.by==='player').length;waitDay('BdU: '+(n?n+' élő parancs – az U-boatok úton.':'nincs kiadott parancs – a Kész U-boatok a bázison várnak (U-flottilla lap).'));return}   /* v1.14.605: Axis – nincs saját konvoj, a nap telik */
  {const v=CAMP.voy;if(v&&!v.sailed&&!tut&&!CAMP.mission){const w=CAMP.fleet.filter(f=>f.loc===v.from&&(f.st==='svc'||f.st==='upg'||f.st==='refit'||(f.st==='repair'&&ECO.repMode==='fixed'))),wf=W[sel[0]][sel[1]],dk=day+'/'+year;let sl=CAMP.fleet.filter(f=>f.sel&&CAMP.canSail(f));
   /* v1.14.549 (cvLead): ELŐRE JELZETT KONVOJ – a sorsolt konvoj nem azonnal indul, hanem cvLead nap múlva; addig javíthatsz, fejleszthetsz, kijelölheted a kíséretet; elutasítani nem lehet */
   const lead=String(ECO.cvLead||'0').split('-').map(Number),leadOn=(lead[1]||lead[0])>0;
