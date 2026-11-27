@@ -1,6 +1,6 @@
 <!doctype html><html lang="hu" data-theme="light"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>CEG – Konvoj kísérő kampány v1.14.600</title>
+<title>CEG – Konvoj kísérő kampány v1.14.601</title>
 <style>
 /* Színek: világos/sötét téma változókkal; a gombok és táblázatok stílusa */
 :root{--bg:#f4f1ea;--fg:#1d2733;--pn:#fff;--ln:#c9c2b3;--ac:#b3261e;--sea:#d6ecf4;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -2031,11 +2031,19 @@ function htTorp(s,t){const U=s.t=='U';
  if(U&&(lutUse(s)||fatUse(s)))return['Torpedó',(lutUse(s)?'LUT':'FAT')+' kiválasztva: vaklövés'];
  const dirs=U?[s.tub.slice(0,4).some(Boolean)?s.dir:null,s.tub[4]?nd(s.dir+4):null].filter(x=>x!=null):tpDirs(s);
  if(!dirs.length)return['Torpedó','nincs betöltött cső'];
+ /* v1.14.601: az útban lévő hajók is számítanak – a torpedó a seg() sorrendjében (cellánként, a hajólista szerint) minden ellenfélre dob,
+    és az első találatnál megáll; a cél esélye = a saját esélye × az előtte sorra kerülők „mellé” esélye */
  let best=null;
- dirs.forEach(d=>{const v=DV[d];for(let k=1;k<=3;k++){const x=s.x+v[0]*k,y=s.y+v[1]*k;if(x<1||x>N||y<1||y>N||isLand(x,y))break;
-  if(occ(t,x,y)){const p=htTpP(d,t);if(!best||p>best.p)best={d,k,p};break}}});
+ dirs.forEach(d=>{const v=DV[d];let miss=1;const blk=[];
+  for(let k=1;k<=3;k++){const x=s.x+v[0]*k,y=s.y+v[1]*k;if(x<1||x>N||y<1||y>N||isLand(x,y))break;
+   let found=false;
+   for(const q of ships.filter(q=>q!==s&&occ(q,x,y)&&(q.t=='M'||q.t=='E')&&htFoe(s,q))){
+    const pq=htTpP(d,q);
+    if(q===t){const p=miss*pq;if(!best||p>best.p)best={d,k,p,p0:pq,blk:blk.slice()};found=true;break}
+    miss*=1-pq;blk.push(q.id+' '+htPc(pq))}
+   if(found)break}});
  if(!best)return['Torpedó','nincs az első lépés vonalában'];
- let tx=AR[best.d]+' '+best.k+' mező: '+htPc(best.p);
+ let tx=AR[best.d]+' '+best.k+' mező: '+htPc(best.p)+(best.blk.length?' (útban: '+best.blk.join(', ')+'; szabad úton '+htPc(best.p0)+')':'');
  if(!U){const n=Math.min((s.tub||[]).filter(Boolean).length,s.tp,5);if(n>1)tx+=' · sorozat '+n+' db: '+htPc(1-Math.pow(1-best.p,n))}
  return['Torpedó',tx+(still(t)?' (álló cél)':'')]}
 /* htDC: vízibomba (és hedgehog) – csak saját kísérő U-boat ellen */
@@ -5548,6 +5556,7 @@ function storageReport() {
 //   v1.14.418 (2026-11-09) – kézi kísérő iránya (manDir: 0 ki / 1 minden kézi kísérő / 2 csak a kijelölt): narancs szaggatott vonal a legközelebbi látható U-boat felé (az AI-vonal mintájára, az AI érzékelési sugarán belül)
 //   v1.14.417 (2026-11-09) – a napfény és a csillogás (W0–W1) a TELJES taktikai pályán (korábban csak a keretben); az időjárás-effektek (felhő, eső, villám, napfény, csillogás) mind az egész pályán
 //   v1.14.416 (2026-11-09) – a belső felhők kisebbek (3–6 cella) és szintenként sötétednek / szaporodnak: W2 fehér, W3 szürke, W4 sötét, összefüggő tömbökben (csoportok); a pályát nem borítják el
+//   v1.14.601 (2026-11-27) – Esély-buborék, torpedó: az első lépés 3 cellájában a cél előtt útban lévő hajók is számítanak (elnyelhetik a torpedót); a buborék kiírja őket és a szabad úti esélyt
 //   v1.14.600 (2026-11-27) – TALÁLATI ESÉLY-BUBORÉK (hitTip, „🎯 esélyek” a kártyán): a kijelölt hajó (saját vagy ellenséges) esélyei a kurzor alatti felderített ellenfél ellen – ágyú lövegenként (tört + %), torpedó első lépése (FAT / LUT = vaklövés), vízibomba / hedgehog; telefonon koppintásra
 //   v1.14.599 (2026-11-26) – Napi jelentés: a „Nap” oszlop helyett „A háború napja” (1939-09-01 = 1.)
 //   v1.14.598 (2026-11-26) – CSIPTETŐS NAPI JELENTÉS: fa tábla, papírlap, öt lapfül (Összefoglaló: idő, konvoj, kíséret, pénz, figyelmeztetések; Konvoj: teherhajók, elszámolás; Kíséret: hajók, javítópontok, úton / kikötőben; Ellenség; Hírek); összecsukva egy sor dátummal és a figyelmeztetések számával; csak a saját hajók
@@ -5909,7 +5918,7 @@ function storageReport() {
 //   v1.14.239 (2026-10-26) – ÚJ: (1) LUT torpedó (lutOn, alap 1; 1944. januártól): az U-boat kártyán „LUT” jelölőnégyzet (az AI lutAiP %); a FAT utóda: lutLen 18 cella, lutRun 6 egyenes, lutLeg 3 fél-szélesség, találat teherhajón d6 ≤ lutHit (3), hadihajón ≤ lutHitE (1); ha FAT is be van jelölve, a LUT számít. (2) LÉGPERISZKÓP / SCHNORCHEL (schOn, alap 1; 1944. júniustól; csak szabad mozgásnál): 1/8-as mélységen a kártya „Légperiszkóp” jelölőnégyzetével a dízel hajt: az akku nem fogy, hanem schRech (2) cellát tölt körönként, max schSpd (2) lépés, kimerült akkuval is halad; kiesett dízelnél nem működik; az AI az akku fele alatt automatikusan használja.
 //   v1.14.238 (2026-10-26) – SZABAD MOZGÁS: az U-boat a belső játékterületen (pl. 80-as táblán az 50×50-esen) bárhol léphet be, nem csak a szélén (uInner, alapból BE; KI = a régi szél-belépés uEdge szerint).
 //   v1.14.237 (2026-10-26) – HEDGEHOG / SQUID ELLENŐRZÉS: az U-boat lépés utáni kiértékelésében a hedgehog / Squid „nincs találat” eredmény akkor is kiíródik, ha a vízibombák is hatottak (eddig ilyenkor csak a vízibomba-sor látszott, a hedgehog-ellenőrzés nem)
-const VER = 'v1.14.600';
+const VER = 'v1.14.601';
 // ===== MEGFIGYELŐ / TESZT MÓD (obsMode, v1.14.195) =====
 // Megfigyelő módban mindkét oldalt az AI vezérli (a kísérők is: NPC-logikával), a pálya mindent mutat (nincs köd), és a körök maguktól léptetődnek;
 // a lezárt csatákból statisztika készül (konvoj-, U-boat-, kísérő-veszteség, kimenetel), hogy látszódjon: sokféle csata születik-e, vagy egyoldalú lett a hangolás.
