@@ -124,6 +124,31 @@ await T(b,'Beállítás-kereső (cfgFilter)',()=>{CAMP.setupView();
  const vis=()=>[...document.querySelectorAll('#vSET tr')].filter(t=>t.querySelector('td')&&t.style.display!='none'&&t.closest('table').style.display!='none').length;
  const all=vis();cfgFilter('wxCloudN');const one=vis();cfgFilter('felho');const some=vis();cfgFilter('xyzzy');const none=vis();cfgFilter('');const back=vis();
  return{ok:all>500&&one===1&&some>=3&&none===0&&back===all,info:JSON.stringify({all,one,some,none,back})}});
+
+// ===== v1.14.613 (rendrakás 1.): a közös alap és a német oldal tesztjei =====
+// 18) közös jelentés-napló: oldal szerinti tudás (biztos / feltételezett / nem tud)
+await T(b,'Közös jelentés-napló (repAdd / repKnown)',()=>{
+ OPG.repAdd({u:'U90',ev:'sunk',kn:{A:'sure'},tx:'a'});OPG.repAdd({u:'U91',ev:'sight',kn:{X:'sure'},tx:'b'});OPG.repAdd({u:'U92',ev:'sunk',kn:{A:'pres',X:'sure'},tx:'c'});
+ const A=OPG.repKnown('A').map(r=>r.u).join(','),X=OPG.repKnown('X').map(r=>r.u).join(',');
+ return{ok:A==='U90,U92'&&X==='U91,U92',info:'A='+A+' X='+X}});
+// 19) közös parancs-szerkezet: egy egységnek egy élő parancsa van
+await T(b,'Közös parancsok (ordSet / ordOf)',()=>{
+ OPG.ordSet({u:'U95',side:'X',kind:'patrol',cell:'P11',by:'player'});OPG.ordSet({u:'U95',side:'X',kind:'home',cell:'W',by:'player'});
+ const L=CAMP.ord.filter(x=>x.u==='U95'),o=OPG.ordOf('U95');
+ return{ok:L.length===2&&L[0].st==='done'&&o&&o.kind==='home'&&o.st==='active',info:L.map(x=>x.kind+':'+x.st).join(',')}});
+// 20) tudás-réteg: oldalanként külön
+await T(b,'Tudás-réteg (knowSet / knowOf)',()=>{OPG.knowSet('A','U96',5,6,'obs');const a=OPG.knowOf('A','U96'),x=OPG.knowOf('X','U96');
+ return{ok:!!a&&a.r===5&&a.c===6&&!x,info:JSON.stringify(a)}});
+// 21) Axis új kampány: nincs brit flotta; parancs nélkül egy U-boat sem fut ki; parancsra kifut
+await T(b,'Axis: parancs nélkül vár, parancsra kifut',()=>{ECO.side='X';CFG.gLevel=2;ECO.uTrack=1;CAMP.newCampGo();
+ for(let i=0;i<10;i++)OPG.worldDay();
+ const sea=()=>Object.values(CAMP.ub).filter(q=>q.op&&!['base','trn'].includes(q.op.st)).length,s0=sea();
+ const id=Object.keys(CAMP.ub).find(k=>CAMP.ub[k].op&&CAMP.ub[k].op.st==='base');CAMP.ub[id].op.ready=-1e9;
+ OPG.ordSet({u:id,side:'X',kind:'patrol',cell:'P11',by:'player'});OPG.worldDay();const st=CAMP.ub[id].op.st;
+ ECO.side='A';return{ok:CAMP.fleet.length===0&&s0===0&&st==='out',info:'flotta='+CAMP.fleet.length+' tengeren parancs nélkül='+s0+' '+id+'='+st}});
+// 22) esély-buborék: a kijelölt kísérő ágyújának esélye tört + százalék
+await T(b,'Esély-buborék (htLines)',()=>{$('n').value=30;reset();const E=mkE({id:'X0',cls:'T'},SLOT_ORDER[0],cmd());ships.push(E);const U=mkU('U9');ships.push(U);U.x=E.x+2;U.y=E.y;U.dep=0;
+ const L=htLines(E,U)||[],g=L.find(r=>/^Ágyú/.test(r[0]));return{ok:!!g&&/\d+\/\d+ \(\d+%\)/.test(g[1]),info:JSON.stringify(L).slice(0,120)}});
 await b.close();
 let bad=0;for(const r of results){console.log((r.ok?'  OK   ':'  HIBA ')+r.name+(r.info?'  ['+r.info+']':'')+(r.errs.length?'  JS-hibák: '+r.errs.join(' | '):''));if(!r.ok)bad++}
 console.log(bad?('\n'+bad+' / '+results.length+' teszt BUKOTT'):('\nMind a '+results.length+' teszt rendben'));process.exit(bad?1:0)})();
